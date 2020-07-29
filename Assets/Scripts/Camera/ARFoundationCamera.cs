@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
@@ -10,66 +12,86 @@ namespace ARVRLab.VPSService
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
         public ARCameraManager cameraManager;
-        public RawImage image;
+
+        public bool fake = false;
+
+        public RawImage raw_image;
         private Texture2D texture;
 
-        // Start is called before the first frame update
-        void Start()
+        private void Awake()
         {
-            RenderTexture rt = new RenderTexture(image.texture.width, image.texture.height, 0);
-            RenderTexture.active = rt;
-            Graphics.Blit(image.texture, rt);
-
-            texture = new Texture2D(image.texture.width, image.texture.height, TextureFormat.RGB24, false);
-            texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
-            texture.Apply();
+            cameraManager.frameReceived += UpdateFrame;
         }
 
-        // Update is called once per frame
-        void Update()
+        void UpdateFrame(ARCameraFrameEventArgs args)
         {
-
+            Debug.Log("WORK");
+            GetFrame();
         }
+
+        //private void Start()/////////////////////////////////////////////
+        //{
+        //    UpdateFrame(new ARCameraFrameEventArgs());
+        //}
 
         public unsafe Texture2D GetFrame()
         {
+            if (fake)
+            {
+                return GetFromFake();
+            }
+
+            // Пытаемся получить последнее изображение с камеры
+            XRCameraImage image;
+            if (!cameraManager.TryGetLatestImage(out image))
+            {
+                return null;
+            }
+
+            Vector2Int Resolution = new Vector2Int(1920, 1080);
+
+            var format = TextureFormat.RGBA32;
+
+            // Создаем текстуру
+            if (texture == null || texture.width != Resolution.x || texture.height != Resolution.y)
+            {
+                texture = new Texture2D(Resolution.x, Resolution.y, format, false);
+            }
+
+            // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
+            var conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorY);
+            // Задаем downscale до нужного разрешения
+            conversionParams.outputDimensions = new Vector2Int(Resolution.x, Resolution.y);
+
+            // Получаем ссылку на массив байтов текущей текстуры
+            var rawTextureData = texture.GetRawTextureData<byte>();
+            try
+            {
+                // Копируем байты из изображения с камеры в текстуру
+                image.Convert(conversionParams, new IntPtr(rawTextureData.GetUnsafePtr()), rawTextureData.Length);
+            }
+            finally
+            {
+                // Высвобождаем память
+                image.Dispose();
+            }
+
+            texture.Apply();
+
             return texture;
-            //// Пытаемся получить последнее изображение с камеры
-            //XRCameraImage image;
-            //if (!cameraManager.TryGetLatestImage(out image))
-            //{
-            //    return null;
-            //}
+        }
 
-            //var format = TextureFormat.RGBA32;
+        private Texture2D GetFromFake()
+        {
+            RenderTexture rt = new RenderTexture(raw_image.texture.width, raw_image.texture.height, 0);
+            RenderTexture.active = rt;
+            Graphics.Blit(raw_image.texture, rt);
 
-            //// Создаем текстуру
-            //if (currentTexture == null || currentTexture.width != CameraProperties.DownscalledResolution.x || currentTexture.height != CameraProperties.DownscalledResolution.y)
-            //{
-            //    currentTexture = new Texture2D(CameraProperties.DownscalledResolution.x, CameraProperties.DownscalledResolution.y, format, false);
-            //}
+            texture = new Texture2D(raw_image.texture.width, raw_image.texture.height, TextureFormat.RGB24, false);
+            texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
+            texture.Apply();
 
-            //// Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
-            //var conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorY);
-            //// Задаем downscale до нужного разрешения
-            //conversionParams.outputDimensions = new Vector2Int(CameraProperties.DownscalledResolution.x, CameraProperties.DownscalledResolution.y);
-
-            //// Получаем ссылку на массив байтов текущей текстуры
-            //var rawTextureData = currentTexture.GetRawTextureData<byte>();
-            //try
-            //{
-            //    // Копируем байты из изображения с камеры в текстуру
-            //    image.Convert(conversionParams, new IntPtr(rawTextureData.GetUnsafePtr()), rawTextureData.Length);
-            //}
-            //finally
-            //{
-            //    // Высвобождаем память
-            //    image.Dispose();
-            //}
-
-            //currentTexture.Apply();
-
-            //return currentTexture;
+            return texture;
         }
 
         public Vector2 GetFocalPixelLength()
