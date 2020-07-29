@@ -13,9 +13,6 @@ namespace ARVRLab.VPSService
     {
         public ARCameraManager cameraManager;
 
-        public bool fake = false;
-
-        public RawImage raw_image;
         private Texture2D texture;
 
         private void Awake()
@@ -23,24 +20,13 @@ namespace ARVRLab.VPSService
             cameraManager.frameReceived += UpdateFrame;
         }
 
-        void UpdateFrame(ARCameraFrameEventArgs args)
+        private void UpdateFrame(ARCameraFrameEventArgs args)
         {
-            Debug.Log("WORK");
             GetFrame();
         }
 
-        //private void Start()/////////////////////////////////////////////
-        //{
-        //    UpdateFrame(new ARCameraFrameEventArgs());
-        //}
-
         public unsafe Texture2D GetFrame()
         {
-            if (fake)
-            {
-                return GetFromFake();
-            }
-
             // Пытаемся получить последнее изображение с камеры
             XRCameraImage image;
             if (!cameraManager.TryGetLatestImage(out image))
@@ -76,19 +62,6 @@ namespace ARVRLab.VPSService
                 image.Dispose();
             }
 
-            texture.Apply();
-
-            return texture;
-        }
-
-        private Texture2D GetFromFake()
-        {
-            RenderTexture rt = new RenderTexture(raw_image.texture.width, raw_image.texture.height, 0);
-            RenderTexture.active = rt;
-            Graphics.Blit(raw_image.texture, rt);
-
-            texture = new Texture2D(raw_image.texture.width, raw_image.texture.height, TextureFormat.RGB24, false);
-            texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
             texture.Apply();
 
             return texture;

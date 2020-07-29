@@ -7,11 +7,14 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
     public static class DataCollector
     {
+        // передать ServiceProvider в параметрах
         public static string CollectData(Pose CurrentCameraPose, bool forceVPS = false)
         {
             //CurrentCameraPose = new Pose(ARSessionOrigin.camera.transform.position, ARSessionOrigin.camera.transform.rotation)
             Pose pose = forceVPS ? Pose.identity : CurrentCameraPose;
 
+
+            // Это все перекочует в ITracking
             string stat = "-";
             float prog = 0f;
             string loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";

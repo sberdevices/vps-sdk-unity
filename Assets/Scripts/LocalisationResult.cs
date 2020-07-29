@@ -14,5 +14,17 @@ namespace ARVRLab.VPSService
         public float Heading;
         public float Accuracy;
         public double Timestamp;
+
+        public LocalisationResult()
+        {
+            LocalPosition = Vector3.zero;
+            LocalRotationY = 0;
+            GpsLatitude = 0;
+            GpsLongitude = 0;
+            GuidPointcloud = "";
+            Heading = 0;
+            Accuracy = 0;
+            Timestamp = 0;
+        }
     }
 }

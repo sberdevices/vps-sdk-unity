@@ -7,17 +7,27 @@ namespace ARVRLab.VPSService
     public class ServiceProvider : MonoBehaviour
     {
         [SerializeField]
-        private ARFoundationCamera Camera; //////////////////
+        private Camera cameraObject;
+
+        [SerializeField]
+        private ARFoundationApplyer arFoundationApplyer;
+
+        private ICamera camera; 
 
         //[SerializeField]
-        //private IGPS GPS;
+        //private IGPS gps;
 
         //[SerializeField]
-        //private ITracking Tracking;
+        //private ITracking tracking;
 
         public ICamera GetCamera()
         {
-            return Camera;
+            return camera;
+        }
+
+        private void Awake()
+        {
+            camera = cameraObject.GetComponent<ICamera>();
         }
 
         //public IGPS GetGPS()
@@ -29,5 +39,10 @@ namespace ARVRLab.VPSService
         //{
         //    return Tracking;
         //}
+
+        public ARFoundationApplyer GetARFoundationApplyer()
+        {
+            return arFoundationApplyer;
+        }
     }
 }

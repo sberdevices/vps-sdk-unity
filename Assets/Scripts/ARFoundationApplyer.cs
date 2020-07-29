@@ -7,52 +7,38 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationApplyer : MonoBehaviour
     {
-        public static ARFoundationApplyer Instance;
+        private ARSessionOrigin arSessionOrigin;
 
-        ARSessionOrigin ArSessionOrigin;
-
-        private Pose StartPose;
+        private Pose startPose;
 
         public float LerpSpeed = 2.0f;
 
-        private void Awake()
+        private void Start()
         {
-            if (Instance == null)
+            arSessionOrigin = FindObjectOfType<ARSessionOrigin>();
+            if (arSessionOrigin == null)
             {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(this);
-            }
-        }
-
-        void Start()
-        {
-            ArSessionOrigin = FindObjectOfType<ARSessionOrigin>();
-            if (ArSessionOrigin == null)
-            {
-                Debug.LogError("ARSessionOrigin не найден");
+                Debug.LogError("ARSessionOrigin is not found");
             }
         }
 
         // Save camera pose at the moment of start sending request to server
         public void LocalisationStart()
         {
-            Vector3 pos = ArSessionOrigin.camera.transform.position;
-            Vector3 rot = new Vector3(0, ArSessionOrigin.camera.transform.eulerAngles.y, 0);
-            StartPose = new Pose(pos, Quaternion.Euler(rot));
+            Vector3 pos = arSessionOrigin.camera.transform.position;
+            Vector3 rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0);
+            startPose = new Pose(pos, Quaternion.Euler(rot));
         }
 
         // Применяем полученные transform
         public void ApplyVPSTransform(LocalisationResult localisation)
         {
-            LocalisationStart();///////////////////////////////////////
+            LocalisationStart();/////////////////////////////////////// убрать после внедрения ITracking
 
-            Vector3 NewPosition = ArSessionOrigin.transform.localPosition + localisation.LocalPosition - StartPose.position;
+            Vector3 NewPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
-            var qrot = Quaternion.Inverse(StartPose.rotation) * rot;
+            var qrot = Quaternion.Inverse(startPose.rotation) * rot;
             float NewRotationY = qrot.eulerAngles.y;
 
             Debug.Log("LocalisationDone happend");
@@ -69,10 +55,10 @@ namespace ARVRLab.VPSService
 
             while (true)
             {
-                ArSessionOrigin.transform.localPosition = Vector3.Lerp(ArSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
-                ArSessionOrigin.transform.RotateAround(ArSessionOrigin.camera.transform.position, Vector3.up, -CurAngle);
+                arSessionOrigin.transform.localPosition = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
+                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, -CurAngle);
                 CurAngle = Mathf.LerpAngle(CurAngle, NewRotationY, LerpSpeed * Time.deltaTime);
-                ArSessionOrigin.transform.RotateAround(ArSessionOrigin.camera.transform.position, Vector3.up, CurAngle);
+                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, CurAngle);
                 yield return null;
             }
         }

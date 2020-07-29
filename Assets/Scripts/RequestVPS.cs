@@ -11,30 +11,30 @@ namespace ARVRLab.VPSService
 {
     public class RequestVPS
     {
-        private string ServerUrl;
+        private string serverUrl;
         private string api_path = "vps/api/v1/job";
 
         private LocationState locationState = new LocationState();
 
         public RequestVPS(string url)
         {
-            ServerUrl = url;
+            serverUrl = url;
         }
 
-        public IEnumerator SendVpsRequest(Texture2D Image, string Meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
-            string uri = Path.Combine(ServerUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path);
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
                 Debug.LogError("URL is incorrect: " + uri);
-                yield return null;
+                yield break;
             }
 
             WWWForm form = new WWWForm();
             form.AddField("image", "file");
-            form.AddBinaryData("image", GetByteArrayFromImage(Image), CreateFileName());
-            form.AddField("json", Meta);
+            form.AddBinaryData("image", GetByteArrayFromImage(image), CreateFileName());
+            form.AddField("json", meta);
 
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {
@@ -71,7 +71,7 @@ namespace ARVRLab.VPSService
                         Debug.LogError(e);
                     }
 
-                    if (deserialized != null /*&& deserialized.data != null*/)
+                    if (deserialized != null)
                     {
                         Debug.Log("Server status " + deserialized.Status);
                         locationState = deserialized;
@@ -103,14 +103,14 @@ namespace ARVRLab.VPSService
             return locationState.Status;
         }
 
-        public LocalisationResult GetResponce()
-        {
-            return locationState.Localisation;
-        }
-
         public ErrorCode GetErrorCode()
         {
             return locationState.Error;
+        }
+
+        public LocalisationResult GetResponce()
+        {
+            return locationState.Localisation;
         }
 
         private string CreateFileName()

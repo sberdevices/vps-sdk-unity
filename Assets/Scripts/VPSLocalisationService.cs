@@ -6,33 +6,32 @@ namespace ARVRLab.VPSService
 {
     public class VPSLocalisationService : MonoBehaviour
     {
-        private bool StartOnAwake;
-        private bool IsMock;
+        private bool startOnAwake;
+        private bool isMock;
 
-        private ServiceProvider Provider;
+        private ServiceProvider provider;
         private VPSLocalisationAlgorithm algorithm;
 
-        public void Start()
+        private void Start()
         {
-            Provider = GetComponent<ServiceProvider>();
+            provider = GetComponent<ServiceProvider>();
             StartVPS();
         }
 
         public void StartVPS()
         {
-            algorithm = new VPSLocalisationAlgorithm(this, Provider);
-            StartCoroutine(algorithm.LocalisationRoutine());
+            algorithm = new VPSLocalisationAlgorithm(this, provider);
         }
 
         public void StartVPS(SettingsVPS settings)
         {
-            algorithm = new VPSLocalisationAlgorithm(this, Provider, settings);
+            algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
             StartCoroutine(algorithm.LocalisationRoutine());
         }
 
         public void StopVps()
         {
-            StopAllCoroutines();
+            algorithm?.Stop();
         }
 
         public LocationState GetLatestPose()
