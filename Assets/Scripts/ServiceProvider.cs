@@ -12,7 +12,8 @@ namespace ARVRLab.VPSService
         [SerializeField]
         private ARFoundationApplyer arFoundationApplyer;
 
-        private ICamera camera; 
+        private ICamera camera;
+        private IServiceGPS gps;
 
         //[SerializeField]
         //private IGPS gps;
@@ -28,12 +29,13 @@ namespace ARVRLab.VPSService
         private void Awake()
         {
             camera = cameraObject.GetComponent<ICamera>();
+            gps = GetComponent<IServiceGPS>();
         }
 
-        //public IGPS GetGPS()
-        //{
-        //    return GPS;
-        //}
+        public IServiceGPS GetGPS()
+        {
+            return gps;
+        }
 
         //public ITracking GetTracking()
         //{

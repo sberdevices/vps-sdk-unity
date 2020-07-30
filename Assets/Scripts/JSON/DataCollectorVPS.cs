@@ -8,7 +8,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     public static class DataCollector
     {
         // передать ServiceProvider в параметрах
-        public static string CollectData(Pose CurrentCameraPose, bool forceVPS = false)
+        public static string CollectData(ServiceProvider Provider, Pose CurrentCameraPose, bool forceVPS = false)
         {
             //CurrentCameraPose = new Pose(ARSessionOrigin.camera.transform.position, ARSessionOrigin.camera.transform.rotation)
             Pose pose = forceVPS ? Pose.identity : CurrentCameraPose;
@@ -19,15 +19,21 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             float prog = 0f;
             string loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
 
-            double lat = 0.0d;
-            double lon = 0.0d;
-            double alt = 0.0d;
-            float accuracy = 0.0f;
-            double locationTimeStamp = 0.0d;
+            IServiceGPS gps = Provider.GetGPS();
 
-            float heading = 0.0f;
-            float headingAccuracy = 0.0f;
-            double compassTimeStamp = 0.0f;
+            GPSData gpsData = gps.GetGPSData();
+
+            double lat = gpsData.Latitude;
+            double lon = gpsData.Longitude;
+            double alt = gpsData.Altitude;
+            float accuracy = gpsData.Accuracy;
+            double locationTimeStamp = gpsData.Timestamp;
+
+            CompassData gpsCompass = gps.GetCompassData();
+
+            float heading = gpsCompass.Heading;
+            float headingAccuracy = gpsCompass.Accuracy;
+            double compassTimeStamp = gpsCompass.Timestamp;
 
             var attrib = new Attributes
             {
@@ -102,12 +108,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
-                GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
-                GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
-                GuidPointcloud = communicationStruct.data.attributes.location.location_id,
-                Heading = communicationStruct.data.attributes.location.compass.heading,
-                Accuracy = communicationStruct.data.attributes.location.gps.accuracy,
-                Timestamp = communicationStruct.data.attributes.location.gps.timestamp
+                //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
+                //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
+                //GuidPointcloud = communicationStruct.data.attributes.location.location_id,
+                //Heading = communicationStruct.data.attributes.location.compass.heading,
+                //Accuracy = communicationStruct.data.attributes.location.gps.accuracy,
+                //Timestamp = communicationStruct.data.attributes.location.gps.timestamp
             };
 
             LocationState request = new LocationState

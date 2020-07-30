@@ -11,6 +11,10 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
+#if UNITY_ANDROID
+            UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
+#endif
+
             gpsData = new GPSData();
             compassData = new CompassData();
             StartCoroutine(StartGPS());

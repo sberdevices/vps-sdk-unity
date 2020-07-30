@@ -422,7 +422,7 @@ PlayerSettings:
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
   cameraUsageDescription: Camera please
-  locationUsageDescription: 
+  locationUsageDescription: NSLocationWhenInUseUsageDescription
   microphoneUsageDescription: 
   switchNetLibKey: 
   switchSocketMemoryPoolSize: 6144

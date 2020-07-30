@@ -81,14 +81,14 @@ namespace ARVRLab.VPSService
 
                 if (!isLocalized)
                 {
-                    Meta = DataCollector.CollectData(Pose.identity, true);
+                    Meta = DataCollector.CollectData(provider, Pose.identity, true);
                 }
                 else
                 {
                     //arRFoundationApplyer?.LocalisationStart();
 
                     //Meta = DataCollector.CollectData(Provider.GetTracking(), false);
-                    Meta = DataCollector.CollectData(Pose.identity, true);
+                    Meta = DataCollector.CollectData(provider, Pose.identity, true);
                 }
 
                 yield return requestVPS.SendVpsRequest(Image, Meta);
