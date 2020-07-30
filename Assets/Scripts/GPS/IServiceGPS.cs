@@ -2,7 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IServiceGPS
-{ 
-
+namespace ARVRLab.VPSService
+{
+    public interface IServiceGPS
+    {
+        GPSData GetGPSData();
+        CompassData GetCompassData();
+    }
 }

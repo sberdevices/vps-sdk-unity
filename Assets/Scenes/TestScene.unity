@@ -428,10 +428,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 296158840}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4da887eb656d49b1bcf46ee3ca5260c, type: 3}
+  m_Script: {fileID: 11500000, guid: 584f697f9e01d4839b9c4ae5d9af5dfb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Raw_image: {fileID: 1707755071}
+  cameraManager: {fileID: 0}
 --- !u!114 &296158843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,7 +444,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 816b289ef451e094f9ae174fb4cf8db0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UseCustomMaterial: 0
+  m_UseCustomMaterial: 1
   m_CustomMaterial: {fileID: 0}
 --- !u!114 &296158844
 MonoBehaviour:
@@ -632,6 +632,7 @@ GameObject:
   - component: {fileID: 2057405511}
   - component: {fileID: 2057405513}
   - component: {fileID: 2057405514}
+  - component: {fileID: 2057405515}
   m_Layer: 0
   m_Name: Vps
   m_TagString: Untagged
@@ -692,6 +693,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LerpSpeed: 5
+--- !u!114 &2057405515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057405510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94686ea43d7a1429eaf622c81f51aeb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2127641147
 GameObject:
   m_ObjectHideFlags: 0
