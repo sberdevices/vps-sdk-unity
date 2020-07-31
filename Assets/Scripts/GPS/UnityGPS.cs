@@ -9,6 +9,9 @@ namespace ARVRLab.VPSService
         private GPSData gpsData;
         private CompassData compassData;
 
+        private int maxWait = 20;
+        private const float timeToUpdate = 3;
+
         private void Start()
         {
 #if UNITY_ANDROID
@@ -35,7 +38,6 @@ namespace ARVRLab.VPSService
             Input.compass.enabled = true;
 
             // Wait until service initializes
-            int maxWait = 20;
             while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
             {
                 yield return new WaitForSeconds(1);
@@ -74,10 +76,10 @@ namespace ARVRLab.VPSService
                     compassData.Accuracy = Input.compass.headingAccuracy;
                     compassData.Timestamp = Input.compass.timestamp;
 
-                    Debug.Log("Gps location: " + gpsData.Latitude + " " + gpsData.Longitude + " " + gpsData.Altitude + " " + gpsData.Accuracy + " " + gpsData.Timestamp);
-                    Debug.Log("Compass data: " + compassData.Heading + " " + compassData.Accuracy + " " + compassData.Timestamp);
+                    //Debug.Log("Gps location: " + gpsData.Latitude + " " + gpsData.Longitude + " " + gpsData.Altitude + " " + gpsData.Accuracy + " " + gpsData.Timestamp);
+                    //Debug.Log("Compass data: " + compassData.Heading + " " + compassData.Accuracy + " " + compassData.Timestamp);
 
-                    yield return new WaitForSeconds(3);
+                    yield return new WaitForSeconds(timeToUpdate);
                 }
             }
         }

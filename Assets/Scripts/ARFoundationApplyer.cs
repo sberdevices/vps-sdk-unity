@@ -22,7 +22,7 @@ namespace ARVRLab.VPSService
             }
         }
 
-        // Save camera pose at the moment of start sending request to server
+        // Сохраняем pose камеры перед отправкой запроса на сервер
         public void LocalisationStart()
         {
             Vector3 pos = arSessionOrigin.camera.transform.position;
@@ -33,7 +33,7 @@ namespace ARVRLab.VPSService
         // Применяем полученные transform
         public void ApplyVPSTransform(LocalisationResult localisation)
         {
-            LocalisationStart();/////////////////////////////////////// убрать после внедрения ITracking
+            //LocalisationStart();/////////////////////////////////////// убрать после внедрения ITracking
 
             Vector3 NewPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
 

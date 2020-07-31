@@ -2,17 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ITracking : MonoBehaviour
+namespace ARVRLab.VPSService
 {
-    // Start is called before the first frame update
-    void Start()
+    public interface ITracking
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        TrackingData GetLocalTracking();
+        void SetGuidPointcloud(string guid);
     }
 }

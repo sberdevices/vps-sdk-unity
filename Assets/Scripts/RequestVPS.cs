@@ -44,9 +44,8 @@ namespace ARVRLab.VPSService
 
                 if (www.isNetworkError || www.isHttpError)
                 {
-                    Debug.LogError("Network error!");
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    //JobHandlerVPS.FailHandler(null);
+                    Debug.LogError("Network error!");
                 }
                 else
                 {
@@ -54,7 +53,6 @@ namespace ARVRLab.VPSService
 
                     if (www.responseCode != 200)
                     {
-                        //JobHandlerVPS.FailHandler(null);
                         UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                         yield return null;
                     }
@@ -69,30 +67,19 @@ namespace ARVRLab.VPSService
                     catch (Exception e)
                     {
                         Debug.LogError(e);
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        yield break;
                     }
 
                     if (deserialized != null)
                     {
                         Debug.Log("Server status " + deserialized.Status);
                         locationState = deserialized;
-
-                        if (deserialized.Status == LocalisationStatus.NO_LOCALISATION)
-                        {
-                            //JobHandlerVPS.ProgressHandler(deserialized);
-                        }
-                        else if (deserialized.Status == LocalisationStatus.VPS_READY)
-                        {
-                            //JobHandlerVPS.DoneHandler(deserialized);
-                        }
-                        else //LocalisationStatus.GPS_ONLY
-                        {
-                            //JobHandlerVPS.FailHandler(deserialized);
-                        }
                     }
                     else
                     {
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                         Debug.LogError("There is no data come from server");
-                        //JobHandlerVPS.FailHandler(null);
                     }
                 }
             }
@@ -122,7 +109,6 @@ namespace ARVRLab.VPSService
             return file;
         }
 
-        // Get a byte array from RawImage.texture
         private byte[] GetByteArrayFromImage(Texture2D image)
         {
             byte[] bytesOfImage = image.EncodeToJPG();

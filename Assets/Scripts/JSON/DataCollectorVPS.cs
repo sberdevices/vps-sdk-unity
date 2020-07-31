@@ -7,17 +7,28 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
     public static class DataCollector
     {
-        // передать ServiceProvider в параметрах
-        public static string CollectData(ServiceProvider Provider, Pose CurrentCameraPose, bool forceVPS = false)
+        public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
         {
-            //CurrentCameraPose = new Pose(ARSessionOrigin.camera.transform.position, ARSessionOrigin.camera.transform.rotation)
-            Pose pose = forceVPS ? Pose.identity : CurrentCameraPose;
+            Pose pose = new Pose();
+            string loc_id = "";
 
+            if (forceVPS)
+            {
+                pose = Pose.identity;
+            }
+            else
+            {
+                TrackingData tracking = Provider.GetTracking().GetLocalTracking();
+                pose.position = tracking.Position;
+                pose.rotation = tracking.Rotation;
+            }
 
-            // Это все перекочует в ITracking
+            // сейчас сервер обязательно должен получить loc_id от клиента
+            loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
+            //loc_id = tracking.GuidPointcloud; //клиент не знает loc_id, так как сервер не выдает
+
             string stat = "-";
             float prog = 0f;
-            string loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
 
             IServiceGPS gps = Provider.GetGPS();
 

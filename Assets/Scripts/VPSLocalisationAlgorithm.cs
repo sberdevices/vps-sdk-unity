@@ -12,8 +12,6 @@ namespace ARVRLab.VPSService
 
         private LocationState locationState;
 
-        private bool isLocalized = false; // сообщает трекинг, перенести туда
-
         private SettingsVPS settings;
 
         event System.Action<ErrorCode> OnErrorHappend;
@@ -56,6 +54,14 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
+            var tracking = provider.GetTracking();
+            if (tracking == null)
+            {
+                OnErrorHappend?.Invoke(ErrorCode.TRACKING_NOT_AVALIABLE);
+                Debug.LogError("Tracking is not available");
+                yield break;
+            }
+
             ARFoundationApplyer arRFoundationApplyer = provider.GetARFoundationApplyer();
             if (arRFoundationApplyer == null)
             {
@@ -79,24 +85,26 @@ namespace ARVRLab.VPSService
 
                 RequestVPS requestVPS = new RequestVPS(settings.Url);
 
-                if (!isLocalized)
+                if (!tracking.GetLocalTracking().IsLocalisedFloor)
                 {
-                    Meta = DataCollector.CollectData(provider, Pose.identity, true);
+                    arRFoundationApplyer?.LocalisationStart();
+
+                    Meta = DataCollector.CollectData(provider, true);
                 }
                 else
                 {
-                    //arRFoundationApplyer?.LocalisationStart();
+                    arRFoundationApplyer?.LocalisationStart();
 
-                    //Meta = DataCollector.CollectData(Provider.GetTracking(), false);
-                    Meta = DataCollector.CollectData(provider, Pose.identity, true);
+                    Meta = DataCollector.CollectData(provider, false);
                 }
-
+                Debug.Log(Meta);
                 yield return requestVPS.SendVpsRequest(Image, Meta);
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {
                     arRFoundationApplyer?.ApplyVPSTransform(requestVPS.GetResponce());
-                    isLocalized = true;
+                    // сервер не выдает GuidPointcloud
+                    tracking.SetGuidPointcloud(requestVPS.GetResponce().GuidPointcloud);
                 }
                 else
                 {

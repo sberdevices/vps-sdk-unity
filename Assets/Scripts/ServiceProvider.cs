@@ -14,12 +14,7 @@ namespace ARVRLab.VPSService
 
         private ICamera camera;
         private IServiceGPS gps;
-
-        //[SerializeField]
-        //private IGPS gps;
-
-        //[SerializeField]
-        //private ITracking tracking;
+        private ITracking tracking;
 
         public ICamera GetCamera()
         {
@@ -30,6 +25,7 @@ namespace ARVRLab.VPSService
         {
             camera = cameraObject.GetComponent<ICamera>();
             gps = GetComponent<IServiceGPS>();
+            tracking = GetComponent<ITracking>();
         }
 
         public IServiceGPS GetGPS()
@@ -37,10 +33,10 @@ namespace ARVRLab.VPSService
             return gps;
         }
 
-        //public ITracking GetTracking()
-        //{
-        //    return Tracking;
-        //}
+        public ITracking GetTracking()
+        {
+            return tracking;
+        }
 
         public ARFoundationApplyer GetARFoundationApplyer()
         {
