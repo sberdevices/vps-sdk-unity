@@ -33,8 +33,6 @@ namespace ARVRLab.VPSService
         // Применяем полученные transform
         public void ApplyVPSTransform(LocalisationResult localisation)
         {
-            //LocalisationStart();/////////////////////////////////////// убрать после внедрения ITracking
-
             Vector3 NewPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);

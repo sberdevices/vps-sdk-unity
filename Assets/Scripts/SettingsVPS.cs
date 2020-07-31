@@ -8,6 +8,6 @@ namespace ARVRLab.VPSService
     {
         public string Url = "http://89.108.75.122:5001/";
         public float Timeout = 5;
-        public int ForceVpsCount = 3;
+        public int ForceVpsCount = 3; // пока не используется
     }
 }

@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
+    /// <summary>
+    /// Упавковка и распаковка JSON 
+    /// </summary>
     public static class DataCollector
     {
         public static string CollectData(ServiceProvider Provider, bool forceVPS = false)

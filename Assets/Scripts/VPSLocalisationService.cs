@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// API сервиса VPS
+    /// </summary>
     public class VPSLocalisationService : MonoBehaviour
     {
+        public bool StartOnAwake;
+
         private bool startOnAwake;
         private bool isMock;
+        private LocationState mockLocation;
 
         private ServiceProvider provider;
         private VPSLocalisationAlgorithm algorithm;
@@ -15,7 +21,8 @@ namespace ARVRLab.VPSService
         private void Start()
         {
             provider = GetComponent<ServiceProvider>();
-            StartVPS();
+            if (StartOnAwake)
+                StartVPS();
         }
 
         public void StartVPS()
@@ -26,7 +33,6 @@ namespace ARVRLab.VPSService
         public void StartVPS(SettingsVPS settings)
         {
             algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
-            StartCoroutine(algorithm.LocalisationRoutine());
         }
 
         public void StopVps()
@@ -36,17 +42,24 @@ namespace ARVRLab.VPSService
 
         public LocationState GetLatestPose()
         {
+            if (isMock)
+                return mockLocation;
+
             return algorithm.GetLocationRequest();
         }
 
-        public void SetMockLocation(LocalisationResult mockLocation)
+        public void SetMockLocation(LocalisationResult mock_location)
         {
+            mockLocation = new LocationState();
 
+            mockLocation.Localisation = mock_location;
+            mockLocation.Status = LocalisationStatus.VPS_READY;
+            mockLocation.Error = ErrorCode.NO_ERROR;
         }
 
-        public void SetMockMode(bool isMock)
+        public void SetMockMode(bool is_mock)
         {
-
+            isMock = is_mock;
         }
     }
 }

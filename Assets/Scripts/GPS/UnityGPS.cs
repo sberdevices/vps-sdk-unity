@@ -4,16 +4,22 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Получение GPS координат и значение компаса
+    /// </summary>
     public class UnityGPS : MonoBehaviour, IServiceGPS
     {
         private GPSData gpsData;
         private CompassData compassData;
 
+        // максимальное время ожидания инициализации
         private int maxWait = 20;
+        // период обновления данных gps
         private const float timeToUpdate = 3;
 
         private void Start()
         {
+            // для андроида запрашиваем разрешение отдельно
 #if UNITY_ANDROID
             UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
 #endif
@@ -25,7 +31,7 @@ namespace ARVRLab.VPSService
 
         private IEnumerator StartGPS()
         {
-            // First, check if user has location service enabled
+            // Проверяем, что gps доступен
             if (!Input.location.isEnabledByUser)
             {
                 gpsData.status = GPSStatus.Failed;
@@ -33,18 +39,18 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            // Start service before querying location
+            // Запускаем 
             Input.location.Start();
             Input.compass.enabled = true;
 
-            // Wait until service initializes
+            // Ждем инициализации
             while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
             {
                 yield return new WaitForSeconds(1);
                 maxWait--;
             }
 
-            // Service didn't initialize in 20 seconds
+            // Если не получилось инициализировать в течении maxWait секунд - выход по таймауту
             if (maxWait < 1)
             {
                 gpsData.status = GPSStatus.Failed;
@@ -52,7 +58,7 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            // Connection has failed
+            // Проверка на ошибку соединения
             if (Input.location.status == LocationServiceStatus.Failed)
             {
                 Debug.LogError("GPS: Unable to determine device location");
@@ -75,9 +81,6 @@ namespace ARVRLab.VPSService
                     compassData.Heading = Input.compass.trueHeading;
                     compassData.Accuracy = Input.compass.headingAccuracy;
                     compassData.Timestamp = Input.compass.timestamp;
-
-                    //Debug.Log("Gps location: " + gpsData.Latitude + " " + gpsData.Longitude + " " + gpsData.Altitude + " " + gpsData.Accuracy + " " + gpsData.Timestamp);
-                    //Debug.Log("Compass data: " + compassData.Heading + " " + compassData.Accuracy + " " + compassData.Timestamp);
 
                     yield return new WaitForSeconds(timeToUpdate);
                 }

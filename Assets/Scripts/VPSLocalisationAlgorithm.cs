@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Внутреннее управление VPS
+    /// </summary>
     public class VPSLocalisationAlgorithm
     {
         private VPSLocalisationService localisationService;
@@ -17,6 +20,12 @@ namespace ARVRLab.VPSService
         event System.Action<ErrorCode> OnErrorHappend;
         event System.Action<LocationState> OnLocalisationHappend;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="vps_servise">Родительский GameObject, для запуска корутин</param>
+        /// <param name="vps_provider">Провайдер камеры, gps и трекинга</param>
+        /// <param name="vps_settings">Настройки</param>
         public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings = null)
         {
             localisationService = vps_servise;
@@ -40,7 +49,10 @@ namespace ARVRLab.VPSService
             return locationState;
         }
 
-        // исключить nullreference, ошибки парсинга, try catch
+        /// <summary>
+        /// Главный цикл процесса. Проверяет готовность всех сервисов, отправляет запрос (force / не force), применяет полученную локализацию в случае успеха
+        /// </summary>
+        /// <returns>The routine.</returns>
         public IEnumerator LocalisationRoutine()
         {
             Texture2D Image;
@@ -97,7 +109,7 @@ namespace ARVRLab.VPSService
 
                     Meta = DataCollector.CollectData(provider, false);
                 }
-                Debug.Log(Meta);
+
                 yield return requestVPS.SendVpsRequest(Image, Meta);
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)

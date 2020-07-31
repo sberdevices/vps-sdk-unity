@@ -20,18 +20,17 @@ namespace ARVRLab.VPSService
             cameraManager.frameReceived += UpdateFrame;
         }
 
-        private void UpdateFrame(ARCameraFrameEventArgs args)
-        {
-            GetFrame();
-        }
-
-        public unsafe Texture2D GetFrame()
+        /// <summary>
+        /// Обновляет значение texture
+        /// </summary>
+        /// <returns>The frame.</returns>
+        private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
             // Пытаемся получить последнее изображение с камеры
             XRCameraImage image;
             if (!cameraManager.TryGetLatestImage(out image))
             {
-                return null;
+                return;
             }
 
             Vector2Int Resolution = new Vector2Int(1920, 1080);
@@ -63,7 +62,10 @@ namespace ARVRLab.VPSService
             }
 
             texture.Apply();
+        }
 
+        public Texture2D GetFrame()
+        {
             return texture;
         }
 

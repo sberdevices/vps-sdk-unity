@@ -9,6 +9,9 @@ using UnityEngine.UI;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Запрос к серверу VPS
+    /// </summary>
     public class RequestVPS
     {
         private string serverUrl;
@@ -21,6 +24,12 @@ namespace ARVRLab.VPSService
             serverUrl = url;
         }
 
+        /// <summary>
+        /// Отправка запроса: изображение и meta-данные
+        /// </summary>
+        /// <returns>The vps request.</returns>
+        /// <param name="image">Image.</param>
+        /// <param name="meta">Meta.</param>
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
             string uri = Path.Combine(serverUrl, api_path);
@@ -80,6 +89,7 @@ namespace ARVRLab.VPSService
                     {
                         UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                         Debug.LogError("There is no data come from server");
+                        yield break;
                     }
                 }
             }
@@ -115,6 +125,12 @@ namespace ARVRLab.VPSService
             return bytesOfImage;
         }
 
+        /// <summary>
+        /// Обновляет данные последнего ответа от сервера
+        /// </summary>
+        /// <param name="Status">Status.</param>
+        /// <param name="Error">Error.</param>
+        /// <param name="Localisation">Localisation.</param>
         private void UpdateLocalisationState(LocalisationStatus Status, ErrorCode Error, LocalisationResult Localisation)
         {
             locationState.Status = Status;

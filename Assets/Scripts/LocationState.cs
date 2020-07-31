@@ -12,6 +12,9 @@ namespace ARVRLab.VPSService
         TRACKING_NOT_AVALIABLE, SERVER_INTERNAL_ERROR, LOCALISATION_FAIL, TIMEOUT_ERROR
     }
 
+    /// <summary>
+    /// Данные о последнем запросе локализации
+    /// </summary>
     public class LocationState
     {
         public LocalisationStatus Status;

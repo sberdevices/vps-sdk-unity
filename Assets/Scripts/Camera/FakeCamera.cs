@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Фейковая камера - выдает заданную картинку
+    /// </summary>
     public class FakeCamera : MonoBehaviour, ICamera
     {
         public RawImage Raw_image;
@@ -15,6 +18,10 @@ namespace ARVRLab.VPSService
             GetTextureFromFake();
         }
 
+        /// <summary>
+        /// Забираем текстуру с RawImage
+        /// </summary>
+        /// <returns>The texture from fake.</returns>
         private Texture2D GetTextureFromFake()
         {
             RenderTexture rt = new RenderTexture(Raw_image.texture.width, Raw_image.texture.height, 0);
