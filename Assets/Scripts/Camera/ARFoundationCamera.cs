@@ -11,6 +11,7 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
+        [Tooltip("Менеджер АР камеры для получения изображения")]
         public ARCameraManager cameraManager;
 
         private Texture2D texture;

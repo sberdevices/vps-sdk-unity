@@ -13,12 +13,12 @@ namespace ARVRLab.VPSService
         public bool StartOnAwake;
 
         /// <summary>
-        /// Тут тоже комментарий
+        /// Событие ошибки локализации
         /// </summary>
         public event System.Action<ErrorCode> OnErrorHappend;
 
         /// <summary>
-        /// И тут комментарий
+        /// Событие успешной локализации
         /// </summary>
         public event System.Action<LocationState> OnPositionUpdated;
 
@@ -36,23 +36,29 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Запускает сервис VPS c настройками по умолчанию
         /// </summary>
         public void StartVPS()
         {
             algorithm = new VPSLocalisationAlgorithm(this, provider);
+
+            algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
+            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Запускает сервис VPS c заданными настройками
         /// </summary>
         public void StartVPS(SettingsVPS settings)
         {
             algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
+
+            algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
+            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated(ls);
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Останавливает работу сервиса VPS
         /// </summary>
         public void StopVps()
         {
@@ -60,19 +66,24 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Выдает результат последней локализации
         /// </summary>
         public LocationState GetLatestPose()
         {
             if (isMock)
                 return mockLocation;
 
-            // null ref если алгоритм не запущен - нужно вывести ошибку
+            // null ref если алгоритм не запущен - выводим ошибку и возвращаем null
+            if (algorithm == null)
+            {
+                Debug.LogError("VPS service is not running. Use StartVPS before");
+                return null;
+            }
             return algorithm.GetLocationRequest();
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Задает тестовый результат запроса локализации
         /// </summary>
         public void SetMockLocation(LocalisationResult mock_location)
         {
@@ -84,7 +95,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Расписать комментарии к каждой функции
+        /// Включает/выключает тестовый режим 
         /// </summary>
         public void SetMockMode(bool is_mock)
         {

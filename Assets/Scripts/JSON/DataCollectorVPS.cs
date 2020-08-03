@@ -10,6 +10,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     /// </summary>
     public static class DataCollector
     {
+        /// <summary>
+        /// Упаковывает все необходимы данные в json для отправки на сервер
+        /// </summary>
+        /// <returns>The data.</returns>
+        /// <param name="Provider">Provider.</param>
+        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
         public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
         {
             Pose pose = new Pose();
@@ -113,6 +119,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             //return job;
         }
 
+        /// <summary>
+        /// Распаковываем ответ от сервера
+        /// </summary>
+        /// <returns>The deserialize.</returns>
+        /// <param name="json">Json.</param>
         public static LocationState Deserialize(string json)
         {
             CommunicationStruct communicationStruct = JsonUtility.FromJson<CommunicationStruct>(json);

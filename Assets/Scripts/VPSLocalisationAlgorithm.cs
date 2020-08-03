@@ -17,8 +17,15 @@ namespace ARVRLab.VPSService
 
         private SettingsVPS settings;
 
-        event System.Action<ErrorCode> OnErrorHappend;
-        event System.Action<LocationState> OnLocalisationHappend;
+        /// <summary>
+        /// Событие ошибки локализации
+        /// </summary>
+        public event System.Action<ErrorCode> OnErrorHappend;
+
+        /// <summary>
+        /// Событие успешной локализации
+        /// </summary>
+        public event System.Action<LocationState> OnLocalisationHappend;
 
         /// <summary>
         /// Конструктор
@@ -36,6 +43,8 @@ namespace ARVRLab.VPSService
             else
                 settings = new SettingsVPS();
 
+            locationState = new LocationState();
+
             localisationService.StartCoroutine(LocalisationRoutine());
         }
 
@@ -45,7 +54,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Location state нигде не меняется
+        /// Выдает последний доступный Location state. Location state обновляется в LocalisationRoutine()
         /// </summary>
         /// <returns></returns>
         public LocationState GetLocationRequest()
@@ -114,15 +123,21 @@ namespace ARVRLab.VPSService
                 {
                     var response = requestVPS.GetResponce();
 
-                    arRFoundationApplyer?.ApplyVPSTransform(response);
                     // сервер не выдает GuidPointcloud
-                    tracking.SetGuidPointcloud(requestVPS.GetResponce().GuidPointcloud);
+                    tracking.SetGuidPointcloud(response.GuidPointcloud);
 
-                    // Тут также нужно применить еще и поправку по аркиту на текущем кадре
-                    //OnLocalisationHappend?.Invoke(response);
+                    locationState.Status = LocalisationStatus.VPS_READY;
+                    locationState.Error = ErrorCode.NO_ERROR;
+                    locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response); ;
+
+                    OnLocalisationHappend?.Invoke(locationState);
                 }
                 else
                 {
+                    locationState.Status = LocalisationStatus.GPS_ONLY;
+                    locationState.Error = requestVPS.GetErrorCode();
+                    locationState.Localisation = null;
+
                     OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
                     Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
                 }

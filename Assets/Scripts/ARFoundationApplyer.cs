@@ -11,6 +11,10 @@ namespace ARVRLab.VPSService
 
         private Pose startPose;
 
+        [Tooltip("Максимальное расстояние, на котором применяется интерполяция")]
+        public float MaxInterpolationDistance = 5;
+
+        [Tooltip("Скорость интерполяции")]
         public float LerpSpeed = 2.0f;
 
         private void Start()
@@ -22,7 +26,9 @@ namespace ARVRLab.VPSService
             }
         }
 
-        // Сохраняем pose камеры перед отправкой запроса на сервер
+        /// <summary>
+        /// Сохраняем pose камеры перед отправкой запроса на сервер
+        /// </summary>
         public void LocalisationStart()
         {
             Vector3 pos = arSessionOrigin.camera.transform.position;
@@ -30,27 +36,48 @@ namespace ARVRLab.VPSService
             startPose = new Pose(pos, Quaternion.Euler(rot));
         }
 
-        // Применяем полученные transform
-        public void ApplyVPSTransform(LocalisationResult localisation)
+        /// <summary>
+        /// Применяем полученные transform и возвращает скорректированную с учетом поправки ARFoundation локализацию
+        /// </summary>
+        /// <returns>The VPST ransform.</returns>
+        /// <param name="localisation">Localisation.</param>
+        public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
-            Vector3 NewPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
+            LocalisationResult correctedResult = new LocalisationResult();
+
+            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
             var qrot = Quaternion.Inverse(startPose.rotation) * rot;
-            float NewRotationY = qrot.eulerAngles.y;
+            correctedResult.LocalRotationY = qrot.eulerAngles.y;
 
             Debug.Log("LocalisationDone happend");
-            Debug.Log(NewPosition);
+            Debug.Log(correctedResult.LocalPosition);
 
             StopAllCoroutines();
 
             // важно учитывать был ли это force vps или нет
-            StartCoroutine(UpdatePosAndRot(NewPosition, NewRotationY));
+            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotationY));
+
+            return correctedResult;
         }
 
-        // Интерполяция
+        /// <summary>
+        /// Применяем NewPosition и NewRotationY с использованием интерполяции
+        /// </summary>
+        /// <returns>The position and rot.</returns>
+        /// <param name="NewPosition">New position.</param>
+        /// <param name="NewRotationY">New rotation y.</param>
         IEnumerator UpdatePosAndRot(Vector3 NewPosition, float NewRotationY)
         {
+            // если смещение больше MaxInterpolationDistance - перемещаем мгновенно
+            if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
+            {
+                arSessionOrigin.transform.localPosition = NewPosition;
+                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotationY);
+                yield break;
+            }
+
             float CurAngle = 0;
 
             while (true)

@@ -95,16 +95,28 @@ namespace ARVRLab.VPSService
             }
         }
 
+        /// <summary>
+        /// Выдает статус последнего запроса
+        /// </summary>
+        /// <returns>The status.</returns>
         public LocalisationStatus GetStatus()
         {
             return locationState.Status;
         }
 
+        /// <summary>
+        /// Выдает ошибку последнего запроса
+        /// </summary>
+        /// <returns>The error code.</returns>
         public ErrorCode GetErrorCode()
         {
             return locationState.Error;
         }
 
+        /// <summary>
+        /// Выдает ответ на последний запрос
+        /// </summary>
+        /// <returns>The responce.</returns>
         public LocalisationResult GetResponce()
         {
             return locationState.Localisation;

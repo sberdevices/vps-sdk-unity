@@ -42,7 +42,9 @@ namespace ARVRLab.VPSService
         /// <returns></returns>
         public Vector2 GetFocalPixelLength()
         {
-            return Vector2.zero;
+            float angle = 45f;
+            // вроде бы так
+            return new Vector2((texture.width * 0.5f) / Mathf.Tan(angle * 0.5f), (texture.height * 0.5f) / Mathf.Tan(angle * 0.5f));
         }
 
         public Texture2D GetFrame()
@@ -52,7 +54,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return Vector2.zero;
+            return new Vector2(texture.width * 0.5f, texture.height * 0.5f);
         }
 
         public bool IsCameraReady()

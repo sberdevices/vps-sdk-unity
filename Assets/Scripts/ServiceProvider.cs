@@ -6,9 +6,11 @@ namespace ARVRLab.VPSService
 {
     public class ServiceProvider : MonoBehaviour
     {
+        [Tooltip("Камера, с которой будет браться изображение")]
         [SerializeField]
         private Camera cameraObject;
 
+        [Tooltip("Для применения полученной локализации")]
         [SerializeField]
         private ARFoundationApplyer arFoundationApplyer;
 
