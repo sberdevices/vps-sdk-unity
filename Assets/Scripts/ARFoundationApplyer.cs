@@ -43,6 +43,8 @@ namespace ARVRLab.VPSService
             Debug.Log(NewPosition);
 
             StopAllCoroutines();
+
+            // важно учитывать был ли это force vps или нет
             StartCoroutine(UpdatePosAndRot(NewPosition, NewRotationY));
         }
 

@@ -35,6 +35,11 @@ namespace ARVRLab.VPSService
             return texture;
         }
 
+
+        /// <summary>
+        /// Тут нужно вычислить
+        /// </summary>
+        /// <returns></returns>
         public Vector2 GetFocalPixelLength()
         {
             return Vector2.zero;

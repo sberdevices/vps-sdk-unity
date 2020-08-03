@@ -44,6 +44,10 @@ namespace ARVRLab.VPSService
             localisationService.StopAllCoroutines();
         }
 
+        /// <summary>
+        /// Location state нигде не меняется
+        /// </summary>
+        /// <returns></returns>
         public LocationState GetLocationRequest()
         {
             return locationState;
@@ -74,11 +78,12 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            ARFoundationApplyer arRFoundationApplyer = provider.GetARFoundationApplyer();
-            if (arRFoundationApplyer == null)
+            // Это не ошибка
+            var arRFoundationApplyer = provider.GetARFoundationApplyer();
+            /*if (arRFoundationApplyer == null)
             {
                 Debug.LogError("ARFoundationApplyer is not available");
-            }
+            }*/
 
             while (true)
             {
@@ -93,30 +98,28 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
+                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
+                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
+                Meta = DataCollector.CollectData(provider, !isCalibration);
+
+                // запомним текущию позицию
+                arRFoundationApplyer?.LocalisationStart();
+
                 Debug.Log("Sending VPS Request");
-
-                RequestVPS requestVPS = new RequestVPS(settings.Url);
-
-                if (!tracking.GetLocalTracking().IsLocalisedFloor)
-                {
-                    arRFoundationApplyer?.LocalisationStart();
-
-                    Meta = DataCollector.CollectData(provider, true);
-                }
-                else
-                {
-                    arRFoundationApplyer?.LocalisationStart();
-
-                    Meta = DataCollector.CollectData(provider, false);
-                }
-
+                var requestVPS = new RequestVPS(settings.Url);
                 yield return requestVPS.SendVpsRequest(Image, Meta);
+                Debug.Log("VPS answer recieved!");
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {
-                    arRFoundationApplyer?.ApplyVPSTransform(requestVPS.GetResponce());
+                    var response = requestVPS.GetResponce();
+
+                    arRFoundationApplyer?.ApplyVPSTransform(response);
                     // сервер не выдает GuidPointcloud
                     tracking.SetGuidPointcloud(requestVPS.GetResponce().GuidPointcloud);
+
+                    // Тут также нужно применить еще и поправку по аркиту на текущем кадре
+                    //OnLocalisationHappend?.Invoke(response);
                 }
                 else
                 {
