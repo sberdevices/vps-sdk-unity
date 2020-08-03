@@ -3,46 +3,45 @@
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
 	[Serializable]
-	public class CommunicationStruct
+	public class RequestStruct
 	{
-		public Data data;
+		public RequestData data;
 	}
 
 	[Serializable]
-	public class Data
+	public class RequestData
 	{
 		public string id;
 		public string type;
-		public Attributes attributes;
+		public RequestAttributes attributes;
 	}
 
 	[Serializable]
-	public class Attributes
+	public class RequestAttributes
 	{
-		public string status;
+        public Location location;
 
-		public float progress;
+        public ImageTransform imageTransform;
 
-		public Location location;
+        public Intrinsics intrinsics;
 
         public bool forced_localization;
 	}
 
-	[Serializable]
+    [Serializable]
 	public class Location
 	{
-
 		public string type;
 		public string location_id;
 		public Gps gps;
 		public Compass compass;
-		public Relative relative;
+        public string clientCoordinateSystem;
         public LocalPos localPos;
 	}
+
 	[Serializable]
 	public class Gps
 	{
-
 		public double latitude;
 
 		public double longitude;
@@ -52,7 +51,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 		public float accuracy;
 
 		public double timestamp;
-
 	}
 
 	[Serializable]
@@ -92,4 +90,26 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
 		public double timestamp;
 	}
+
+    [Serializable]
+    public class ImageTransform
+    {
+        public int orientation;
+
+        public bool mirrorX;
+
+        public bool mirrorY;
+    }
+
+    [Serializable]
+    public class Intrinsics
+    {
+        public float fx;
+
+        public float fy;
+
+        public float cx;
+
+        public float cy;
+    }
 }

@@ -36,9 +36,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
             //loc_id = tracking.GuidPointcloud; //клиент не знает loc_id, так как сервер не выдает
 
-            string stat = "-";
-            float prog = 0f;
-
             IServiceGPS gps = Provider.GetGPS();
 
             GPSData gpsData = gps.GetGPSData();
@@ -55,17 +52,14 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             float headingAccuracy = gpsCompass.Accuracy;
             double compassTimeStamp = gpsCompass.Timestamp;
 
-            var attrib = new Attributes
+            var attrib = new RequestAttributes
             {
                 //id = System.Guid.NewGuid().ToString(),
 
-                status = stat,
-                progress = prog,
-
-                location = new Location()
+                location = new RequestLocation()
                 {
                     location_id = loc_id,
-                    gps = new Gps
+                    gps = new RequstGps
                     {
                         latitude = lat,
                         longitude = lon,
@@ -74,7 +68,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         timestamp = locationTimeStamp
                     },
 
-                    compass = new ARVRLab.VPSService.JSONs.Compass
+                    compass = new ARVRLab.VPSService.JSONs.RequestCompass
                     {
                         heading = heading,
                         accuracy = headingAccuracy,
@@ -99,7 +93,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             };
 
 
-            var data = new Data
+            var data = new RequestData
             {
                 id = System.Guid.NewGuid().ToString(),
 
@@ -108,7 +102,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 attributes = attrib
             };
 
-            var communicationStruct = new CommunicationStruct
+            var communicationStruct = new RequestStruct
             {
                 data = data
             };
@@ -126,7 +120,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// <param name="json">Json.</param>
         public static LocationState Deserialize(string json)
         {
-            CommunicationStruct communicationStruct = JsonUtility.FromJson<CommunicationStruct>(json);
+            ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
 
             LocalisationResult localisation = new LocalisationResult
             {
