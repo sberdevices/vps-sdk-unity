@@ -9,7 +9,7 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class VPSLocalisationService : MonoBehaviour
     {
-        [Tooltip("Используй tooltip, чтобы указать комментарий для полей в инспекторе")]
+        [Tooltip("Запускать VPS сразу?")]
         public bool StartOnAwake;
 
         /// <summary>
