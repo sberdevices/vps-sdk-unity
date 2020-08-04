@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,9 +18,42 @@ namespace ARVRLab.VPSService
 
         private Texture2D texture;
 
+        private NativeArray<XRCameraConfiguration> configurations;
+
         private void Awake()
         {
             cameraManager.frameReceived += UpdateFrame;
+        }
+
+        private IEnumerator Start()
+        {
+            // Если список доступных разрешений пустой
+            while (configurations.Length == 0)
+            {
+                if ((cameraManager == null) || (cameraManager.subsystem == null) || !cameraManager.subsystem.running)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                // Пытаемся получить доступные разрешения
+                configurations = cameraManager.GetConfigurations(Allocator.Temp);
+
+                if (!configurations.IsCreated || (configurations.Length <= 0))
+                {
+                    yield return null;
+                    continue;
+                }
+
+                // Пытаемся получить разрешение 1920x1080
+                cameraManager.currentConfiguration = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
+                if (cameraManager.currentConfiguration == null)
+                {
+                    Debug.LogError("Не удалось получить HD разрешение!");
+                    // Берем наилучшее возможное
+                    cameraManager.currentConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
+                }
+            }
         }
 
         /// <summary>
@@ -86,7 +121,7 @@ namespace ARVRLab.VPSService
             XRCameraIntrinsics intrins;
             if (cameraManager.TryGetIntrinsics(out intrins))
             {
-                return intrins.focalLength;
+                return intrins.principalPoint;
             }
 
             return Vector2.zero;

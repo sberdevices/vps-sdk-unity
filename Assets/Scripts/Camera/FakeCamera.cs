@@ -19,9 +19,7 @@ namespace ARVRLab.VPSService
         /// <returns></returns>
         public Vector2 GetFocalPixelLength()
         {
-            float angle = 45f;
-            // вроде бы так
-            return new Vector2((FakeTexture.width * 0.5f) / Mathf.Tan(angle * 0.5f), (FakeTexture.height * 0.5f) / Mathf.Tan(angle * 0.5f));
+            return new Vector2(1396.5250f, 1396.5250f);
         }
 
         public Texture2D GetFrame()
