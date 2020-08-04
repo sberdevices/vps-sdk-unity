@@ -19,6 +19,9 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
+            if (Application.isEditor)
+                return;
+
             // для андроида запрашиваем разрешение отдельно
 #if UNITY_ANDROID
             UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);

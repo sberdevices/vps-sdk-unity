@@ -87,12 +87,11 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            // Это не ошибка
+            // TODO: убрать ссылку в этом скрипте на ARFoundationApplyer и из Provider
+            // Все операции по вычислению скоректированной новой позиции можно
+            // сделать внутри этого класса. ARFoundationApplyer должен подписаться
+            // на событие начала локализации (новое) и конца локализации
             var arRFoundationApplyer = provider.GetARFoundationApplyer();
-            /*if (arRFoundationApplyer == null)
-            {
-                Debug.LogError("ARFoundationApplyer is not available");
-            }*/
 
             while (true)
             {
@@ -114,7 +113,7 @@ namespace ARVRLab.VPSService
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
 
-                Debug.Log("Sending VPS Request");
+                Debug.Log("Sending VPS Request...");
                 var requestVPS = new RequestVPS(settings.Url);
                 yield return requestVPS.SendVpsRequest(Image, Meta);
                 Debug.Log("VPS answer recieved!");
@@ -122,13 +121,11 @@ namespace ARVRLab.VPSService
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {
                     var response = requestVPS.GetResponce();
-
-                    // сервер не выдает GuidPointcloud
                     tracking.SetGuidPointcloud(response.GuidPointcloud);
 
                     locationState.Status = LocalisationStatus.VPS_READY;
                     locationState.Error = ErrorCode.NO_ERROR;
-                    locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response); ;
+                    locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response);
 
                     OnLocalisationHappend?.Invoke(locationState);
                 }

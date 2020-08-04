@@ -12,6 +12,9 @@ namespace ARVRLab.VPSService
         [Tooltip("Запускать VPS сразу?")]
         public bool StartOnAwake;
 
+        [Tooltip("Какие брать данные с камеры, GPS...")]
+        public ServiceProvider provider;
+
         /// <summary>
         /// Событие ошибки локализации
         /// </summary>
@@ -25,12 +28,16 @@ namespace ARVRLab.VPSService
         private bool isMock;
         private LocationState mockLocation;
 
-        private ServiceProvider provider;
         private VPSLocalisationAlgorithm algorithm;
 
         private void Start()
         {
-            provider = GetComponent<ServiceProvider>();
+            if (!provider)
+            {
+                Debug.LogError("Please, select provider for VPS service!");
+                return;
+            }
+
             if (StartOnAwake)
                 StartVPS();
         }
@@ -40,10 +47,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         public void StartVPS()
         {
-            algorithm = new VPSLocalisationAlgorithm(this, provider);
-
-            algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
-            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);
+            StartVPS(null);
         }
 
         /// <summary>
@@ -54,7 +58,7 @@ namespace ARVRLab.VPSService
             algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
-            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated(ls);
+            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);
         }
 
         /// <summary>

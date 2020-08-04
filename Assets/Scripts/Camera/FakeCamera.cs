@@ -13,10 +13,6 @@ namespace ARVRLab.VPSService
         [Tooltip("Текстура, которая будет отправлена")]
         public Texture2D FakeTexture;
 
-        /// <summary>
-        /// Тут нужно вычислить
-        /// </summary>
-        /// <returns></returns>
         public Vector2 GetFocalPixelLength()
         {
             return new Vector2(1396.5250f, 1396.5250f);

@@ -6,15 +6,11 @@ namespace ARVRLab.VPSService
 {
     public class ServiceProvider : MonoBehaviour
     {
-        [Tooltip("Камера, с которой будет браться изображение")]
-        [SerializeField]
-        private Camera cameraObject;
-
         [Tooltip("Для применения полученной локализации")]
         [SerializeField]
         private ARFoundationApplyer arFoundationApplyer;
 
-        private ICamera camera;
+        private new ICamera camera;
         private IServiceGPS gps;
         private ITracking tracking;
 
@@ -25,7 +21,7 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            camera = cameraObject.GetComponent<ICamera>();
+            camera = GetComponent<ICamera>();
             gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
         }

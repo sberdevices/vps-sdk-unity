@@ -13,15 +13,20 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Менеджер АР камеры для получения изображения")]
-        public ARCameraManager cameraManager;
-
+        private ARCameraManager cameraManager;
         private Texture2D texture;
 
         private NativeArray<XRCameraConfiguration> configurations;
 
         private void Awake()
         {
+            cameraManager = FindObjectOfType<ARCameraManager>();
+            if (!cameraManager)
+            {
+                Debug.LogError("Can't find ARCameraManager on scene!");
+                return;
+            }
+
             cameraManager.frameReceived += UpdateFrame;
         }
 

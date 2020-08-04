@@ -13,31 +13,41 @@ namespace ARVRLab.VPSService
         private GPSData gpsData;
         private CompassData compassData;
 
-        private void Start()
+        public float Latitude = 54.875f;
+        public float Longitude = 48.6543f;
+
+        private GPSData GenerateGPSData()
         {
-            gpsData = new GPSData();
+            var gpsData = new GPSData();
             gpsData.status = GPSStatus.Running;
-            gpsData.Latitude = 54.875;
-            gpsData.Longitude = 48.6543;
+            gpsData.Latitude = Latitude;
+            gpsData.Longitude = Longitude;
             gpsData.Altitude = 72.4563;
             gpsData.Accuracy = 0.5f;
             gpsData.Timestamp = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
-            compassData = new CompassData();
+            return gpsData;
+        }
+
+        private CompassData GenerateCompassData()
+        {
+            var compassData = new CompassData();
             compassData.status = GPSStatus.Running;
             compassData.Heading = 55.33f;
             compassData.Accuracy = 0.4f;
             compassData.Timestamp = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+
+            return compassData;
         }
 
         public CompassData GetCompassData()
         {
-            return compassData;
+            return GenerateCompassData();
         }
 
         public GPSData GetGPSData()
         {
-            return gpsData;
+            return GenerateGPSData();
         }
     }
 }

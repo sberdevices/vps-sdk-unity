@@ -42,7 +42,15 @@ namespace ARVRLab.VPSService
 
             WWWForm form = new WWWForm();
             form.AddField("image", "file");
-            form.AddBinaryData("image", GetByteArrayFromImage(image), CreateFileName());
+
+            var binaryImage = GetByteArrayFromImage(image);
+            if (binaryImage == null)
+            {
+                Debug.LogError("Can't read camera image! Please, check image format!");
+                yield break;
+            }
+
+            form.AddBinaryData("image", binaryImage, CreateFileName());
             form.AddField("json", meta);
 
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
