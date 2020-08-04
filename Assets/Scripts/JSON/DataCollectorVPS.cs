@@ -36,6 +36,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
             //loc_id = tracking.GuidPointcloud; //клиент не знает loc_id, так как сервер не выдает
 
+            string relative_type = "relative";
+
             IServiceGPS gps = Provider.GetGPS();
 
             GPSData gpsData = gps.GetGPSData();
@@ -52,12 +54,16 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             float headingAccuracy = gpsCompass.Accuracy;
             double compassTimeStamp = gpsCompass.Timestamp;
 
+            Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
+            Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
+
             var attrib = new RequestAttributes
             {
                 //id = System.Guid.NewGuid().ToString(),
 
                 location = new RequestLocation()
                 {
+                    type = relative_type,
                     location_id = loc_id,
                     gps = new RequstGps
                     {
@@ -75,6 +81,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         timestamp = compassTimeStamp
                     },
 
+                    clientCoordinateSystem = "unity",
+
                     localPos = new LocalPos
                     {
                         x = pose.position.x,
@@ -83,8 +91,22 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         roll = pose.rotation.eulerAngles.x,
                         pitch = pose.rotation.eulerAngles.y,
                         yaw = pose.rotation.eulerAngles.z
-
                     }
+                },
+
+                imageTransform = new ImageTransform
+                {
+                    orientation = 0,
+                    mirrorX = true,
+                    mirrorY = false
+                },
+
+                intrinsics = new Intrinsics
+                {
+                    fx = FocalPixelLength.x,
+                    fy = FocalPixelLength.y,
+                    cx = PrincipalPoint.x,
+                    cy = PrincipalPoint.y
                 },
 
                 forced_localization = forceVPS
@@ -109,6 +131,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             var json = JsonUtility.ToJson(communicationStruct);
 
+            Debug.Log(json);
             return json;
             //return job;
         }
