@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    // TODO: Зарефактероить в мега-класс, с множеством настроек
     public class ServiceProvider : MonoBehaviour
     {
         [Tooltip("Для применения полученной локализации")]
