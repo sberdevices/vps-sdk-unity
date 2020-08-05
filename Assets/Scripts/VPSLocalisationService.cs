@@ -55,6 +55,8 @@ namespace ARVRLab.VPSService
         /// </summary>
         public void StartVPS(SettingsVPS settings)
         {
+            StopVps();
+
             algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
