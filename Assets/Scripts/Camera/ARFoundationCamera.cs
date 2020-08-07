@@ -85,7 +85,7 @@ namespace ARVRLab.VPSService
             }
 
             // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
-            var conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorY);
+            var conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.None);
             // Задаем downscale до нужного разрешения
             conversionParams.outputDimensions = new Vector2Int(Resolution.x, Resolution.y);
 

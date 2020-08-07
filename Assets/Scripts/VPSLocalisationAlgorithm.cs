@@ -97,8 +97,6 @@ namespace ARVRLab.VPSService
             {
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
-                yield return new WaitForSeconds(settings.Timeout);
-
                 Image = camera.GetFrame();
 
                 if (Image == null)
@@ -140,6 +138,8 @@ namespace ARVRLab.VPSService
                     OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
                     Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
                 }
+
+                yield return new WaitForSeconds(settings.Timeout);
             }
         }
     }
