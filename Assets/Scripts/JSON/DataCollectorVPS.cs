@@ -97,8 +97,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 imageTransform = new ImageTransform
                 {
                     orientation = 0,
-                    mirrorX = true,
-                    mirrorY = false
+                    mirrorX = false,
+                    mirrorY = true
                 },
 
                 intrinsics = new Intrinsics
