@@ -36,6 +36,13 @@ namespace ARVRLab.VPSService
             startPose = new Pose(pos, Quaternion.Euler(rot));
         }
 
+        public Pose GetCurrentPose()
+        {
+            Vector3 pos = arSessionOrigin.camera.transform.position;
+            Vector3 rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0);
+            return new Pose(pos, Quaternion.Euler(rot));
+        }
+
         /// <summary>
         /// Применяем полученные transform и возвращает скорректированную с учетом поправки ARFoundation локализацию
         /// </summary>
@@ -49,6 +56,27 @@ namespace ARVRLab.VPSService
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
             var qrot = Quaternion.Inverse(startPose.rotation) * rot;
+            correctedResult.LocalRotationY = qrot.eulerAngles.y;
+
+            Debug.Log("LocalisationDone happend");
+            Debug.Log(correctedResult.LocalPosition);
+
+            StopAllCoroutines();
+
+            // важно учитывать был ли это force vps или нет
+            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotationY));
+
+            return correctedResult;
+        }
+
+        public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
+        {
+            LocalisationResult correctedResult = new LocalisationResult();
+
+            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
+
+            var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
+            var qrot = Quaternion.Inverse(CustomStartPose.rotation) * rot;
             correctedResult.LocalRotationY = qrot.eulerAngles.y;
 
             Debug.Log("LocalisationDone happend");

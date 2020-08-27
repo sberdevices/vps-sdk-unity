@@ -15,7 +15,7 @@ namespace ARVRLab.VPSService
     public class RequestVPS
     {
         private string serverUrl;
-        private string api_path = "vps/api/v1/job";
+        private string api_path = "vps/api/first_loc/job";//"vps/api/v1/job";
 
         private LocationState locationState = new LocationState();
 
@@ -52,6 +52,81 @@ namespace ARVRLab.VPSService
 
             form.AddBinaryData("image", binaryImage, CreateFileName());
             form.AddField("json", meta);
+
+            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
+            {
+                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+
+                yield return www.SendWebRequest();
+
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
+                    Debug.LogError("Network error!");
+                }
+                else
+                {
+                    Debug.Log("Request finished with code: " + www.responseCode);
+
+                    if (www.responseCode != 200)
+                    {
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        yield return null;
+                    }
+                    string response = www.downloadHandler.text;
+
+                    Debug.Log("Request Finished Successfully!\n" + response);
+                    LocationState deserialized = null;
+                    try
+                    {
+                        deserialized = DataCollector.Deserialize(response);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError(e);
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        yield break;
+                    }
+
+                    if (deserialized != null)
+                    {
+                        Debug.Log("Server status " + deserialized.Status);
+                        locationState = deserialized;
+                    }
+                    else
+                    {
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        Debug.LogError("There is no data come from server");
+                        yield break;
+                    }
+                }
+            }
+        }
+
+        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
+        {
+            string uri = Path.Combine(serverUrl, api_path);
+
+            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
+            {
+                Debug.LogError("URL is incorrect: " + uri);
+                yield break;
+            }
+
+            WWWForm form = new WWWForm();
+            
+            for (int i = 0; i < data.Count; i++)
+            {
+                var binaryImage = GetByteArrayFromImage(data[i].image);
+                if (binaryImage == null)
+                {
+                    Debug.LogError("Can't read camera image! Please, check image format!");
+                    yield break;
+                }
+
+                form.AddBinaryData("mes" + i, binaryImage, CreateFileName());
+                form.AddField("mes" + i, data[i].meta);
+            }
 
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {

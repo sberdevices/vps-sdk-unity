@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
@@ -95,5 +96,19 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public float cx;
 
         public float cy;
+    }
+
+    public class RequestLocalizationData
+    {
+        public Texture2D image;
+        public string meta;
+        public Pose pose;
+
+        public RequestLocalizationData(Texture2D Img, string Meta, Pose pose)
+        {
+            image = Img;
+            meta = Meta;
+            this.pose = pose;
+        }
     }
 }

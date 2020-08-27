@@ -21,16 +21,16 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             Pose pose = new Pose();
             string loc_id = "";
 
-            if (forceVPS)
-            {
-                pose = Pose.identity;
-            }
-            else
-            {
+            //if (forceVPS)
+            //{
+            //    pose = Pose.identity;
+            //}
+            //else
+            //{
                 TrackingData tracking = Provider.GetTracking().GetLocalTracking();
                 pose.position = tracking.Position;
                 pose.rotation = tracking.Rotation;
-            }
+            //}
 
             // сейчас сервер обязательно должен получить loc_id от клиента
             loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
@@ -150,6 +150,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
+                Img_id = communicationStruct.data.Img_id
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 //GuidPointcloud = communicationStruct.data.attributes.location.location_id,

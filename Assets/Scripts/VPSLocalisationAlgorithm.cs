@@ -17,6 +17,8 @@ namespace ARVRLab.VPSService
 
         private SettingsVPS settings;
 
+        private LocalizationImagesCollector imagesCollector;
+
         /// <summary>
         /// Событие ошибки локализации
         /// </summary>
@@ -37,6 +39,7 @@ namespace ARVRLab.VPSService
         {
             localisationService = vps_servise;
             provider = vps_provider;
+            imagesCollector = new LocalizationImagesCollector();
 
             if (vps_settings != null)
                 settings = vps_settings;
@@ -97,6 +100,38 @@ namespace ARVRLab.VPSService
             {
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
+                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
+                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
+
+                if (!isCalibration)
+                {
+                    while (imagesCollector.GetLocalizationData().Count < 8)
+                    {
+                        yield return imagesCollector.AddImage(provider);
+                        yield return new WaitForSeconds(1);
+                    }
+
+                    Debug.Log("Sending VPS Localization Request...");
+                    var locRequestVPS = new RequestVPS(settings.Url);
+                    yield return locRequestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
+                    Debug.Log("VPS Localization answer recieved!");
+                    Debug.Log(locRequestVPS.GetStatus());
+
+                    if (locRequestVPS.GetStatus() == LocalisationStatus.VPS_READY)
+                    {
+                        Debug.Log("YEES");
+                        var response = locRequestVPS.GetResponce();
+                        tracking.SetGuidPointcloud(response.GuidPointcloud);
+
+                        locationState.Status = LocalisationStatus.VPS_READY;
+                        locationState.Error = ErrorCode.NO_ERROR;
+                        locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response, imagesCollector.GetLocalizationData()[response.Img_id].pose);
+
+                        OnLocalisationHappend?.Invoke(locationState);
+                    }
+                }
+
+                yield return new WaitForSeconds(20);
                 Image = camera.GetFrame();
 
                 if (Image == null)
@@ -106,8 +141,6 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
-                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
                 // запомним текущию позицию

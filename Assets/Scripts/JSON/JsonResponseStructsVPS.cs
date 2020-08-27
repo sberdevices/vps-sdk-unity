@@ -13,6 +13,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     {
         public string id;
         public string type;
+        public int Img_id;
         public ResponseAttributes attributes;
     }
 
