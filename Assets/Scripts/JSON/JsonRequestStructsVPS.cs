@@ -100,11 +100,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
     public class RequestLocalizationData
     {
-        public Texture2D image;
+        public byte[] image;
         public string meta;
         public Pose pose;
 
-        public RequestLocalizationData(Texture2D Img, string Meta, Pose pose)
+        public RequestLocalizationData(byte[] Img, string Meta, Pose pose)
         {
             image = Img;
             meta = Meta;

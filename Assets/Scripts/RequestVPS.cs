@@ -15,7 +15,8 @@ namespace ARVRLab.VPSService
     public class RequestVPS
     {
         private string serverUrl;
-        private string api_path = "vps/api/first_loc/job";//"vps/api/v1/job";
+        private string api_path_firstloc = "vps/api/first_loc/job";
+        private string api_path = "vps/api/v1/job";
 
         private LocationState locationState = new LocationState();
 
@@ -105,7 +106,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
         {
-            string uri = Path.Combine(serverUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path_firstloc);
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -117,14 +118,14 @@ namespace ARVRLab.VPSService
             
             for (int i = 0; i < data.Count; i++)
             {
-                var binaryImage = GetByteArrayFromImage(data[i].image);
-                if (binaryImage == null)
-                {
-                    Debug.LogError("Can't read camera image! Please, check image format!");
-                    yield break;
-                }
+                //var binaryImage = GetByteArrayFromImage(data[i].image);
+                //if (binaryImage == null)
+                //{
+                //    Debug.LogError("Can't read camera image! Please, check image format!");
+                //    yield break;
+                //}
 
-                form.AddBinaryData("mes" + i, binaryImage, CreateFileName());
+                form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
                 form.AddField("mes" + i, data[i].meta);
             }
 
@@ -141,6 +142,7 @@ namespace ARVRLab.VPSService
                 }
                 else
                 {
+                    Debug.Log(uri);
                     Debug.Log("Request finished with code: " + www.responseCode);
 
                     if (www.responseCode != 200)

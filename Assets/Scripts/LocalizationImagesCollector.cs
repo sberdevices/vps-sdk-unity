@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using ARVRLab.ARVRLab.VPSService.JSONs;
 using UnityEngine;
 
@@ -44,7 +45,7 @@ namespace ARVRLab.VPSService
 
             Meta = DataCollector.CollectData(provider, true);
 
-            localizationData.Add(new RequestLocalizationData(Image, Meta, provider.GetARFoundationApplyer().GetCurrentPose()));
+            localizationData.Add(new RequestLocalizationData(Image.EncodeToJPG(), Meta, provider.GetARFoundationApplyer().GetCurrentPose()));
         }
 
         public List<RequestLocalizationData> GetLocalizationData()

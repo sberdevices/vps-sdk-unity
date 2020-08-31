@@ -145,12 +145,15 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
 
+            int id;
+            bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
+
             LocalisationResult localisation = new LocalisationResult
             {
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
-                Img_id = communicationStruct.data.Img_id
+                Img_id = checkImgId ? id : -1
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 //GuidPointcloud = communicationStruct.data.attributes.location.location_id,

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ARVRLab.ARVRLab.VPSService.JSONs;
 using UnityEngine;
+using System.IO;
 
 namespace ARVRLab.VPSService
 {
@@ -105,7 +106,7 @@ namespace ARVRLab.VPSService
 
                 if (!isCalibration)
                 {
-                    while (imagesCollector.GetLocalizationData().Count < 8)
+                    while (imagesCollector.GetLocalizationData().Count < 5)
                     {
                         yield return imagesCollector.AddImage(provider);
                         yield return new WaitForSeconds(1);
@@ -113,13 +114,12 @@ namespace ARVRLab.VPSService
 
                     Debug.Log("Sending VPS Localization Request...");
                     var locRequestVPS = new RequestVPS(settings.Url);
+
                     yield return locRequestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
                     Debug.Log("VPS Localization answer recieved!");
-                    Debug.Log(locRequestVPS.GetStatus());
 
                     if (locRequestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                     {
-                        Debug.Log("YEES");
                         var response = locRequestVPS.GetResponce();
                         tracking.SetGuidPointcloud(response.GuidPointcloud);
 
@@ -131,7 +131,8 @@ namespace ARVRLab.VPSService
                     }
                 }
 
-                yield return new WaitForSeconds(20);
+                //yield return new WaitForSeconds(20);
+
                 Image = camera.GetFrame();
 
                 if (Image == null)
@@ -141,6 +142,7 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
+                isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
                 // запомним текущию позицию
@@ -175,5 +177,82 @@ namespace ARVRLab.VPSService
                 yield return new WaitForSeconds(settings.Timeout);
             }
         }
+
+        //public IEnumerator LocalisationRoutine()
+        //{
+        //    Texture2D Image;
+        //    string Meta;
+
+        //    var camera = provider.GetCamera();
+        //    if (camera == null)
+        //    {
+        //        OnErrorHappend?.Invoke(ErrorCode.NO_CAMERA);
+        //        Debug.LogError("Camera is not available");
+        //        yield break;
+        //    }
+
+        //    var tracking = provider.GetTracking();
+        //    if (tracking == null)
+        //    {
+        //        OnErrorHappend?.Invoke(ErrorCode.TRACKING_NOT_AVALIABLE);
+        //        Debug.LogError("Tracking is not available");
+        //        yield break;
+        //    }
+
+        //    // TODO: убрать ссылку в этом скрипте на ARFoundationApplyer и из Provider
+        //    // Все операции по вычислению скоректированной новой позиции можно
+        //    // сделать внутри этого класса. ARFoundationApplyer должен подписаться
+        //    // на событие начала локализации (новое) и конца локализации
+        //    var arRFoundationApplyer = provider.GetARFoundationApplyer();
+
+        //    while (true)
+        //    {
+        //        yield return new WaitUntil(() => camera.IsCameraReady());
+
+        //        Image = camera.GetFrame();
+
+        //        if (Image == null)
+        //        {
+        //            Debug.LogError("Image from camera is not available");
+        //            yield return null;
+        //            continue;
+        //        }
+
+        //        // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
+        //        var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
+        //        Meta = DataCollector.CollectData(provider, !isCalibration);
+
+        //        // запомним текущию позицию
+        //        arRFoundationApplyer?.LocalisationStart();
+
+        //        Debug.Log("Sending VPS Request...");
+        //        var requestVPS = new RequestVPS(settings.Url);
+        //        yield return requestVPS.SendVpsRequest(Image, Meta);
+        //        Debug.Log("VPS answer recieved!");
+
+        //        if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
+        //        {
+        //            var response = requestVPS.GetResponce();
+        //            tracking.SetGuidPointcloud(response.GuidPointcloud);
+
+        //            locationState.Status = LocalisationStatus.VPS_READY;
+        //            locationState.Error = ErrorCode.NO_ERROR;
+        //            locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response);
+
+        //            OnLocalisationHappend?.Invoke(locationState);
+        //        }
+        //        else
+        //        {
+        //            locationState.Status = LocalisationStatus.GPS_ONLY;
+        //            locationState.Error = requestVPS.GetErrorCode();
+        //            locationState.Localisation = null;
+
+        //            OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
+        //            Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
+        //        }
+
+        //        yield return new WaitForSeconds(settings.Timeout);
+        //    }
+        //}
     }
 }
