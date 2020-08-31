@@ -15,7 +15,9 @@ namespace ARVRLab.VPSService
     public class RequestVPS
     {
         private string serverUrl;
+        // api для локализации через серию фотографий
         private string api_path_firstloc = "vps/api/first_loc/job";
+        // api для стандартной работы
         private string api_path = "vps/api/v1/job";
 
         private LocationState locationState = new LocationState();
@@ -104,6 +106,11 @@ namespace ARVRLab.VPSService
             }
         }
 
+        /// <summary>
+        /// Отправка запроса: серия изображений и meta-данные к ним
+        /// </summary>
+        /// <returns>The vps localization request.</returns>
+        /// <param name="data">Data.</param>
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
         {
             string uri = Path.Combine(serverUrl, api_path_firstloc);
@@ -118,13 +125,6 @@ namespace ARVRLab.VPSService
             
             for (int i = 0; i < data.Count; i++)
             {
-                //var binaryImage = GetByteArrayFromImage(data[i].image);
-                //if (binaryImage == null)
-                //{
-                //    Debug.LogError("Can't read camera image! Please, check image format!");
-                //    yield break;
-                //}
-
                 form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
                 form.AddField("mes" + i, data[i].meta);
             }
@@ -142,7 +142,6 @@ namespace ARVRLab.VPSService
                 }
                 else
                 {
-                    Debug.Log(uri);
                     Debug.Log("Request finished with code: " + www.responseCode);
 
                     if (www.responseCode != 200)

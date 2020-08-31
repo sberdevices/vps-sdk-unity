@@ -6,46 +6,70 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Собирает серию фотографий для отправки на сервер локализации
+    /// </summary>
     public class LocalizationImagesCollector
     {
+        // Кол-во фотографий в серии
+        private int photosInSeria;
+        // Список фото, меты и pose, откуда были сделаны
         private List<RequestLocalizationData> localizationData = new List<RequestLocalizationData>();
+        // Задержка между фотографиями
+        private float timeout = 1;
 
-        public IEnumerator AddImage(ServiceProvider provider)
+        public LocalizationImagesCollector(int PhotosInSeria)
         {
+            photosInSeria = PhotosInSeria;
+        }
+
+        /// <summary>
+        /// Делаем фото и собираем в список с интервалом timeout
+        /// </summary>
+        /// <returns>The image.</returns>
+        /// <param name="provider">Provider.</param>
+        public IEnumerator StartCollectPhoto(ServiceProvider provider)
+        {
+            localizationData.Clear();
             Texture2D Image;
             string Meta;
 
+            // Повторная проверка доступности камеры
             var camera = provider.GetCamera();
             if (camera == null)
             {
-                //OnErrorHappend?.Invoke(ErrorCode.NO_CAMERA);
                 Debug.LogError("Camera is not available");
                 yield break;
             }
 
+            // Повторная проверка доступности трекинга
             var tracking = provider.GetTracking();
             if (tracking == null)
             {
-                //OnErrorHappend?.Invoke(ErrorCode.TRACKING_NOT_AVALIABLE);
                 Debug.LogError("Tracking is not available");
                 yield break;
             }
 
             var arRFoundationApplyer = provider.GetARFoundationApplyer();
 
-            yield return new WaitUntil(() => camera.IsCameraReady());
-
-            Image = camera.GetFrame();
-
-            if (Image == null)
+            Debug.Log("Start collect photo");
+            while (localizationData.Count < photosInSeria)
             {
-                Debug.LogError("Image from camera is not available");
-                yield break;
+                yield return new WaitUntil(() => camera.IsCameraReady());
+
+                Image = camera.GetFrame();
+                if (Image == null)
+                {
+                    Debug.LogError("Image from camera is not available");
+                    yield break;
+                }
+
+                Meta = DataCollector.CollectData(provider, true);
+
+                localizationData.Add(new RequestLocalizationData(Image.EncodeToJPG(), Meta, provider.GetARFoundationApplyer().GetCurrentPose()));
+
+                yield return new WaitForSeconds(timeout);
             }
-
-            Meta = DataCollector.CollectData(provider, true);
-
-            localizationData.Add(new RequestLocalizationData(Image.EncodeToJPG(), Meta, provider.GetARFoundationApplyer().GetCurrentPose()));
         }
 
         public List<RequestLocalizationData> GetLocalizationData()

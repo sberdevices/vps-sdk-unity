@@ -36,6 +36,9 @@ namespace ARVRLab.VPSService
             startPose = new Pose(pos, Quaternion.Euler(rot));
         }
 
+        /// <summary>
+        /// Выдает текущую pose камеры
+        /// </summary>
         public Pose GetCurrentPose()
         {
             Vector3 pos = arSessionOrigin.camera.transform.position;
@@ -69,6 +72,13 @@ namespace ARVRLab.VPSService
             return correctedResult;
         }
 
+        /// <summary>
+        /// Применяем полученные transform и возвращает скорректированную с учетом поправки ARFoundation локализацию
+        /// относительно заданной стартовой позиции
+        /// </summary>
+        /// <returns>The VPST ransform.</returns>
+        /// <param name="localisation">Localisation.</param>
+        /// <param name="CustomStartPose">Позиция, с которой была отправлена фотография.</param>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
         {
             LocalisationResult correctedResult = new LocalisationResult();
