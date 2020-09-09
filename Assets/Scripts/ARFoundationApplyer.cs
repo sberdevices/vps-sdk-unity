@@ -83,7 +83,7 @@ namespace ARVRLab.VPSService
         {
             LocalisationResult correctedResult = new LocalisationResult();
 
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
+            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition; // ToDo: тут нужен CustomStartPose - подумать
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
             var qrot = Quaternion.Inverse(CustomStartPose.rotation) * rot;
@@ -111,8 +111,8 @@ namespace ARVRLab.VPSService
             // если смещение больше MaxInterpolationDistance - перемещаем мгновенно
             if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
             {
-                arSessionOrigin.transform.localPosition = NewPosition;
                 arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotationY);
+                arSessionOrigin.transform.localPosition = NewPosition;
                 yield break;
             }
 
