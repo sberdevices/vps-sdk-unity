@@ -15,8 +15,17 @@ namespace ARVRLab.VPSService
         private int photosInSeria;
         // Список фото, меты и pose, откуда были сделаны
         private List<RequestLocalizationData> localizationData = new List<RequestLocalizationData>();
+        // Использовать дистанцию или по таймауту?
+        private bool useDistance = true;
         // Задержка между фотографиями
         private float timeout = 1;
+        // Расстояние между фотографиями
+        private float distance = 0.5f;
+
+        private Vector3 predPos = Vector3.zero;
+
+        public static event System.Action OnPhotoAdded;
+        public static event System.Action OnSeriaIsReady;
 
         public LocalizationImagesCollector(int PhotosInSeria)
         {
@@ -50,7 +59,12 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            var arRFoundationApplyer = provider.GetARFoundationApplyer();
+            var arFoundationApplyer = provider.GetARFoundationApplyer();
+            useDistance = arFoundationApplyer != null;
+            if (!useDistance)
+            {
+                Debug.Log("ArFoundationApplyer is not available. Using timeout");
+            }
 
             Debug.Log("Start collect photo");
             while (localizationData.Count < photosInSeria)
@@ -68,8 +82,19 @@ namespace ARVRLab.VPSService
 
                 localizationData.Add(new RequestLocalizationData(Image.EncodeToJPG(), Meta, provider.GetARFoundationApplyer().GetCurrentPose()));
 
-                yield return new WaitForSeconds(timeout);
+                predPos = arFoundationApplyer.GetCurrentPose().position;
+
+                if (useDistance)
+                {
+                    yield return new WaitUntil(() => Vector3.Distance(predPos, arFoundationApplyer.GetCurrentPose().position) > distance);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(timeout);
+                }
+                OnPhotoAdded?.Invoke();
             }
+            OnSeriaIsReady?.Invoke();
         }
 
         public List<RequestLocalizationData> GetLocalizationData()
