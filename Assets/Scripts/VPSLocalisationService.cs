@@ -110,5 +110,14 @@ namespace ARVRLab.VPSService
         {
             isMock = is_mock;
         }
+
+        /// <summary>
+        /// Была ли локализация?
+        /// </summary>
+        /// <returns><c>true</c>, if localized was ised, <c>false</c> otherwise.</returns>
+        public bool IsLocalized()
+        {
+            return provider.GetTracking().GetLocalTracking().IsLocalisedFloor;
+        }
     }
 }
