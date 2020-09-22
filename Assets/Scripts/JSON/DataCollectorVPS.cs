@@ -19,7 +19,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
         {
             Pose pose = new Pose();
-            string loc_id = "";
+            var tracking = Provider.GetTracking().GetLocalTracking();
+            var loc_id = tracking.GuidPointcloud;
 
             if (forceVPS)
             {
@@ -27,14 +28,9 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             }
             else
             {
-                TrackingData tracking = Provider.GetTracking().GetLocalTracking();
                 pose.position = tracking.Position;
                 pose.rotation = tracking.Rotation;
             }
-
-            // сейчас сервер обязательно должен получить loc_id от клиента
-            loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-            //loc_id = tracking.GuidPointcloud; //клиент не знает loc_id, так как сервер не выдает
 
             string relative_type = "relative";
 

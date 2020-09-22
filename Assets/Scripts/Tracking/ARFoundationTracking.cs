@@ -7,12 +7,17 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationTracking : MonoBehaviour, ITracking
     {
+        private const string DefaultGuidPointcloud = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
+
         private GameObject ARCamera;
         private TrackingData trackingData;
 
         private void Start()
         {
-            trackingData = new TrackingData();
+            trackingData = new TrackingData
+            {
+                GuidPointcloud = DefaultGuidPointcloud
+            };
 
             ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
             if (ARCamera == null)
