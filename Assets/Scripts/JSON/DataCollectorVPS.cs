@@ -10,13 +10,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     /// </summary>
     public static class DataCollector
     {
-        /// <summary>
-        /// Упаковывает все необходимы данные в json для отправки на сервер
-        /// </summary>
-        /// <returns>The data.</returns>
-        /// <param name="Provider">Provider.</param>
-        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
+        public static RequestStruct CollectDataAttributes(ServiceProvider Provider, bool forceVPS = false)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
@@ -125,11 +119,22 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 data = data
             };
 
+            return communicationStruct;
+        }
+
+        /// <summary>
+        /// Упаковывает все необходимы данные в json для отправки на сервер
+        /// </summary>
+        /// <returns>The data.</returns>
+        /// <param name="Provider">Provider.</param>
+        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
+        public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
+        {
+            var communicationStruct = CollectDataAttributes(Provider, forceVPS);
             var json = JsonUtility.ToJson(communicationStruct);
 
             Debug.Log(json);
             return json;
-            //return job;
         }
 
         /// <summary>
