@@ -13,8 +13,16 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
+        [Tooltip("Разрешение, в котором будут делаться фотографии")]
+        private Vector2Int desiredResolution = new Vector2Int(960, 540);
+
+        public Resolution TagretResolution;
+
         private ARCameraManager cameraManager;
         private Texture2D texture;
+        private Texture2D scaledTexture;
+
+        private RenderTexture currentRender;
 
         private NativeArray<XRCameraConfiguration> configurations;
 
@@ -28,6 +36,9 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
+
+            TagretResolution.width = desiredResolution.x;
+            TagretResolution.height = desiredResolution.y;
         }
 
         private IEnumerator Start()
@@ -103,11 +114,24 @@ namespace ARVRLab.VPSService
             }
 
             texture.Apply();
+
+            if (currentRender == null)
+                currentRender = new RenderTexture(TagretResolution.width, TagretResolution.height, 0);
+
+            Graphics.Blit(texture, currentRender);
+
+            RenderTexture.active = currentRender;
+
+            if (scaledTexture == null)
+                scaledTexture = new Texture2D(TagretResolution.width, TagretResolution.height);
+
+            scaledTexture.ReadPixels(new Rect(0, 0, currentRender.width, currentRender.height), 0, 0);
+            scaledTexture.Apply();
         }
 
         public Texture2D GetFrame()
         {
-            return texture;
+            return scaledTexture;
         }
 
         public Vector2 GetFocalPixelLength()
@@ -134,7 +158,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return texture != null;
+            return scaledTexture != null;
         }
     }
 }
