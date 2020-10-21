@@ -76,7 +76,7 @@ namespace ARVRLab.VPSService
 
             Vector2Int Resolution = new Vector2Int(1920, 1080);
 
-            var format = TextureFormat.RGBA32;
+            var format = TextureFormat.R8;
 
             // Создаем текстуру
             if (texture == null || texture.width != Resolution.x || texture.height != Resolution.y)
