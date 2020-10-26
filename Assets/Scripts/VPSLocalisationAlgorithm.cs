@@ -108,7 +108,8 @@ namespace ARVRLab.VPSService
 
                 // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
                 var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
-                Meta = DataCollector.CollectData(provider, !isCalibration);
+                isCalibration = false; ////////////////////////////////////////////////////////
+                Meta = DataCollector.CollectData(provider, !isCalibration); 
 
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();

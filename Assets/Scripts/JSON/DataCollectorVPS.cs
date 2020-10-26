@@ -153,7 +153,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
-                //GuidPointcloud = communicationStruct.data.attributes.location.location_id,
+                GuidPointcloud = communicationStruct.data.attributes.location.location_id,
                 //Heading = communicationStruct.data.attributes.location.compass.heading,
                 //Accuracy = communicationStruct.data.attributes.location.gps.accuracy,
                 //Timestamp = communicationStruct.data.attributes.location.gps.timestamp

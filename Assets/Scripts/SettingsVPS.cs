@@ -6,7 +6,7 @@ namespace ARVRLab.VPSService
 {
     public class SettingsVPS
     {
-        public string Url = "http://89.108.75.122:5001/";
+        public string Url = "http://api.polytech.vps.arvr.sberlabs.com/";
         public float Timeout = 5;
         public int ForceVpsCount = 3; // пока не используется
     }

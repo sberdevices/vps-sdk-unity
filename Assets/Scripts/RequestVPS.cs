@@ -41,7 +41,7 @@ namespace ARVRLab.VPSService
             }
 
             WWWForm form = new WWWForm();
-            form.AddField("image", "file");
+            //form.AddField("image", "file");
 
             var binaryImage = GetByteArrayFromImage(image);
             if (binaryImage == null)
@@ -63,6 +63,8 @@ namespace ARVRLab.VPSService
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
                     Debug.LogError("Network error!");
+                    Debug.LogError(www.error);
+                    Debug.LogError(www.responseCode);
                 }
                 else
                 {
