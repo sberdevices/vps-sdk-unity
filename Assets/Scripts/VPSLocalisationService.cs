@@ -15,6 +15,9 @@ namespace ARVRLab.VPSService
         [Tooltip("Какие брать данные с камеры, GPS...")]
         public ServiceProvider provider;
 
+        [Tooltip("Использовать пайплайн с локализацией по серии снимков?")]
+        public bool UsePhotoSerias;
+
         /// <summary>
         /// Событие ошибки локализации
         /// </summary>
@@ -57,7 +60,7 @@ namespace ARVRLab.VPSService
         {
             StopVps();
 
-            algorithm = new VPSLocalisationAlgorithm(this, provider, settings);
+            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSerias);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
             algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);
@@ -106,6 +109,15 @@ namespace ARVRLab.VPSService
         public void SetMockMode(bool is_mock)
         {
             isMock = is_mock;
+        }
+
+        /// <summary>
+        /// Была ли локализация?
+        /// </summary>
+        /// <returns><c>true</c>, if localized was ised, <c>false</c> otherwise.</returns>
+        public bool IsLocalized()
+        {
+            return provider.GetTracking().GetLocalTracking().IsLocalisedFloor;
         }
     }
 }

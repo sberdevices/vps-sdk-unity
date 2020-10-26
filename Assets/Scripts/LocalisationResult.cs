@@ -14,6 +14,7 @@ namespace ARVRLab.VPSService
         public float Heading;
         public float Accuracy;
         public double Timestamp;
+        public int Img_id;
 
         public LocalisationResult()
         {
@@ -25,6 +26,7 @@ namespace ARVRLab.VPSService
             Heading = 0;
             Accuracy = 0;
             Timestamp = 0;
+            Img_id = -1;
         }
     }
 }

@@ -15,6 +15,9 @@ namespace ARVRLab.VPSService
     public class RequestVPS
     {
         private string serverUrl;
+        // api для локализации через серию фотографий
+        private string api_path_firstloc = "vps/api/first_loc/job";
+        // api для стандартной работы
         private string api_path = "vps/api/v1/job";
 
         private LocationState locationState = new LocationState();
@@ -65,6 +68,79 @@ namespace ARVRLab.VPSService
                     Debug.LogError("Network error!");
                     Debug.LogError(www.error);
                     Debug.LogError(www.responseCode);
+                }
+                else
+                {
+                    Debug.Log("Request finished with code: " + www.responseCode);
+
+                    if (www.responseCode != 200)
+                    {
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        yield return null;
+                    }
+                    string response = www.downloadHandler.text;
+
+                    Debug.Log("Request Finished Successfully!\n" + response);
+                    LocationState deserialized = null;
+                    try
+                    {
+                        deserialized = DataCollector.Deserialize(response);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError(e);
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        yield break;
+                    }
+
+                    if (deserialized != null)
+                    {
+                        Debug.Log("Server status " + deserialized.Status);
+                        locationState = deserialized;
+                    }
+                    else
+                    {
+                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                        Debug.LogError("There is no data come from server");
+                        yield break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Отправка запроса: серия изображений и meta-данные к ним
+        /// </summary>
+        /// <returns>The vps localization request.</returns>
+        /// <param name="data">Data.</param>
+        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
+        {
+            string uri = Path.Combine(serverUrl, api_path_firstloc);
+
+            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
+            {
+                Debug.LogError("URL is incorrect: " + uri);
+                yield break;
+            }
+
+            WWWForm form = new WWWForm();
+            
+            for (int i = 0; i < data.Count; i++)
+            {
+                form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
+                form.AddField("mes" + i, data[i].meta);
+            }
+
+            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
+            {
+                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+
+                yield return www.SendWebRequest();
+
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
+                    Debug.LogError("Network error!");
                 }
                 else
                 {

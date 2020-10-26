@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using ARVRLab.VPSService;
 using UnityEngine;
@@ -16,15 +16,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             var tracking = Provider.GetTracking().GetLocalTracking();
             var loc_id = tracking.GuidPointcloud;
 
-            if (forceVPS)
-            {
-                pose = Pose.identity;
-            }
-            else
-            {
-                pose.position = tracking.Position;
-                pose.rotation = tracking.Rotation;
-            }
+            pose.position = tracking.Position;
+            pose.rotation = tracking.Rotation;
 
             string relative_type = "relative";
 
@@ -146,11 +139,17 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
 
+            // ToDo: Сервер выдает ImgId в поле id сессии. Нужно добавить дополнительное для
+            // него доп. поле в json и обработать здесь
+            int id;
+            bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
+
             LocalisationResult localisation = new LocalisationResult
             {
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
+                Img_id = checkImgId ? id : -1
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 GuidPointcloud = communicationStruct.data.attributes.location.location_id,

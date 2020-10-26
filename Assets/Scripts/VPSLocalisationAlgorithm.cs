@@ -1,7 +1,8 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using ARVRLab.ARVRLab.VPSService.JSONs;
 using UnityEngine;
+using System.IO;
 
 namespace ARVRLab.VPSService
 {
@@ -16,6 +17,10 @@ namespace ARVRLab.VPSService
         private LocationState locationState;
 
         private SettingsVPS settings;
+
+        private LocalizationImagesCollector imagesCollector;
+
+        private bool newLocalizationPipeline;
 
         /// <summary>
         /// Событие ошибки локализации
@@ -33,15 +38,18 @@ namespace ARVRLab.VPSService
         /// <param name="vps_servise">Родительский GameObject, для запуска корутин</param>
         /// <param name="vps_provider">Провайдер камеры, gps и трекинга</param>
         /// <param name="vps_settings">Настройки</param>
-        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings = null)
+        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings = null, bool new_localization_pipeline = false)
         {
             localisationService = vps_servise;
             provider = vps_provider;
+            newLocalizationPipeline = new_localization_pipeline;
 
             if (vps_settings != null)
                 settings = vps_settings;
             else
                 settings = new SettingsVPS();
+
+            imagesCollector = new LocalizationImagesCollector(settings.PhotosInSeria);
 
             locationState = new LocationState();
 
@@ -97,6 +105,43 @@ namespace ARVRLab.VPSService
             {
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
+                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
+                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
+
+                if (!isCalibration && newLocalizationPipeline)
+                {
+                    yield return imagesCollector.StartCollectPhoto(provider);
+
+                    Debug.Log("Sending VPS Localization Request...");
+                    var locRequestVPS = new RequestVPS(settings.Url);
+
+                    yield return locRequestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
+                    Debug.Log("VPS Localization answer recieved!");
+
+                    if (locRequestVPS.GetStatus() == LocalisationStatus.VPS_READY)
+                    {
+                        var response = locRequestVPS.GetResponce();
+                        tracking.SetGuidPointcloud(response.GuidPointcloud);
+
+                        locationState.Status = LocalisationStatus.VPS_READY;
+                        locationState.Error = ErrorCode.NO_ERROR;
+                        locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response, imagesCollector.GetLocalizationData()[response.Img_id].pose);
+
+                        OnLocalisationHappend?.Invoke(locationState);
+                    }
+                    else
+                    {
+                        locationState.Status = LocalisationStatus.GPS_ONLY;
+                        locationState.Error = locRequestVPS.GetErrorCode();
+                        locationState.Localisation = null;
+
+                        OnErrorHappend?.Invoke(locRequestVPS.GetErrorCode());
+                        Debug.LogErrorFormat("VPS Request Error: {0}", locRequestVPS.GetErrorCode());
+                    }
+
+                    continue;
+                }
+
                 Image = camera.GetFrame();
 
                 if (Image == null)
@@ -106,10 +151,9 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
-                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
                 isCalibration = false; ////////////////////////////////////////////////////////
-                Meta = DataCollector.CollectData(provider, !isCalibration); 
+
+                Meta = DataCollector.CollectData(provider, !isCalibration);
 
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
