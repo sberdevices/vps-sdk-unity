@@ -48,21 +48,21 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     type = relative_type,
                     location_id = loc_id,
-                    gps = new RequstGps
-                    {
-                        latitude = lat,
-                        longitude = lon,
-                        altitude = alt,
-                        accuracy = accuracy,
-                        timestamp = locationTimeStamp
-                    },
+                    //gps = new RequstGps
+                    //{
+                    //    latitude = lat,
+                    //    longitude = lon,
+                    //    altitude = alt,
+                    //    accuracy = accuracy,
+                    //    timestamp = locationTimeStamp
+                    //},
 
-                    compass = new ARVRLab.VPSService.JSONs.RequestCompass
-                    {
-                        heading = heading,
-                        accuracy = headingAccuracy,
-                        timestamp = compassTimeStamp
-                    },
+                    //compass = new ARVRLab.VPSService.JSONs.RequestCompass
+                    //{
+                    //    heading = heading,
+                    //    accuracy = headingAccuracy,
+                    //    timestamp = compassTimeStamp
+                    //},
 
                     clientCoordinateSystem = "unity",
 
