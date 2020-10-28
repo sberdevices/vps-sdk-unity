@@ -151,7 +151,7 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                isCalibration = false; ////////////////////////////////////////////////////////
+                //isCalibration = false; ////////////////////////////////////////////////////////
 
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
