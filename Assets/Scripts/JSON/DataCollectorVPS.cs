@@ -48,21 +48,21 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     type = relative_type,
                     location_id = loc_id,
-                    gps = new RequstGps
-                    {
-                        latitude = lat,
-                        longitude = lon,
-                        altitude = alt,
-                        accuracy = accuracy,
-                        timestamp = locationTimeStamp
-                    },
+                    //gps = new RequstGps
+                    //{
+                    //    latitude = lat,
+                    //    longitude = lon,
+                    //    altitude = alt,
+                    //    accuracy = accuracy,
+                    //    timestamp = locationTimeStamp
+                    //},
 
-                    compass = new ARVRLab.VPSService.JSONs.RequestCompass
-                    {
-                        heading = heading,
-                        accuracy = headingAccuracy,
-                        timestamp = compassTimeStamp
-                    },
+                    //compass = new ARVRLab.VPSService.JSONs.RequestCompass
+                    //{
+                    //    heading = heading,
+                    //    accuracy = headingAccuracy,
+                    //    timestamp = compassTimeStamp
+                    //},
 
                     clientCoordinateSystem = "unity",
 
@@ -81,7 +81,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     orientation = 0,
                     mirrorX = false,
-                    mirrorY = true
+                    mirrorY = false // Ошибка может быть здесь
                 },
 
                 intrinsics = new Intrinsics
@@ -149,7 +149,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
                 LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
-                Img_id = checkImgId ? id : -1
+                Img_id = checkImgId ? id : -1,
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 GuidPointcloud = communicationStruct.data.attributes.location.location_id,
