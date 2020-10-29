@@ -14,7 +14,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
-            var loc_id = tracking.GuidPointcloud;
+            var loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
 
             pose.position = tracking.Position;
             pose.rotation = tracking.Rotation;

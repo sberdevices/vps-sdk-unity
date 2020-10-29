@@ -79,8 +79,8 @@ namespace ARVRLab.VPSService
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
             // Пытаемся получить последнее изображение с камеры
-            XRCpuImage image;
-            if (!cameraManager.TryAcquireLatestCpuImage(out image))
+            XRCameraImage image;
+            if (!cameraManager.TryGetLatestImage(out image))
             {
                 return;
             }
@@ -96,7 +96,7 @@ namespace ARVRLab.VPSService
             }
 
             // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
-            var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
+            var conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.None);
             // Задаем downscale до нужного разрешения
             conversionParams.outputDimensions = new Vector2Int(Resolution.x, Resolution.y);
 
