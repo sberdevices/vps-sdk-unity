@@ -64,6 +64,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         timestamp = compassTimeStamp
                     },
 
+
                     clientCoordinateSystem = "unity",
 
                     localPos = new LocalPos
@@ -81,7 +82,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     orientation = 0,
                     mirrorX = false,
-                    mirrorY = true
+                    mirrorY = false // Ошибка может быть здесь
                 },
 
                 intrinsics = new Intrinsics
