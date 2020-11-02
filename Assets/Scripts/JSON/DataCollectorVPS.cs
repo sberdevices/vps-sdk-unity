@@ -14,7 +14,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
-            var loc_id = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
+            var loc_id = tracking.GuidPointcloud;
 
             pose.position = tracking.Position;
             pose.rotation = tracking.Rotation;
@@ -82,7 +82,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     orientation = 0,
                     mirrorX = false,
-                    mirrorY = false // Ошибка может быть здесь
+                    mirrorY = true // Ошибка может быть здесь
                 },
 
                 intrinsics = new Intrinsics
