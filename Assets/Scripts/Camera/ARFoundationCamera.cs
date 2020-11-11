@@ -26,6 +26,8 @@ namespace ARVRLab.VPSService
 
         private NativeArray<XRCameraConfiguration> configurations;
 
+        private NativeArray<byte> buffer;
+
         private void Awake()
         {
             cameraManager = FindObjectOfType<ARCameraManager>();
@@ -36,6 +38,7 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
+            //cameraManager.frameReceived += UpdateFrame1;
 
             TagretResolution.width = desiredResolution.x;
             TagretResolution.height = desiredResolution.y;
@@ -85,27 +88,25 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            Vector2Int Resolution = new Vector2Int(1920, 1080);
-
             var format = TextureFormat.R8;
 
             // Создаем текстуру
-            if (texture == null || texture.width != Resolution.x || texture.height != Resolution.y)
+            if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
             {
-                texture = new Texture2D(Resolution.x, Resolution.y, format, false);
+                texture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
             }
 
             // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
             // Задаем downscale до нужного разрешения
-            conversionParams.outputDimensions = new Vector2Int(Resolution.x, Resolution.y);
+            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
             // Получаем ссылку на массив байтов текущей текстуры
-            var rawTextureData = texture.GetRawTextureData<byte>();
+            buffer = texture.GetRawTextureData<byte>();
             try
             {
                 // Копируем байты из изображения с камеры в текстуру
-                image.Convert(conversionParams, new IntPtr(rawTextureData.GetUnsafePtr()), rawTextureData.Length);
+                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
             }
             finally
             {
@@ -128,6 +129,36 @@ namespace ARVRLab.VPSService
             scaledTexture.ReadPixels(new Rect(0, 0, currentRender.width, currentRender.height), 0, 0);
             scaledTexture.Apply();
         }
+
+        //private unsafe void UpdateFrame1(ARCameraFrameEventArgs args)
+        //{
+        //    // Пытаемся получить последнее изображение с камеры
+        //    XRCpuImage image;
+        //    if (!cameraManager.TryAcquireLatestCpuImage(out image))
+        //    {
+        //        return;
+        //    }
+
+        //    var format = TextureFormat.R8;
+
+        //    // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
+        //    var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
+        //    // Задаем downscale до нужного разрешения
+        //    conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
+
+        //    // Получаем ссылку на массив байтов текущей текстуры
+        //    buffer = new NativeArray<byte>(image.GetConvertedDataSize(conversionParams), Allocator.None, NativeArrayOptions.ClearMemory);
+        //    try
+        //    {
+        //        // Копируем байты из изображения с камеры в текстуру
+        //        image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+        //    }
+        //    finally
+        //    {
+        //        // Высвобождаем память
+        //        image.Dispose();
+        //    }
+        //}
 
         public Texture2D GetFrame()
         {
@@ -159,6 +190,41 @@ namespace ARVRLab.VPSService
         public bool IsCameraReady()
         {
             return scaledTexture != null;
+        }
+
+        public unsafe NativeArray<byte> GetImageArray()
+        {
+            return buffer;
+
+            //if (buffer == null || buffer.Length == 0)
+                //return null;
+
+            int height = desiredResolution.x;
+            int width = desiredResolution.y;
+            var input = new float[height, width, 1];
+
+            Debug.Log("WORK: " + buffer.Length);
+            //for (int i = 0; i < buffer.Length; i++)
+            //{
+                //try
+                //{
+                //    input[i / width, i % width, 0] = (float)(buffer[i]);
+                //}
+                //catch (Exception ex)
+                //{
+                //    Debug.Log("EXCEPTION: " + ex.Message);
+                //    return null;
+                //}
+                //float b = (float)ptr[offset + 0] / 255.0f;
+                //float g = (float)ptr[offset + 1] / 255.0f;
+                //float r = (float)ptr[offset + 2] / 255.0f;
+                //float a = (float)ptr[offset + 3] / 255.0f;
+
+                //UnityEngine.Color color = new UnityEngine.Color(r, g, b, a);
+                //texture.SetPixel(j, height - i, color);
+            //}
+
+            //return input;
         }
     }
 }

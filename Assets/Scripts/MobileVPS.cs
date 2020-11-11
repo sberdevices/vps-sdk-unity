@@ -4,19 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace TensorFlowLite
 {
-    public class MobileVPS : MonoBehaviour
+    public class MobileVPS
     {
         private const string FileName = "hfnet_i8_960.tflite";
         public Texture2D TestTexture;
 
         Interpreter interpreter;
 
-        private void Start()
+        public MobileVPS()
         {
             var options = new InterpreterOptions
             {
@@ -27,33 +28,48 @@ namespace TensorFlowLite
             interpreter.AllocateTensors();
         }
 
-        private void OnDestroy()
+        //private void OnDestroy()
+        //{
+        //    interpreter?.Dispose();
+        //}
+
+        public async Task<float[,]> GetFeaturesAsync(Color[] buffer)
         {
-            interpreter?.Dispose();
+            return await Task.Run(() => doInference(buffer));
         }
 
-        public async Task<float[,]> GetFeaturesAsync(float[,,] input)
+        public float[,] doInference(Color[] buffer)
         {
-            return await Task.Run(() => doInference(input));
-        }
-
-        public float[,] doInference(float [,,] input)
-        {
-            Debug.Log("Start");
+            Debug.Log("START");
             var idim0 = interpreter.GetInputTensorInfo(0).shape;
             var height = idim0[1]; //960
             var width = idim0[2]; //540
             var channels = idim0[3]; //1
 
-            //var input0 = new float[height, width, channels];
+            var input0 = new float[height, width, channels];
 
             //var pixels = TestTexture.GetPixels();
-            //for (int i = 0; i < pixels.Length; i++)
-            //{
-            //    input0[i / width, i % width, 0] = (float)(pixels[i].r * 255);
-            //}
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                try
+                {
+                    input0[i / width, i % width, 0] = (float)(buffer[i].grayscale * 255);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log("EXCEPTION: " + ex.Message);
+                    return null;
+                }
+                //float b = (float)ptr[offset + 0] / 255.0f;
+                //float g = (float)ptr[offset + 1] / 255.0f;
+                //float r = (float)ptr[offset + 2] / 255.0f;
+                //float a = (float)ptr[offset + 3] / 255.0f;
 
-            interpreter.SetInputTensorData(0, input);
+                //UnityEngine.Color color = new UnityEngine.Color(r, g, b, a);
+                //texture.SetPixel(j, height - i, color);
+            }
+
+            interpreter.SetInputTensorData(0, input0);
 
             var output0 = new float[4096];
             var output1 = new float[400, 2];
@@ -67,7 +83,9 @@ namespace TensorFlowLite
             interpreter.GetOutputTensorData(2, output2);
             interpreter.GetOutputTensorData(3, output3);
 
-            Debug.Log("Done");
+            Debug.Log("DONE");
+
+            Debug.Log("SCORE FOR THIS: " + output3[0]);
             return output1;
 
             //Texture2D tex = FeatureTexture.mainTexture as Texture2D;

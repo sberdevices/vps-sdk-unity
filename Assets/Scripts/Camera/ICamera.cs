@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 
 namespace ARVRLab.VPSService
@@ -10,6 +11,6 @@ namespace ARVRLab.VPSService
         Texture2D GetFrame();
         Vector2 GetFocalPixelLength();
         Vector2 GetPrincipalPoint();
-        float[,,] GetImageArray();
+        NativeArray<byte> GetImageArray();
     }
 }

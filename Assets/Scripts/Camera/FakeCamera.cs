@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,9 +24,9 @@ namespace ARVRLab.VPSService
             return FakeTexture;
         }
 
-        public float[,,] GetImageArray()
+        public NativeArray<byte> GetImageArray()
         {
-            return new float[0, 0, 0];
+            throw new System.NotImplementedException();
         }
 
         public Vector2 GetPrincipalPoint()

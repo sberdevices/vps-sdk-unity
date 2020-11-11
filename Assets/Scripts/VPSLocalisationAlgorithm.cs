@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using ARVRLab.ARVRLab.VPSService.JSONs;
 using UnityEngine;
 using System.IO;
+using TensorFlowLite;
+using Unity.Collections;
 
 namespace ARVRLab.VPSService
 {
@@ -151,7 +153,44 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                //isCalibration = false; ////////////////////////////////////////////////////////
+                NativeArray<byte> input = camera.GetImageArray();
+                if (input != null)
+                {
+                    Debug.Log("INPUT IS NOT NULL");
+                    MobileVPS mobileVPS = new MobileVPS();
+                    var task = mobileVPS.GetFeaturesAsync(rotateTexture(Image, true).GetPixels());
+                    while (!task.IsCompleted)
+                        yield return null;
+
+                    //===============================================================================
+                    Image = rotateTexture(Image, true);
+
+                    for (int i = 0; i < task.Result.Length / 2; i++)
+                    {
+                        Image.SetPixel((int)task.Result[i, 0], (int)task.Result[i, 1], Color.yellow);
+                    }
+
+                    for (int i = 0; i < Image.height; i++)
+                        for (int j = 0; j < Image.width; j++)
+                        {
+                            if (Image.GetPixel(j, i) == Color.yellow)
+                            {
+                                Image.SetPixel(j - 1, i - 1, Color.green);
+                                Image.SetPixel(j - 1, i, Color.green);
+                                Image.SetPixel(j - 1, i + 1, Color.green);
+                                Image.SetPixel(j, i - 1, Color.green);
+                                Image.SetPixel(j, i + 1, Color.green);
+                                Image.SetPixel(j + 1, i - 1, Color.green);
+                                Image.SetPixel(j + 1, i, Color.green);
+                                Image.SetPixel(j + 1, i + 1, Color.green);
+                            }
+                        }
+                    Image.Apply();
+
+                    File.WriteAllBytes(Path.Combine(Application.persistentDataPath, "test.png"), Image.EncodeToPNG());
+
+                    //===============================================================================
+                }
 
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
@@ -186,6 +225,31 @@ namespace ARVRLab.VPSService
 
                 yield return new WaitForSeconds(settings.Timeout);
             }
+        }
+
+        Texture2D rotateTexture(Texture2D originalTexture, bool clockwise)
+        {
+            Color32[] original = originalTexture.GetPixels32();
+            Color32[] rotated = new Color32[original.Length];
+            int w = originalTexture.width;
+            int h = originalTexture.height;
+
+            int iRotated, iOriginal;
+
+            for (int j = 0; j < h; ++j)
+            {
+                for (int i = 0; i < w; ++i)
+                {
+                    iRotated = (i + 1) * h - j - 1;
+                    iOriginal = original.Length - 1 - (j * w + i);//clockwise ? original.Length - 1 - (j * w + i) : j * w + i;
+                    rotated[iRotated] = original[iOriginal];
+                }
+            }
+
+            Texture2D rotatedTexture = new Texture2D(h, w);
+            rotatedTexture.SetPixels32(rotated);
+            rotatedTexture.Apply();
+            return rotatedTexture;
         }
     }
 }
