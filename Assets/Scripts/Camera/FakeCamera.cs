@@ -23,6 +23,11 @@ namespace ARVRLab.VPSService
             return FakeTexture;
         }
 
+        public float[,,] GetImageArray()
+        {
+            return new float[0, 0, 0];
+        }
+
         public Vector2 GetPrincipalPoint()
         {
             return new Vector2(FakeTexture.width * 0.5f, FakeTexture.height * 0.5f);
