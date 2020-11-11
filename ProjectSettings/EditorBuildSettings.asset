@@ -9,5 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/TestScene.unity
     guid: e7dc35790c2224ab582d9b4538e51241
   m_configObjects:
+    com.unity.xr.arkit.PlayerSettings: {fileID: 11400000, guid: 1809e66358d2147c18774358c70f3f92,
+      type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 50bd1e2ecc35c42c68bc9b9b1f7b1917,
       type: 2}

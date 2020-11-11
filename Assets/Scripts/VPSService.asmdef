@@ -2,7 +2,8 @@
     "name": "VPSService",
     "references": [
         "GUID:a9420e37d7990b54abdef6688edbe313",
-        "GUID:92703082f92b41ba80f0d6912de66115"
+        "GUID:92703082f92b41ba80f0d6912de66115",
+        "GUID:6e1d47a1424c040aca79d8b6a2710888"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -11,5 +12,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }
