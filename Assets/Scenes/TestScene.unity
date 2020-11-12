@@ -195,7 +195,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 3.7864363e+16, z: 4.5876e-41, w: 5.1245493e-20}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -520,6 +520,11 @@ PrefabInstance:
       propertyPath: UsePhotoSerias
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8690752169563304425, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: FakeTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 5071ea4b3cf2f46bc83067987e84bc42, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
 --- !u!114 &8690752169532022779 stripped

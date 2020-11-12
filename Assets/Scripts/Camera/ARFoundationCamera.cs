@@ -26,7 +26,7 @@ namespace ARVRLab.VPSService
 
         private NativeArray<XRCameraConfiguration> configurations;
 
-        private NativeArray<byte> buffer;
+        //private NativeArray<byte> buffer;
 
         private void Awake()
         {
@@ -102,11 +102,11 @@ namespace ARVRLab.VPSService
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
             // Получаем ссылку на массив байтов текущей текстуры
-            buffer = texture.GetRawTextureData<byte>();
+            var raw = texture.GetRawTextureData<byte>();
             try
             {
                 // Копируем байты из изображения с камеры в текстуру
-                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+                image.Convert(conversionParams, new IntPtr(raw.GetUnsafePtr()), raw.Length);
             }
             finally
             {
@@ -128,6 +128,7 @@ namespace ARVRLab.VPSService
 
             scaledTexture.ReadPixels(new Rect(0, 0, currentRender.width, currentRender.height), 0, 0);
             scaledTexture.Apply();
+            raw.Dispose();
         }
 
         //private unsafe void UpdateFrame1(ARCameraFrameEventArgs args)
@@ -194,7 +195,7 @@ namespace ARVRLab.VPSService
 
         public unsafe NativeArray<byte> GetImageArray()
         {
-            return buffer;
+            return new NativeArray<byte>();
 
             //if (buffer == null || buffer.Length == 0)
                 //return null;
@@ -203,7 +204,7 @@ namespace ARVRLab.VPSService
             int width = desiredResolution.y;
             var input = new float[height, width, 1];
 
-            Debug.Log("WORK: " + buffer.Length);
+            //Debug.Log("WORK: " + buffer.Length);
             //for (int i = 0; i < buffer.Length; i++)
             //{
                 //try

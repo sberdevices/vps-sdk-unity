@@ -12,10 +12,19 @@ namespace TensorFlowLite
 {
     public class MobileVPS
     {
+        public static string NeuronTime = "";
+
         private const string FileName = "hfnet_i8_960.tflite";
         public Texture2D TestTexture;
 
         Interpreter interpreter;
+
+        private float[,,] input0;
+
+        static public float[] output0;
+        static public float[,] output1;
+        static public float[,] output2;
+        static public float[] output3;
 
         public MobileVPS()
         {
@@ -26,12 +35,24 @@ namespace TensorFlowLite
 
             interpreter = new Interpreter(FileUtil.LoadFile(FileName), options);
             interpreter.AllocateTensors();
+
+            var idim0 = interpreter.GetInputTensorInfo(0).shape;
+            var height = idim0[1]; //960
+            var width = idim0[2]; //540
+            var channels = idim0[3]; //1
+
+            input0 = new float[height, width, channels];
+
+            output0 = new float[4096];
+            output1 = new float[400, 2];
+            output2 = new float[400, 256];
+            output3 = new float[400];
         }
 
-        //private void OnDestroy()
-        //{
-        //    interpreter?.Dispose();
-        //}
+        ~MobileVPS()
+        {
+            interpreter?.Dispose();
+        }
 
         public async Task<float[,]> GetFeaturesAsync(Color[] buffer)
         {
@@ -41,19 +62,13 @@ namespace TensorFlowLite
         public float[,] doInference(Color[] buffer)
         {
             Debug.Log("START");
-            var idim0 = interpreter.GetInputTensorInfo(0).shape;
-            var height = idim0[1]; //960
-            var width = idim0[2]; //540
-            var channels = idim0[3]; //1
-
-            var input0 = new float[height, width, channels];
 
             //var pixels = TestTexture.GetPixels();
             for (int i = 0; i < buffer.Length; i++)
             {
                 try
                 {
-                    input0[i / width, i % width, 0] = (float)(buffer[i].grayscale * 255);
+                    input0[i / 540, i % 540, 0] = (float)(buffer[i].grayscale * 255);
                 }
                 catch (Exception ex)
                 {
@@ -69,12 +84,9 @@ namespace TensorFlowLite
                 //texture.SetPixel(j, height - i, color);
             }
 
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             interpreter.SetInputTensorData(0, input0);
-
-            var output0 = new float[4096];
-            var output1 = new float[400, 2];
-            var output2 = new float[400, 256];
-            var output3 = new float[400];
 
             interpreter.Invoke();
 
@@ -83,9 +95,20 @@ namespace TensorFlowLite
             interpreter.GetOutputTensorData(2, output2);
             interpreter.GetOutputTensorData(3, output3);
 
+            stopWatch.Stop();
+            TimeSpan ts = stopWatch.Elapsed;
+
+            NeuronTime = String.Format("{0:00}:{1:00}",
+                ts.Seconds, ts.Milliseconds / 10);
+            Debug.Log("Neuron Time " + NeuronTime);
             Debug.Log("DONE");
 
-            Debug.Log("SCORE FOR THIS: " + output3[0]);
+            //Debug.Log("SCORE FOR THIS: " + output3[0]);
+
+            //for (int i = 0; i < output1.Length / 2; i++)
+            //{
+            //    Debug.Log(output1[i, 0] + ":" + output1[i, 1]);
+            //}
             return output1;
 
             //Texture2D tex = FeatureTexture.mainTexture as Texture2D;

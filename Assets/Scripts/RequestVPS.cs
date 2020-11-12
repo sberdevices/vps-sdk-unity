@@ -14,6 +14,8 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class RequestVPS
     {
+        public static string RequestTime = "";
+
         private string serverUrl;
         // api для локализации через серию фотографий
         private string api_path_firstloc = "vps/api/first_loc/job";
@@ -33,7 +35,7 @@ namespace ARVRLab.VPSService
         /// <returns>The vps request.</returns>
         /// <param name="image">Image.</param>
         /// <param name="meta">Meta.</param>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, string keyPoints, string scores, string descriptors, string globalDescriptor)
         {
             string uri = Path.Combine(serverUrl, api_path);
 
@@ -55,12 +57,25 @@ namespace ARVRLab.VPSService
 
             form.AddBinaryData("image", binaryImage, CreateFileName());
             form.AddField("json", meta);
+            form.AddField("keyPoints", keyPoints);
+            form.AddField("scores", scores);
+            form.AddField("descriptors", descriptors);
+            form.AddField("globalDescriptor", globalDescriptor);
 
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {
                 www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
 
                 yield return www.SendWebRequest();
+
+                stopWatch.Stop();
+                TimeSpan ts = stopWatch.Elapsed;
+
+                RequestTime = String.Format("{0:00}:{1:00}",
+                    ts.Seconds, ts.Milliseconds / 10);
+                Debug.Log("Request Time " + RequestTime);
 
                 if (www.isNetworkError || www.isHttpError)
                 {

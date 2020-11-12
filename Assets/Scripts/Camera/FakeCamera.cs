@@ -26,7 +26,7 @@ namespace ARVRLab.VPSService
 
         public NativeArray<byte> GetImageArray()
         {
-            throw new System.NotImplementedException();
+            return new NativeArray<byte>();
         }
 
         public Vector2 GetPrincipalPoint()

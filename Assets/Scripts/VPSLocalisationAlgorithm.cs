@@ -5,6 +5,7 @@ using UnityEngine;
 using System.IO;
 using TensorFlowLite;
 using Unity.Collections;
+using System;
 
 namespace ARVRLab.VPSService
 {
@@ -15,6 +16,7 @@ namespace ARVRLab.VPSService
     {
         private VPSLocalisationService localisationService;
         private ServiceProvider provider;
+        private MobileVPS mobileVPS;
 
         private LocationState locationState;
 
@@ -56,6 +58,7 @@ namespace ARVRLab.VPSService
             locationState = new LocationState();
 
             localisationService.StartCoroutine(LocalisationRoutine());
+            mobileVPS = new MobileVPS();
         }
 
         public void Stop()
@@ -153,53 +156,56 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                NativeArray<byte> input = camera.GetImageArray();
-                if (input != null)
-                {
+                //NativeArray<byte> input = camera.GetImageArray();
+                //if (input != null)
+                //{
                     Debug.Log("INPUT IS NOT NULL");
-                    MobileVPS mobileVPS = new MobileVPS();
                     var task = mobileVPS.GetFeaturesAsync(rotateTexture(Image, true).GetPixels());
                     while (!task.IsCompleted)
                         yield return null;
 
                     //===============================================================================
-                    Image = rotateTexture(Image, true);
+                    //Image = rotateTexture(Image, true);
 
-                    for (int i = 0; i < task.Result.Length / 2; i++)
-                    {
-                        Image.SetPixel((int)task.Result[i, 0], (int)task.Result[i, 1], Color.yellow);
-                    }
+                    //for (int i = 0; i < task.Result.Length / 2; i++)
+                    //{
+                    //    Image.SetPixel((int)task.Result[i, 0], (int)task.Result[i, 1], Color.yellow);
+                    //}
 
-                    for (int i = 0; i < Image.height; i++)
-                        for (int j = 0; j < Image.width; j++)
-                        {
-                            if (Image.GetPixel(j, i) == Color.yellow)
-                            {
-                                Image.SetPixel(j - 1, i - 1, Color.green);
-                                Image.SetPixel(j - 1, i, Color.green);
-                                Image.SetPixel(j - 1, i + 1, Color.green);
-                                Image.SetPixel(j, i - 1, Color.green);
-                                Image.SetPixel(j, i + 1, Color.green);
-                                Image.SetPixel(j + 1, i - 1, Color.green);
-                                Image.SetPixel(j + 1, i, Color.green);
-                                Image.SetPixel(j + 1, i + 1, Color.green);
-                            }
-                        }
-                    Image.Apply();
+                    //for (int i = 0; i < Image.height; i++)
+                    //    for (int j = 0; j < Image.width; j++)
+                    //    {
+                    //        if (Image.GetPixel(j, i) == Color.yellow)
+                    //        {
+                    //            Image.SetPixel(j - 1, i - 1, Color.green);
+                    //            Image.SetPixel(j - 1, i, Color.green);
+                    //            Image.SetPixel(j - 1, i + 1, Color.green);
+                    //            Image.SetPixel(j, i - 1, Color.green);
+                    //            Image.SetPixel(j, i + 1, Color.green);
+                    //            Image.SetPixel(j + 1, i - 1, Color.green);
+                    //            Image.SetPixel(j + 1, i, Color.green);
+                    //            Image.SetPixel(j + 1, i + 1, Color.green);
+                    //        }
+                    //    }
+                    //Image.Apply();
 
-                    File.WriteAllBytes(Path.Combine(Application.persistentDataPath, "test.png"), Image.EncodeToPNG());
+                    //File.WriteAllBytes(Path.Combine("/Users/admin/Downloads", "test.png"), Image.EncodeToPNG());
 
                     //===============================================================================
-                }
-
+                //}
+                //input.Dispose();
                 Meta = DataCollector.CollectData(provider, !isCalibration);
+                string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output1));
+                string scores = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output3));
+                string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output2));
+                string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output0));
 
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
 
                 Debug.Log("Sending VPS Request...");
                 var requestVPS = new RequestVPS(settings.Url);
-                yield return requestVPS.SendVpsRequest(Image, Meta);
+                yield return requestVPS.SendVpsRequest(Image, Meta, keyPoints, scores, descriptors, globalDescriptor);
                 Debug.Log("VPS answer recieved!");
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
@@ -227,6 +233,7 @@ namespace ARVRLab.VPSService
             }
         }
 
+        Texture2D rotatedTexture;
         Texture2D rotateTexture(Texture2D originalTexture, bool clockwise)
         {
             Color32[] original = originalTexture.GetPixels32();
@@ -241,15 +248,32 @@ namespace ARVRLab.VPSService
                 for (int i = 0; i < w; ++i)
                 {
                     iRotated = (i + 1) * h - j - 1;
-                    iOriginal = original.Length - 1 - (j * w + i);//clockwise ? original.Length - 1 - (j * w + i) : j * w + i;
+                    iOriginal = j * w + i; //clockwise ? original.Length - 1 - (j * w + i) : j * w + i;
                     rotated[iRotated] = original[iOriginal];
                 }
             }
 
-            Texture2D rotatedTexture = new Texture2D(h, w);
+            if (rotatedTexture == null)
+                rotatedTexture = new Texture2D(h, w);
             rotatedTexture.SetPixels32(rotated);
             rotatedTexture.Apply();
             return rotatedTexture;
+        }
+
+        byte[] ConvertFloatToByteArray(float[] floats)
+        {
+            var byteArray = new byte[floats.Length * 4];
+            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
+
+            return byteArray;
+        }
+
+        byte[] ConvertFloatToByteArray(float[,] floats)
+        {
+            var byteArray = new byte[floats.Length * 4];
+            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
+
+            return byteArray;
         }
     }
 }
