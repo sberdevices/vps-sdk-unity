@@ -26,7 +26,7 @@ namespace ARVRLab.VPSService
 
         public NativeArray<byte> GetImageArray()
         {
-            return new NativeArray<byte>();
+            return new NativeArray<byte>(FakeTexture.GetRawTextureData(), Allocator.Persistent);
         }
 
         public Vector2 GetPrincipalPoint()

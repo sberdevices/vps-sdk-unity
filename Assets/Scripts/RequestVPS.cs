@@ -46,7 +46,6 @@ namespace ARVRLab.VPSService
             }
 
             WWWForm form = new WWWForm();
-            //form.AddField("image", "file");
 
             var binaryImage = GetByteArrayFromImage(image);
             if (binaryImage == null)
@@ -62,20 +61,23 @@ namespace ARVRLab.VPSService
             form.AddField("descriptors", descriptors);
             form.AddField("globalDescriptor", globalDescriptor);
 
+            //==================
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
+            //==================
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {
                 www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
 
                 yield return www.SendWebRequest();
 
+                //==================
                 stopWatch.Stop();
                 TimeSpan ts = stopWatch.Elapsed;
-
                 RequestTime = String.Format("{0:00}:{1:00}",
                     ts.Seconds, ts.Milliseconds / 10);
                 Debug.Log("Request Time " + RequestTime);
+                //==================
 
                 if (www.isNetworkError || www.isHttpError)
                 {

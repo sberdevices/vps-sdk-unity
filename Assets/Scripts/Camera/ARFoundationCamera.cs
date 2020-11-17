@@ -26,7 +26,7 @@ namespace ARVRLab.VPSService
 
         private NativeArray<XRCameraConfiguration> configurations;
 
-        //private NativeArray<byte> buffer;
+        private NativeArray<byte> buffer;
 
         private void Awake()
         {
@@ -73,6 +73,8 @@ namespace ARVRLab.VPSService
                     cameraManager.currentConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
             }
+
+            //buffer = new NativeArray<byte>(2073600, Allocator.Persistent);
         }
 
         /// <summary>
@@ -147,8 +149,6 @@ namespace ARVRLab.VPSService
         //    // Задаем downscale до нужного разрешения
         //    conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
-        //    // Получаем ссылку на массив байтов текущей текстуры
-        //    buffer = new NativeArray<byte>(image.GetConvertedDataSize(conversionParams), Allocator.None, NativeArrayOptions.ClearMemory);
         //    try
         //    {
         //        // Копируем байты из изображения с камеры в текстуру
@@ -193,39 +193,9 @@ namespace ARVRLab.VPSService
             return scaledTexture != null;
         }
 
-        public unsafe NativeArray<byte> GetImageArray()
+        public NativeArray<byte> GetImageArray()
         {
-            return new NativeArray<byte>();
-
-            //if (buffer == null || buffer.Length == 0)
-                //return null;
-
-            int height = desiredResolution.x;
-            int width = desiredResolution.y;
-            var input = new float[height, width, 1];
-
-            //Debug.Log("WORK: " + buffer.Length);
-            //for (int i = 0; i < buffer.Length; i++)
-            //{
-                //try
-                //{
-                //    input[i / width, i % width, 0] = (float)(buffer[i]);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Debug.Log("EXCEPTION: " + ex.Message);
-                //    return null;
-                //}
-                //float b = (float)ptr[offset + 0] / 255.0f;
-                //float g = (float)ptr[offset + 1] / 255.0f;
-                //float r = (float)ptr[offset + 2] / 255.0f;
-                //float a = (float)ptr[offset + 3] / 255.0f;
-
-                //UnityEngine.Color color = new UnityEngine.Color(r, g, b, a);
-                //texture.SetPixel(j, height - i, color);
-            //}
-
-            //return input;
+            return buffer;
         }
     }
 }

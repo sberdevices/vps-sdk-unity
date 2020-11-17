@@ -156,52 +156,27 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                //NativeArray<byte> input = camera.GetImageArray();
-                //if (input != null)
-                //{
-                    Debug.Log("INPUT IS NOT NULL");
-                    var task = mobileVPS.GetFeaturesAsync(rotateTexture(Image, true).GetPixels());
-                    while (!task.IsCompleted)
-                        yield return null;
-
-                    //===============================================================================
-                    //Image = rotateTexture(Image, true);
-
-                    //for (int i = 0; i < task.Result.Length / 2; i++)
-                    //{
-                    //    Image.SetPixel((int)task.Result[i, 0], (int)task.Result[i, 1], Color.yellow);
-                    //}
-
-                    //for (int i = 0; i < Image.height; i++)
-                    //    for (int j = 0; j < Image.width; j++)
-                    //    {
-                    //        if (Image.GetPixel(j, i) == Color.yellow)
-                    //        {
-                    //            Image.SetPixel(j - 1, i - 1, Color.green);
-                    //            Image.SetPixel(j - 1, i, Color.green);
-                    //            Image.SetPixel(j - 1, i + 1, Color.green);
-                    //            Image.SetPixel(j, i - 1, Color.green);
-                    //            Image.SetPixel(j, i + 1, Color.green);
-                    //            Image.SetPixel(j + 1, i - 1, Color.green);
-                    //            Image.SetPixel(j + 1, i, Color.green);
-                    //            Image.SetPixel(j + 1, i + 1, Color.green);
-                    //        }
-                    //    }
-                    //Image.Apply();
-
-                    //File.WriteAllBytes(Path.Combine("/Users/admin/Downloads", "test.png"), Image.EncodeToPNG());
-
-                    //===============================================================================
-                //}
-                //input.Dispose();
-                Meta = DataCollector.CollectData(provider, !isCalibration);
-                string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output1));
-                string scores = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output3));
-                string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output2));
-                string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(MobileVPS.output0));
-
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
+
+                NativeArray<byte> input = camera.GetImageArray();
+                if (input == null || input.Length == 0)
+                {
+                    Debug.LogError("Cannot take camera image as ByteArray");
+                    yield return null;
+                    continue;
+                }
+
+                var task = mobileVPS.GetFeaturesAsync(input);
+                while (!task.IsCompleted)
+                    yield return null;
+
+                Meta = DataCollector.CollectData(provider, !isCalibration);
+
+                string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.keyPoints));
+                string scores = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.scores));
+                string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.descriptors));
+                string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.globalDescriptor));
 
                 Debug.Log("Sending VPS Request...");
                 var requestVPS = new RequestVPS(settings.Url);
@@ -233,34 +208,10 @@ namespace ARVRLab.VPSService
             }
         }
 
-        Texture2D rotatedTexture;
-        Texture2D rotateTexture(Texture2D originalTexture, bool clockwise)
-        {
-            Color32[] original = originalTexture.GetPixels32();
-            Color32[] rotated = new Color32[original.Length];
-            int w = originalTexture.width;
-            int h = originalTexture.height;
-
-            int iRotated, iOriginal;
-
-            for (int j = 0; j < h; ++j)
-            {
-                for (int i = 0; i < w; ++i)
-                {
-                    iRotated = (i + 1) * h - j - 1;
-                    iOriginal = j * w + i; //clockwise ? original.Length - 1 - (j * w + i) : j * w + i;
-                    rotated[iRotated] = original[iOriginal];
-                }
-            }
-
-            if (rotatedTexture == null)
-                rotatedTexture = new Texture2D(h, w);
-            rotatedTexture.SetPixels32(rotated);
-            rotatedTexture.Apply();
-            return rotatedTexture;
-        }
-
-        byte[] ConvertFloatToByteArray(float[] floats)
+        /// <summary>
+        /// Переводит результаты работы нейронки в массив байт
+        /// </summary>
+        private byte[] ConvertFloatToByteArray(float[] floats)
         {
             var byteArray = new byte[floats.Length * 4];
             Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
@@ -268,7 +219,10 @@ namespace ARVRLab.VPSService
             return byteArray;
         }
 
-        byte[] ConvertFloatToByteArray(float[,] floats)
+        /// <summary>
+        /// Переводит результаты работы нейронки в массив байт
+        /// </summary>
+        private byte[] ConvertFloatToByteArray(float[,] floats)
         {
             var byteArray = new byte[floats.Length * 4];
             Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
