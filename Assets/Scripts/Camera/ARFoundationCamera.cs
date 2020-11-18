@@ -149,10 +149,7 @@ namespace ARVRLab.VPSService
             // Задаем downscale до нужного разрешения
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
-            if (buffer.IsCreated)
-            {
-                buffer.Dispose();
-            }
+            FreeBufferMemory();
             buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
 
             try
@@ -202,6 +199,19 @@ namespace ARVRLab.VPSService
         public NativeArray<byte> GetImageArray()
         {
             return buffer;
+        }
+
+        private void FreeBufferMemory()
+        {
+            if (buffer.IsCreated)
+            {
+                buffer.Dispose();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            FreeBufferMemory();
         }
     }
 }

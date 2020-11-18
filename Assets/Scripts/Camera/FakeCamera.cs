@@ -28,10 +28,7 @@ namespace ARVRLab.VPSService
 
         public NativeArray<byte> GetImageArray()
         {
-            if (buffer.IsCreated)
-            {
-                buffer.Dispose();
-            }
+            FreeBufferMemory();
             buffer = new NativeArray<byte>(FakeTexture.GetRawTextureData(), Allocator.Persistent); // 960*540*4
             return buffer;
         }
@@ -44,6 +41,19 @@ namespace ARVRLab.VPSService
         public bool IsCameraReady()
         {
             return FakeTexture != null;
+        }
+
+        private void OnDestroy()
+        {
+            FreeBufferMemory();
+        }
+
+        private void FreeBufferMemory()
+        {
+            if (buffer.IsCreated)
+            {
+                buffer.Dispose();
+            }
         }
     }
 }

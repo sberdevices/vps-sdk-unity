@@ -8,7 +8,8 @@ namespace ARVRLab.VPSService
     {
         public string Url = "http://arvrlab.supercamera.eu.ngrok.io/";
         public float Timeout = 5;
-        public int ForceVpsCount = 3; // пока не используется
         public int PhotosInSeria = 5;
+        public bool AlwaysUseForceVPS = true;
+        public bool SendOnlyFeatures = true;
     }
 }

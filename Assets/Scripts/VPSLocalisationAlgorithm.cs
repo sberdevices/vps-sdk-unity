@@ -111,7 +111,11 @@ namespace ARVRLab.VPSService
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
                 // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
-                var isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
+                bool isCalibration;
+                if (settings.AlwaysUseForceVPS)
+                    isCalibration = false;
+                else
+                    isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
 
                 if (!isCalibration && newLocalizationPipeline)
                 {
@@ -159,28 +163,40 @@ namespace ARVRLab.VPSService
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
 
-                NativeArray<byte> input = camera.GetImageArray();
-                if (input == null || input.Length == 0)
-                {
-                    Debug.LogError("Cannot take camera image as ByteArray");
-                    yield return null;
-                    continue;
-                }
-
-                var task = mobileVPS.GetFeaturesAsync(input);
-                while (!task.IsCompleted)
-                    yield return null;
-
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
-                string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.keyPoints));
-                string scores = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.scores));
-                string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.descriptors));
-                string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.globalDescriptor));
+                RequestVPS requestVPS = new RequestVPS(settings.Url);
 
-                Debug.Log("Sending VPS Request...");
-                var requestVPS = new RequestVPS(settings.Url);
-                yield return requestVPS.SendVpsRequest(Image, Meta, keyPoints, scores, descriptors, globalDescriptor);
+                // если отправляем фичи - получаем их
+                if (settings.SendOnlyFeatures)
+                {
+                    NativeArray<byte> input = camera.GetImageArray();
+                    if (input == null || input.Length == 0)
+                    {
+                        Debug.LogError("Cannot take camera image as ByteArray");
+                        yield return null;
+                        continue;
+                    }
+
+                    var task = mobileVPS.GetFeaturesAsync(input);
+                    while (!task.IsCompleted)
+                        yield return null;
+
+                    string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.keyPoints));
+                    string scores = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.scores));
+                    string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.descriptors));
+                    string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.globalDescriptor));
+
+                    Debug.Log("Sending VPS Request...");
+                    yield return requestVPS.SendVpsRequest(Image, Meta, keyPoints, scores, descriptors, globalDescriptor);
+                }
+                // иначе отправляем только фото и мету
+                else
+                {
+                    Debug.Log("Sending VPS Request...");
+                    yield return requestVPS.SendVpsRequest(Image, Meta);
+                }
+
                 Debug.Log("VPS answer recieved!");
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
