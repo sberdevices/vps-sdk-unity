@@ -42,16 +42,13 @@ namespace ARVRLab.VPSService
         /// <param name="vps_servise">Родительский GameObject, для запуска корутин</param>
         /// <param name="vps_provider">Провайдер камеры, gps и трекинга</param>
         /// <param name="vps_settings">Настройки</param>
-        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings = null, bool new_localization_pipeline = false)
+        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool new_localization_pipeline = false)
         {
             localisationService = vps_servise;
             provider = vps_provider;
             newLocalizationPipeline = new_localization_pipeline;
 
-            if (vps_settings != null)
-                settings = vps_settings;
-            else
-                settings = new SettingsVPS();
+            settings = vps_settings;
 
             imagesCollector = new LocalizationImagesCollector(settings.PhotosInSeria);
 

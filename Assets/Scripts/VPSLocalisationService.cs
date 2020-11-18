@@ -18,6 +18,17 @@ namespace ARVRLab.VPSService
         [Tooltip("Использовать пайплайн с локализацией по серии снимков?")]
         public bool UsePhotoSerias;
 
+        [Header("Default VPS Settings")]
+        public VPSBuilding defaultBuilding;
+        public ServerType defaultServerType;
+
+        [Header("Custom URL")]
+        [Tooltip("Использовать кастомную ссылку?")]
+        public bool UseCustomUrl;
+        public string CustomUrl = "";
+
+        private SettingsVPS defaultSettings;
+
         /// <summary>
         /// Событие ошибки локализации
         /// </summary>
@@ -41,8 +52,17 @@ namespace ARVRLab.VPSService
                 return;
             }
 
+            if (UseCustomUrl)
+            {
+                defaultSettings = new SettingsVPS(CustomUrl);
+            }
+            else
+            {
+                defaultSettings = new SettingsVPS(defaultBuilding, defaultServerType);
+            }
+
             if (StartOnAwake)
-                StartVPS();
+                StartVPS(defaultSettings);
         }
 
         /// <summary>
@@ -50,7 +70,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         public void StartVPS()
         {
-            StartVPS(null);
+            StartVPS(defaultSettings);
         }
 
         /// <summary>

@@ -6,10 +6,20 @@ namespace ARVRLab.VPSService
 {
     public class SettingsVPS
     {
-        public string Url = "http://arvrlab.supercamera.eu.ngrok.io/";
+        public string Url = "";
         public float Timeout = 5;
         public int PhotosInSeria = 5;
-        public bool AlwaysUseForceVPS = true;
+        public bool AlwaysUseForceVPS = false;
         public bool SendOnlyFeatures = true;
+
+        public SettingsVPS(VPSBuilding building, ServerType serverType)
+        {
+            Url = URLController.CreateURL(building, serverType);
+        }
+
+        public SettingsVPS(string customUrl)
+        {
+            Url = customUrl;
+        }
     }
 }

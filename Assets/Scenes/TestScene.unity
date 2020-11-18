@@ -520,6 +520,26 @@ PrefabInstance:
       propertyPath: UsePhotoSerias
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultBuilding
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultServerType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: UseCustomUrl
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: CustomUrl
+      value: http://arvrlab.supercamera.eu.ngrok.io/
+      objectReference: {fileID: 0}
     - target: {fileID: 8690752169563304425, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: FakeTexture
