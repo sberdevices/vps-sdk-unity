@@ -61,9 +61,9 @@ namespace ARVRLab.VPSService
                 for (int j = 0; j < height; j++)
                 {
                     //против часовой - работает (хотя по логики так фичи вверх ногами)
-                    input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1) * 4]);
+                    input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
                     //по часовой - по логике так, но не работает
-                    //input0[j, i, 0] = (float)(buffer[((i + 1) * height - j - 1) * 4]);
+                    //input0[j, i, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
                 }
             }
 

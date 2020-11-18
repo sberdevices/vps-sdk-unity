@@ -13,7 +13,7 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Разрешение, в котором будут делаться фотографии")]
+        [Tooltip("Разрешение, в котором будут отправляться фотографии")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
 
         public Resolution TagretResolution;
@@ -38,7 +38,7 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
-            //cameraManager.frameReceived += UpdateFrame1;
+            cameraManager.frameReceived += UpdateBuffer;
 
             TagretResolution.width = desiredResolution.x;
             TagretResolution.height = desiredResolution.y;
@@ -74,13 +74,12 @@ namespace ARVRLab.VPSService
                 }
             }
 
-            //buffer = new NativeArray<byte>(2073600, Allocator.Persistent);
+            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
         }
 
         /// <summary>
         /// Обновляет значение texture
         /// </summary>
-        /// <returns>The frame.</returns>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
             // Пытаемся получить последнее изображение с камеры
@@ -133,33 +132,36 @@ namespace ARVRLab.VPSService
             raw.Dispose();
         }
 
-        //private unsafe void UpdateFrame1(ARCameraFrameEventArgs args)
-        //{
-        //    // Пытаемся получить последнее изображение с камеры
-        //    XRCpuImage image;
-        //    if (!cameraManager.TryAcquireLatestCpuImage(out image))
-        //    {
-        //        return;
-        //    }
+        /// <summary>
+        /// Обновляет текстуру в буффере
+        /// </summary>
+        private unsafe void UpdateBuffer(ARCameraFrameEventArgs args)
+        {
+            // Пытаемся получить последнее изображение с камеры
+            XRCpuImage image;
+            if (!cameraManager.TryAcquireLatestCpuImage(out image))
+            {
+                return;
+            }
 
-        //    var format = TextureFormat.R8;
+            var format = TextureFormat.R8;
 
-        //    // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
-        //    var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
-        //    // Задаем downscale до нужного разрешения
-        //    conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
+            // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
+            var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
+            // Задаем downscale до нужного разрешения
+            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
-        //    try
-        //    {
-        //        // Копируем байты из изображения с камеры в текстуру
-        //        image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
-        //    }
-        //    finally
-        //    {
-        //        // Высвобождаем память
-        //        image.Dispose();
-        //    }
-        //}
+            try
+            {
+                // Копируем байты из изображения с камеры в текстуру
+                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+            }
+            finally
+            {
+                // Высвобождаем память
+                image.Dispose();
+            }
+        }
 
         public Texture2D GetFrame()
         {
