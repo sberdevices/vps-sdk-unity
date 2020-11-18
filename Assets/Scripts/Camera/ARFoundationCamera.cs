@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
@@ -20,13 +21,13 @@ namespace ARVRLab.VPSService
 
         private ARCameraManager cameraManager;
         private Texture2D texture;
-        private Texture2D scaledTexture;
-
-        private RenderTexture currentRender;
+        private Texture2D returnedTexture;
 
         private NativeArray<XRCameraConfiguration> configurations;
 
         private NativeArray<byte> buffer;
+
+        private SimpleJob job;
 
         private void Awake()
         {
@@ -45,7 +46,9 @@ namespace ARVRLab.VPSService
         }
 
         private IEnumerator Start()
-        {
+        {   
+            job = new SimpleJob();
+
             // Если список доступных разрешений пустой
             while (configurations.Length == 0)
             {
@@ -112,21 +115,26 @@ namespace ARVRLab.VPSService
                 // Высвобождаем память
                 image.Dispose();
             }
-
             texture.Apply();
 
-            if (currentRender == null)
-                currentRender = new RenderTexture(TagretResolution.width, TagretResolution.height, 0);
+            // Необходимо создать новую текстуру, так как старая в формате R8 и не принимает каналы g и b
+            if (returnedTexture == null)
+            {
+                returnedTexture = new Texture2D(TagretResolution.width, TagretResolution.height, TextureFormat.RGBA32, false);
+            }
 
-            Graphics.Blit(texture, currentRender);
+            NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
+            job.array = array;
 
-            RenderTexture.active = currentRender;
+            JobHandle handle = job.Schedule();
+            handle.Complete();
 
-            if (scaledTexture == null)
-                scaledTexture = new Texture2D(TagretResolution.width, TagretResolution.height);
-
-            scaledTexture.ReadPixels(new Rect(0, 0, currentRender.width, currentRender.height), 0, 0);
-            scaledTexture.Apply();
+            if (handle.IsCompleted)
+            {
+                returnedTexture.SetPixels(job.array.ToArray());
+            }
+            returnedTexture.Apply();
+            array.Dispose();
             raw.Dispose();
         }
 
@@ -166,7 +174,7 @@ namespace ARVRLab.VPSService
 
         public Texture2D GetFrame()
         {
-            return scaledTexture;
+            return returnedTexture;
         }
 
         public Vector2 GetFocalPixelLength()
@@ -193,7 +201,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return scaledTexture != null;
+            return returnedTexture != null;
         }
 
         public NativeArray<byte> GetImageArray()
@@ -212,6 +220,24 @@ namespace ARVRLab.VPSService
         private void OnDestroy()
         {
             FreeBufferMemory();
+        }
+
+        public struct SimpleJob : IJob
+        {
+            public NativeArray<Color> array;
+            private Color color;
+
+            public void Execute()
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    color.r = array[i].r;
+                    color.g = array[i].r;
+                    color.b = array[i].r;
+                    array[i] = color;
+                }
+            }
+
         }
     }
 }

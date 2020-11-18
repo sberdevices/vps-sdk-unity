@@ -10,7 +10,7 @@ namespace ARVRLab.VPSService
         public float Timeout = 5;
         public int PhotosInSeria = 5;
         public bool AlwaysUseForceVPS = false;
-        public bool SendOnlyFeatures = true;
+        public bool SendOnlyFeatures = false;
 
         public SettingsVPS(VPSBuilding building, ServerType serverType)
         {
