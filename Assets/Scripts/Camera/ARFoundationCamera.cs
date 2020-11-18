@@ -73,8 +73,6 @@ namespace ARVRLab.VPSService
                     cameraManager.currentConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
             }
-
-            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
         }
 
         /// <summary>
@@ -150,6 +148,12 @@ namespace ARVRLab.VPSService
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
             // Задаем downscale до нужного разрешения
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
+
+            if (buffer.IsCreated)
+            {
+                buffer.Dispose();
+            }
+            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
 
             try
             {

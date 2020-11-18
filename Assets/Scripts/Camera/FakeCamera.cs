@@ -14,6 +14,8 @@ namespace ARVRLab.VPSService
         [Tooltip("Текстура, которая будет отправлена")]
         public Texture2D FakeTexture;
 
+        private NativeArray<byte> buffer;
+
         public Vector2 GetFocalPixelLength()
         {
             return new Vector2(1396.5250f, 1396.5250f);
@@ -26,7 +28,12 @@ namespace ARVRLab.VPSService
 
         public NativeArray<byte> GetImageArray()
         {
-            return new NativeArray<byte>(FakeTexture.GetRawTextureData(), Allocator.Persistent);
+            if (buffer.IsCreated)
+            {
+                buffer.Dispose();
+            }
+            buffer = new NativeArray<byte>(FakeTexture.GetRawTextureData(), Allocator.Persistent); // 960*540*4
+            return buffer;
         }
 
         public Vector2 GetPrincipalPoint()
