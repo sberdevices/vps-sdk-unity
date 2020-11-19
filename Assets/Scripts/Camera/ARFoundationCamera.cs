@@ -126,7 +126,7 @@ namespace ARVRLab.VPSService
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
             job.array = array;
 
-            JobHandle handle = job.Schedule();
+            JobHandle handle = job.Schedule(array.Length, 64);
             handle.Complete();
 
             if (handle.IsCompleted)
@@ -134,6 +134,7 @@ namespace ARVRLab.VPSService
                 returnedTexture.SetPixels(job.array.ToArray());
             }
             returnedTexture.Apply();
+
             array.Dispose();
             raw.Dispose();
         }
@@ -222,22 +223,18 @@ namespace ARVRLab.VPSService
             FreeBufferMemory();
         }
 
-        public struct SimpleJob : IJob
+        public struct SimpleJob : IJobParallelFor
         {
             public NativeArray<Color> array;
             private Color color;
 
-            public void Execute()
+            public void Execute(int i)
             {
-                for (int i = 0; i < array.Length; i++)
-                {
-                    color.r = array[i].r;
-                    color.g = array[i].r;
-                    color.b = array[i].r;
-                    array[i] = color;
-                }
+                color.r = array[i].r;
+                color.g = array[i].r;
+                color.b = array[i].r;
+                array[i] = color;
             }
-
         }
     }
 }
