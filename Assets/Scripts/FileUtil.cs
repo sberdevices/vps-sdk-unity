@@ -10,7 +10,7 @@ namespace TensorFlowLite
         {
             if (!IsPathRooted(path))
             {
-                path = Path.Combine(Application.streamingAssetsPath, path);
+                path = Path.Combine(Application.persistentDataPath, path);
             }
 
             if (Application.platform != RuntimePlatform.Android)

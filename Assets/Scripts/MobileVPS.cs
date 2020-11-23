@@ -14,7 +14,6 @@ namespace ARVRLab.VPSService
     public class MobileVPS
     {
         public static string NeuronTime = "";
-
         private const string FileName = "hfnet_i8_960.tflite";
 
         Interpreter interpreter;

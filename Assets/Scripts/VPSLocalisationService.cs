@@ -28,6 +28,7 @@ namespace ARVRLab.VPSService
         public string CustomUrl = "";
 
         private SettingsVPS defaultSettings;
+        private VPSPrepareStatus vpsPreparing;
 
         /// <summary>
         /// Событие ошибки локализации
@@ -50,6 +51,12 @@ namespace ARVRLab.VPSService
             {
                 Debug.LogError("Please, select provider for VPS service!");
                 return;
+            }
+
+            vpsPreparing = new VPSPrepareStatus();
+            if (!IsReady())
+            {
+                StartCoroutine(vpsPreparing.DownloadNeural());
             }
 
             if (UseCustomUrl)
@@ -78,6 +85,12 @@ namespace ARVRLab.VPSService
         /// </summary>
         public void StartVPS(SettingsVPS settings)
         {
+            if (!IsReady())
+            {
+                Debug.LogError("MobileVPS is not ready");
+                return;
+            }
+
             StopVps();
 
             algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSerias);
@@ -138,6 +151,22 @@ namespace ARVRLab.VPSService
         public bool IsLocalized()
         {
             return provider.GetTracking().GetLocalTracking().IsLocalisedFloor;
+        }
+
+        /// <summary>
+        /// Возвращает прогресс скачивания от 0 до 1
+        /// </summary>
+        public float GetPreparingProgress()
+        {
+            return vpsPreparing.GetProgress();
+        }
+
+        /// <summary>
+        /// Проверяет, скачана ли нейронка
+        /// </summary>
+        public bool IsReady()
+        {
+            return vpsPreparing.IsReady();
         }
     }
 }
