@@ -166,7 +166,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         public bool IsReady()
         {
-            return vpsPreparing.IsReady();
+            return vpsPreparing != null && vpsPreparing.IsReady();
         }
     }
 }
