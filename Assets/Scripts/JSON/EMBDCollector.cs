@@ -20,16 +20,34 @@ namespace ARVRLab.VPSService
             string descriptorsString = Convert.ToBase64String(ConvertFloatToByteArray(descriptors));
             string globalDescriptorString = Convert.ToBase64String(ConvertFloatToByteArray(globalDescriptor));
 
-            embd.AddRange(BitConverter.GetBytes(keyPointsString.Length));
+            byte[] bytes;
+
+            bytes = BitConverter.GetBytes(keyPointsString.Length);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            embd.AddRange(bytes);
             embd.AddRange(Encoding.ASCII.GetBytes(keyPointsString));
 
-            embd.AddRange(BitConverter.GetBytes(scoresString.Length));
+            bytes = BitConverter.GetBytes(scoresString.Length);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            embd.AddRange(bytes);
             embd.AddRange(Encoding.ASCII.GetBytes(scoresString));
 
-            embd.AddRange(BitConverter.GetBytes(descriptorsString.Length));
+            bytes = BitConverter.GetBytes(descriptorsString.Length);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            embd.AddRange(bytes);
             embd.AddRange(Encoding.ASCII.GetBytes(descriptorsString));
 
-            embd.AddRange(BitConverter.GetBytes(globalDescriptorString.Length));
+            bytes = BitConverter.GetBytes(globalDescriptorString.Length);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            embd.AddRange(bytes);
             embd.AddRange(Encoding.ASCII.GetBytes(globalDescriptorString));
 
             return embd.ToArray();
