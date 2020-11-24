@@ -32,7 +32,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
         /// </summary>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta, string keyPoints, string scores, string descriptors, string globalDescriptor)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, byte[] embedding)
         {
             string uri = Path.Combine(serverUrl, api_path);
 
@@ -51,12 +51,10 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            form.AddBinaryData("image", binaryImage, CreateFileName());
+            //form.AddBinaryData("image", binaryImage, CreateFileName());
             form.AddField("json", meta);
-            form.AddField("keyPoints", keyPoints);
-            form.AddField("scores", scores);
-            form.AddField("descriptors", descriptors);
-            form.AddField("globalDescriptor", globalDescriptor);
+            form.AddBinaryData("embedding", embedding, "data.embd");
+            Debug.Log(embedding.Length);
 
             //==================
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();

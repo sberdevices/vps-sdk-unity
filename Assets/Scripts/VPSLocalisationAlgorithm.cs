@@ -80,6 +80,7 @@ namespace ARVRLab.VPSService
         {
             Texture2D Image;
             string Meta;
+            byte[] Embedding;
 
             var camera = provider.GetCamera();
             if (camera == null)
@@ -179,13 +180,10 @@ namespace ARVRLab.VPSService
                     while (!task.IsCompleted)
                         yield return null;
 
-                    string keyPoints = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.keyPoints));
-                    string scores = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.scores));
-                    string descriptors = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.descriptors));
-                    string globalDescriptor = Convert.ToBase64String(ConvertFloatToByteArray(task.Result.globalDescriptor));
+                    Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
                     Debug.Log("Sending VPS Request...");
-                    yield return requestVPS.SendVpsRequest(Image, Meta, keyPoints, scores, descriptors, globalDescriptor);
+                    yield return requestVPS.SendVpsRequest(Image, Meta, Embedding);
                 }
                 // иначе отправляем только фото и мету
                 else
@@ -219,28 +217,6 @@ namespace ARVRLab.VPSService
 
                 yield return new WaitForSeconds(settings.Timeout);
             }
-        }
-
-        /// <summary>
-        /// Переводит результаты работы нейронки в массив байт
-        /// </summary>
-        private byte[] ConvertFloatToByteArray(float[] floats)
-        {
-            var byteArray = new byte[floats.Length * 4];
-            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
-
-            return byteArray;
-        }
-
-        /// <summary>
-        /// Переводит результаты работы нейронки в массив байт
-        /// </summary>
-        private byte[] ConvertFloatToByteArray(float[,] floats)
-        {
-            var byteArray = new byte[floats.Length * 4];
-            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
-
-            return byteArray;
         }
     }
 }

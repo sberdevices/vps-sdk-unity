@@ -533,12 +533,12 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: UseCustomUrl
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
-      value: http://arvrlab.supercamera.eu.ngrok.io/
+      value: http://d258f7a827a2.ngrok.io/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -554,7 +554,7 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
 --- !u!114 &8690752169532022779 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8690752168016233484, guid: f5ddf2d28f817ce42a7d59e707029842,
+  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
     type: 3}
   m_PrefabInstance: {fileID: 8690752169532022778}
   m_PrefabAsset: {fileID: 0}
