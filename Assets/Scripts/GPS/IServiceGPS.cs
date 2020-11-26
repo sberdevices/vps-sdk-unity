@@ -8,5 +8,6 @@ namespace ARVRLab.VPSService
     {
         GPSData GetGPSData();
         CompassData GetCompassData();
+        void SetEnable(bool enable);
     }
 }

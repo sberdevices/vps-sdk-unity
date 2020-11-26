@@ -17,6 +17,12 @@ namespace ARVRLab.VPSService
 
         [Tooltip("Использовать пайплайн с локализацией по серии снимков?")]
         public bool UsePhotoSerias;
+        [Tooltip("Отправлять фичи или фотку?")]
+        public bool SendOnlyFeatures;
+        [Tooltip("Всегда слать force vps?")]
+        public bool AlwaysForce;
+        [Tooltip("Отправлять позицию GPS?")]
+        public bool SendGPS;
 
         [Header("Default VPS Settings")]
         public VPSBuilding defaultBuilding;
@@ -93,7 +99,7 @@ namespace ARVRLab.VPSService
 
             StopVps();
 
-            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSerias);
+            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSerias, SendOnlyFeatures, AlwaysForce, SendGPS);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
             algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);

@@ -17,6 +17,8 @@ namespace ARVRLab.VPSService
         // период обновления данных gps
         private const float timeToUpdate = 3;
 
+        private new bool enabled = true;
+
         private void Start()
         {
             if (Application.isEditor)
@@ -34,6 +36,14 @@ namespace ARVRLab.VPSService
 
         private IEnumerator StartGPS()
         {
+            if (!enabled)
+            {
+                while(true)
+                {
+                    yield return new WaitForSeconds(timeToUpdate);
+                }
+            }
+
             // Проверяем, что gps доступен
             if (!Input.location.isEnabledByUser)
             {
@@ -43,7 +53,7 @@ namespace ARVRLab.VPSService
             }
 
             // Запускаем 
-            Input.location.Start();
+            Input.location.Start(0f, 0f);
             Input.compass.enabled = true;
 
             // Ждем инициализации
@@ -104,6 +114,11 @@ namespace ARVRLab.VPSService
         public GPSData GetGPSData()
         {
             return gpsData;
+        }
+
+        public void SetEnable(bool enable)
+        {
+            enabled = enable;
         }
     }
 }

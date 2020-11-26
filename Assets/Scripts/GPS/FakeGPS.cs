@@ -10,15 +10,19 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class FakeGPS : MonoBehaviour, IServiceGPS
     {
-        private GPSData gpsData;
-        private CompassData compassData;
-
         public float Latitude = 54.875f;
         public float Longitude = 48.6543f;
+
+        private new bool enabled = true;
 
         private GPSData GenerateGPSData()
         {
             var gpsData = new GPSData();
+            if (!enabled)
+            {
+                return gpsData;
+            }
+
             gpsData.status = GPSStatus.Running;
             gpsData.Latitude = Latitude;
             gpsData.Longitude = Longitude;
@@ -32,6 +36,11 @@ namespace ARVRLab.VPSService
         private CompassData GenerateCompassData()
         {
             var compassData = new CompassData();
+            if (enabled)
+            {
+                return compassData;
+            }
+
             compassData.status = GPSStatus.Running;
             compassData.Heading = 55.33f;
             compassData.Accuracy = 0.4f;
@@ -48,6 +57,11 @@ namespace ARVRLab.VPSService
         public GPSData GetGPSData()
         {
             return GenerateGPSData();
+        }
+
+        public void SetEnable(bool enable)
+        {
+            enabled = enable;
         }
     }
 }

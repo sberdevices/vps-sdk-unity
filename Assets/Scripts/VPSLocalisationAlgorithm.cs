@@ -24,7 +24,9 @@ namespace ARVRLab.VPSService
 
         private LocalizationImagesCollector imagesCollector;
 
-        private bool newLocalizationPipeline;
+        private bool usingPhotoSerias;
+        private bool sendOnlyFeatures;
+        private bool alwaysForceVPS;
 
         /// <summary>
         /// Событие ошибки локализации
@@ -42,11 +44,17 @@ namespace ARVRLab.VPSService
         /// <param name="vps_servise">Родительский GameObject, для запуска корутин</param>
         /// <param name="vps_provider">Провайдер камеры, gps и трекинга</param>
         /// <param name="vps_settings">Настройки</param>
-        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool new_localization_pipeline = false)
+        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool usePhotoSerias, bool onlyFeatures,
+                                        bool alwaysForce, bool sendGps)
         {
             localisationService = vps_servise;
             provider = vps_provider;
-            newLocalizationPipeline = new_localization_pipeline;
+
+            usingPhotoSerias = usePhotoSerias;
+            sendOnlyFeatures = onlyFeatures;
+            alwaysForceVPS = alwaysForce;
+
+            provider.GetGPS().SetEnable(sendGps);
 
             settings = vps_settings;
 
@@ -110,12 +118,12 @@ namespace ARVRLab.VPSService
 
                 // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
                 bool isCalibration;
-                if (settings.AlwaysUseForceVPS)
+                if (alwaysForceVPS)
                     isCalibration = false;
                 else
                     isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
 
-                if (!isCalibration && newLocalizationPipeline)
+                if (!isCalibration && usingPhotoSerias)
                 {
                     yield return imagesCollector.StartCollectPhoto(provider);
 
@@ -166,7 +174,7 @@ namespace ARVRLab.VPSService
                 RequestVPS requestVPS = new RequestVPS(settings.Url);
 
                 // если отправляем фичи - получаем их
-                if (settings.SendOnlyFeatures)
+                if (sendOnlyFeatures)
                 {
                     NativeArray<byte> input = camera.GetImageArray();
                     if (input == null || input.Length == 0)
