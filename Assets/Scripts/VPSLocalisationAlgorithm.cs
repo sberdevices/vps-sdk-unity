@@ -106,6 +106,7 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
+
             // TODO: убрать ссылку в этом скрипте на ARFoundationApplyer и из Provider
             // Все операции по вычислению скоректированной новой позиции можно
             // сделать внутри этого класса. ARFoundationApplyer должен подписаться
@@ -125,7 +126,7 @@ namespace ARVRLab.VPSService
 
                 if (!isCalibration && usingPhotoSerias)
                 {
-                    yield return imagesCollector.StartCollectPhoto(provider);
+                    yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
 
                     Debug.Log("Sending VPS Localization Request...");
                     var locRequestVPS = new RequestVPS(settings.Url);

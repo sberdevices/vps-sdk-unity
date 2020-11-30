@@ -18,7 +18,7 @@ namespace ARVRLab.VPSService
 
         private string serverUrl;
         // api для локализации через серию фотографий
-        private string api_path_firstloc = "vps/api/first_loc/job";
+        private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api для стандартной работы
         private string api_path = "vps/api/v1/job";
 
@@ -147,6 +147,7 @@ namespace ARVRLab.VPSService
 
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {
+                Debug.Log(uri);
                 www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
 
                 yield return www.SendWebRequest();
@@ -155,8 +156,6 @@ namespace ARVRLab.VPSService
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
                     Debug.LogError("Network error!");
-                    Debug.LogError(www.error);
-                    Debug.LogError(www.responseCode);
                 }
                 else
                 {
@@ -213,15 +212,23 @@ namespace ARVRLab.VPSService
             }
 
             WWWForm form = new WWWForm();
-            
+
             for (int i = 0; i < data.Count; i++)
             {
-                form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
+                if (data[i].Embedding != null)
+                {
+                    form.AddBinaryData("embd" + i, data[i].Embedding, "data.embd");
+                }
+                else
+                {
+                    form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
+                }
                 form.AddField("mes" + i, data[i].meta);
             }
 
             using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
             {
+                Debug.Log(uri);
                 www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
 
                 yield return www.SendWebRequest();
@@ -230,6 +237,8 @@ namespace ARVRLab.VPSService
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
                     Debug.LogError("Network error!");
+                    Debug.LogError(www.error);
+                    Debug.LogError(www.responseCode);
                 }
                 else
                 {

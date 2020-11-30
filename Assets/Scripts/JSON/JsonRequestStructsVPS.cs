@@ -103,12 +103,14 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public byte[] image;
         public string meta;
         public Pose pose;
+        public byte[] Embedding;
 
-        public RequestLocalizationData(byte[] Img, string Meta, Pose pose)
+        public RequestLocalizationData(byte[] Img, string Meta, Pose pose, byte[] embedding)
         {
             image = Img;
             meta = Meta;
             this.pose = pose;
+            Embedding = embedding;
         }
     }
 }

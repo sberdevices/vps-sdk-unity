@@ -15,11 +15,11 @@ namespace ARVRLab.VPSService
         // 0 - подсервер
         // 1 - имя проекта
         // 2 - location id
-        const string urlBlank = "https://{0}api.{1}.vps.arvr.sberlabs.com/{2}";
+        const string urlBlank = "http{0}://{1}api.{2}.vps.arvr.sberlabs.com/{3}";
 
         public static string CreateURL(VPSBuilding building, ServerType serverType)
         {
-            return string.Format(urlBlank, GetServerApi(serverType), GetBuildingName(building), GetLocationId(building));
+            return string.Format(urlBlank, GetSecure(serverType), GetServerApi(serverType), GetBuildingName(building), GetLocationId(building));
         }
 
         private static string GetLocationId(VPSBuilding building)
@@ -61,6 +61,11 @@ namespace ARVRLab.VPSService
                 default:
                     return "";
             }
+        }
+
+        private static string GetSecure(ServerType serverType)
+        {
+            return serverType == ServerType.Prod ? "s" : "";
         }
     }
 }
