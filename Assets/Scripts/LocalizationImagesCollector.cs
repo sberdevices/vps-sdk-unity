@@ -66,7 +66,7 @@ namespace ARVRLab.VPSService
 
             var arFoundationApplyer = provider.GetARFoundationApplyer();
             useDistance = arFoundationApplyer != null;
-            useDistance = false; // работаем по таймауту
+            //useDistance = false; // работаем по таймауту
             if (!useDistance)
             {
                 Debug.Log("ArFoundationApplyer is not available. Using timeout");

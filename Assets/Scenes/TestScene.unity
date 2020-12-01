@@ -730,7 +730,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultBuilding
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -771,11 +771,11 @@ PrefabInstance:
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 6e44d256475934a37bb12861bc754ccd, type: 3}
+      objectReference: {fileID: 2800000, guid: 5071ea4b3cf2f46bc83067987e84bc42, type: 3}
     - target: {fileID: 8690752169563304430, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: Buiding
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
