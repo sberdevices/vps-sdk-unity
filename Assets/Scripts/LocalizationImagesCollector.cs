@@ -15,7 +15,7 @@ namespace ARVRLab.VPSService
         // Кол-во фотографий в серии
         private int photosInSeria;
         // Список фото, меты и pose, откуда были сделаны
-        private List<RequestLocalizationData> localizationData = new List<RequestLocalizationData>();
+        private List<RequestLocalizationData> localizationData;
         // Использовать дистанцию или по таймауту?
         private bool useDistance = true;
         // Задержка между фотографиями
@@ -33,6 +33,11 @@ namespace ARVRLab.VPSService
         public LocalizationImagesCollector(int PhotosInSeria)
         {
             photosInSeria = PhotosInSeria;
+            localizationData = new List<RequestLocalizationData>();
+            for (int i = 0; i < photosInSeria; i++)
+            {
+                localizationData.Add(new RequestLocalizationData());
+            }
             mobileVPS = new MobileVPS();
         }
 
@@ -43,7 +48,6 @@ namespace ARVRLab.VPSService
         /// <param name="provider">Provider.</param>
         public IEnumerator StartCollectPhoto(ServiceProvider provider, bool sendOnlyFeatures)
         {
-            localizationData.Clear();
             Texture2D Image;
             string Meta;
             byte[] Embedding;
@@ -66,14 +70,14 @@ namespace ARVRLab.VPSService
 
             var arFoundationApplyer = provider.GetARFoundationApplyer();
             useDistance = arFoundationApplyer != null;
-            //useDistance = false; // работаем по таймауту
+            useDistance = false; // работаем по таймауту
             if (!useDistance)
             {
                 Debug.Log("ArFoundationApplyer is not available. Using timeout");
             }
 
             Debug.Log("Start collect photo");
-            while (localizationData.Count < photosInSeria)
+            for (int i = 0; i < photosInSeria; i++)
             {
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
@@ -108,7 +112,10 @@ namespace ARVRLab.VPSService
                     Embedding = null;
                 }
 
-                localizationData.Add(new RequestLocalizationData(Image.EncodeToJPG(), Meta, provider.GetARFoundationApplyer().GetCurrentPose(), Embedding));
+                localizationData[i].image = Image.EncodeToJPG();
+                localizationData[i].meta = Meta;
+                localizationData[i].pose = provider.GetARFoundationApplyer().GetCurrentPose();
+                localizationData[i].Embedding = Embedding;
 
                 predPos = arFoundationApplyer.GetCurrentPose().position;
 

@@ -59,6 +59,7 @@ namespace ARVRLab.VPSService
                 return;
             }
 
+            provider.Init();
             vpsPreparing = new VPSPrepareStatus();
             if (!IsReady())
             {

@@ -112,5 +112,10 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             this.pose = pose;
             Embedding = embedding;
         }
+
+        public RequestLocalizationData()
+        {
+
+        }
     }
 }

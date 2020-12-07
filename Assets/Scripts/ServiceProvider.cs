@@ -11,9 +11,16 @@ namespace ARVRLab.VPSService
         [SerializeField]
         private ARFoundationApplyer arFoundationApplyer;
 
+        [Tooltip("Фото в серии для первой локализации")]
+        [SerializeField]
+        private int PhotosInSeria = 5;
+
         private new ICamera camera;
         private IServiceGPS gps;
         private ITracking tracking;
+
+        private LocalizationImagesCollector imagesCollector;
+        private MobileVPS mobileVPS;
 
         public ICamera GetCamera()
         {
@@ -25,6 +32,12 @@ namespace ARVRLab.VPSService
             camera = GetComponent<ICamera>();
             gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
+        }
+
+        public void Init()
+        {
+            imagesCollector = new LocalizationImagesCollector(PhotosInSeria);
+            mobileVPS = new MobileVPS();
         }
 
         public IServiceGPS GetGPS()
@@ -40,6 +53,16 @@ namespace ARVRLab.VPSService
         public ARFoundationApplyer GetARFoundationApplyer()
         {
             return arFoundationApplyer;
+        }
+
+        public LocalizationImagesCollector GetImageCollector()
+        {
+            return imagesCollector;
+        }
+
+        public MobileVPS GetMobileVPS()
+        {
+            return mobileVPS; 
         }
     }
 }

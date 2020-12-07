@@ -16,13 +16,10 @@ namespace ARVRLab.VPSService
     {
         private VPSLocalisationService localisationService;
         private ServiceProvider provider;
-        private MobileVPS mobileVPS;
 
         private LocationState locationState;
 
         private SettingsVPS settings;
-
-        private LocalizationImagesCollector imagesCollector;
 
         private bool usingPhotoSerias;
         private bool sendOnlyFeatures;
@@ -58,12 +55,9 @@ namespace ARVRLab.VPSService
 
             settings = vps_settings;
 
-            imagesCollector = new LocalizationImagesCollector(settings.PhotosInSeria);
-
             locationState = new LocationState();
 
             localisationService.StartCoroutine(LocalisationRoutine());
-            mobileVPS = new MobileVPS();
         }
 
         public void Stop()
@@ -126,6 +120,7 @@ namespace ARVRLab.VPSService
 
                 if (!isCalibration && usingPhotoSerias)
                 {
+                    LocalizationImagesCollector imagesCollector = provider.GetImageCollector();
                     yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
 
                     Debug.Log("Sending VPS Localization Request...");
@@ -177,6 +172,7 @@ namespace ARVRLab.VPSService
                 // если отправляем фичи - получаем их
                 if (sendOnlyFeatures)
                 {
+                    MobileVPS mobileVPS = provider.GetMobileVPS();
                     NativeArray<byte> input = camera.GetImageArray();
                     if (input == null || input.Length == 0)
                     {
