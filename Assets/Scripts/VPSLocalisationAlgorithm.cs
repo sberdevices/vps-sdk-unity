@@ -150,6 +150,7 @@ namespace ARVRLab.VPSService
                         Debug.LogErrorFormat("VPS Request Error: {0}", locRequestVPS.GetErrorCode());
                     }
 
+                    yield return new WaitForSeconds(settings.Timeout);
                     continue;
                 }
 
