@@ -36,7 +36,7 @@ namespace ARVRLab.VPSService
         private CompassData GenerateCompassData()
         {
             var compassData = new CompassData();
-            if (enabled)
+            if (!enabled)
             {
                 return compassData;
             }
