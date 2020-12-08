@@ -59,11 +59,16 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            provider.Init();
             vpsPreparing = new VPSPrepareStatus();
+
             if (!IsReady())
             {
+                vpsPreparing.OnVPSReady += () => provider.Init();
                 StartCoroutine(vpsPreparing.DownloadNeural());
+            }
+            else
+            {
+                provider.Init();
             }
 
             if (UseCustomUrl)

@@ -14,13 +14,13 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class RequestVPS
     {
-        public static string RequestTime = "";
-
         private string serverUrl;
         // api для локализации через серию фотографий
         private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api для стандартной работы
         private string api_path = "vps/api/v1/job";
+
+        private int timeout = 15;
 
         private LocationState locationState = new LocationState();
 
@@ -32,7 +32,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
         /// </summary>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta, byte[] embedding)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, byte[] embedding = null)
         {
             string uri = Path.Combine(serverUrl, api_path);
 
@@ -44,156 +44,24 @@ namespace ARVRLab.VPSService
 
             WWWForm form = new WWWForm();
 
-            var binaryImage = GetByteArrayFromImage(image);
-            if (binaryImage == null)
+            if (embedding != null)
             {
-                Debug.LogError("Can't read camera image! Please, check image format!");
-                yield break;
+                form.AddBinaryData("embedding", embedding, "data.embd");
             }
-
-            //form.AddBinaryData("image", binaryImage, CreateFileName());
-            form.AddField("json", meta);
-            form.AddBinaryData("embedding", embedding, "data.embd");
-            Debug.Log(embedding.Length);
-
-            //==================
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
-            //==================
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
+            else
             {
-                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-
-                yield return www.SendWebRequest();
-
-                //==================
-                stopWatch.Stop();
-                TimeSpan ts = stopWatch.Elapsed;
-                RequestTime = String.Format("{0:00}:{1:00}",
-                    ts.Seconds, ts.Milliseconds / 10);
-                Debug.Log("Request Time " + RequestTime);
-                //==================
-
-                if (www.isNetworkError || www.isHttpError)
+                var binaryImage = GetByteArrayFromImage(image);
+                if (binaryImage == null)
                 {
-                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    Debug.LogError("Network error!");
-                    Debug.LogError(www.error);
-                    Debug.LogError(www.responseCode);
+                    Debug.LogError("Can't read camera image! Please, check image format!");
+                    yield break;
                 }
-                else
-                {
-                    Debug.Log("Request finished with code: " + www.responseCode);
-
-                    if (www.responseCode != 200)
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield return null;
-                    }
-                    string response = www.downloadHandler.text;
-
-                    Debug.Log("Request Finished Successfully!\n" + response);
-                    LocationState deserialized = null;
-                    try
-                    {
-                        deserialized = DataCollector.Deserialize(response);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError(e);
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield break;
-                    }
-
-                    if (deserialized != null)
-                    {
-                        Debug.Log("Server status " + deserialized.Status);
-                        locationState = deserialized;
-                    }
-                    else
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        Debug.LogError("There is no data come from server");
-                        yield break;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Отправка запроса: изображение и meta-данные
-        /// </summary>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
-        {
-            string uri = Path.Combine(serverUrl, api_path);
-
-            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
-            {
-                Debug.LogError("URL is incorrect: " + uri);
-                yield break;
+                form.AddBinaryData("image", binaryImage, CreateFileName());
             }
 
-            WWWForm form = new WWWForm();
-
-            var binaryImage = GetByteArrayFromImage(image);
-            if (binaryImage == null)
-            {
-                Debug.LogError("Can't read camera image! Please, check image format!");
-                yield break;
-            }
-
-            form.AddBinaryData("image", binaryImage, CreateFileName());
             form.AddField("json", meta);
 
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
-            {
-                Debug.Log(uri);
-                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-
-                yield return www.SendWebRequest();
-
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    Debug.LogError("Network error!");
-                }
-                else
-                {
-                    Debug.Log("Request finished with code: " + www.responseCode);
-
-                    if (www.responseCode != 200)
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield return null;
-                    }
-                    string response = www.downloadHandler.text;
-
-                    Debug.Log("Request Finished Successfully!\n" + response);
-                    LocationState deserialized = null;
-                    try
-                    {
-                        deserialized = DataCollector.Deserialize(response);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError(e);
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield break;
-                    }
-
-                    if (deserialized != null)
-                    {
-                        Debug.Log("Server status " + deserialized.Status);
-                        locationState = deserialized;
-                    }
-                    else
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        Debug.LogError("There is no data come from server");
-                        yield break;
-                    }
-                }
-            }
+            yield return SendRequest(uri, form);
         }
 
         /// <summary>
@@ -226,57 +94,7 @@ namespace ARVRLab.VPSService
                 form.AddField("mes" + i, data[i].meta);
             }
 
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
-            {
-                Debug.Log(uri);
-                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-
-                yield return www.SendWebRequest();
-
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    Debug.LogError("Network error!");
-                    Debug.LogError(www.error);
-                    Debug.LogError(www.responseCode);
-                }
-                else
-                {
-                    Debug.Log("Request finished with code: " + www.responseCode);
-
-                    if (www.responseCode != 200)
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield return null;
-                    }
-                    string response = www.downloadHandler.text;
-
-                    Debug.Log("Request Finished Successfully!\n" + response);
-                    LocationState deserialized = null;
-                    try
-                    {
-                        deserialized = DataCollector.Deserialize(response);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError(e);
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        yield break;
-                    }
-
-                    if (deserialized != null)
-                    {
-                        Debug.Log("Server status " + deserialized.Status);
-                        locationState = deserialized;
-                    }
-                    else
-                    {
-                        UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                        Debug.LogError("There is no data come from server");
-                        yield break;
-                    }
-                }
-            }
+            yield return SendRequest(uri, form);
         }
 
         /// <summary>
@@ -332,6 +150,63 @@ namespace ARVRLab.VPSService
             locationState.Status = Status;
             locationState.Error = Error;
             locationState.Localisation = Localisation;
+        }
+
+        private IEnumerator SendRequest(string uri, WWWForm form)
+        {
+            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
+            {
+                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+
+                www.timeout = timeout;
+                www.SendWebRequest();
+                while (!www.isDone)
+                {
+                    Debug.Log(www.uploadProgress);
+                    yield return null;
+                }
+
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
+                    Debug.LogError("Network error: " + www.error);
+                    yield break;
+                }
+
+                Debug.Log("Request finished with code: " + www.responseCode);
+
+                if (www.responseCode != 200)
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                    yield break;
+                }
+                string response = www.downloadHandler.text;
+
+                Debug.Log("Request Finished Successfully!\n" + response);
+                LocationState deserialized = null;
+                try
+                {
+                    deserialized = DataCollector.Deserialize(response);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                    yield break;
+                }
+
+                if (deserialized != null)
+                {
+                    Debug.Log("Server status " + deserialized.Status);
+                    locationState = deserialized;
+                }
+                else
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
+                    Debug.LogError("There is no data come from server");
+                    yield break;
+                }
+            }
         }
     }
 }
