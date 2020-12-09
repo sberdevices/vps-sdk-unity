@@ -31,19 +31,10 @@ namespace ARVRLab.VPSService
 
             gpsData = new GPSData();
             compassData = new CompassData();
-            StartCoroutine(StartGPS());
         }
 
         private IEnumerator StartGPS()
         {
-            if (!enabled)
-            {
-                while(true)
-                {
-                    yield return new WaitForSeconds(timeToUpdate);
-                }
-            }
-
             // Проверяем, что gps доступен
             if (!Input.location.isEnabledByUser)
             {
@@ -102,6 +93,7 @@ namespace ARVRLab.VPSService
 
         void StopGPS()
         {
+            StopAllCoroutines();
             Input.location.Stop();
             Input.compass.enabled = false;
         }
@@ -119,6 +111,14 @@ namespace ARVRLab.VPSService
         public void SetEnable(bool enable)
         {
             enabled = enable;
+            if (enabled)
+            {
+                StartCoroutine(StartGPS());
+            }
+            else
+            {
+                StopGPS();
+            }
         }
     }
 }

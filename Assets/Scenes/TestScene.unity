@@ -207,7 +207,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: -5.838748e+35, z: 4.5793e-41, w: 115.5}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -396,9 +396,9 @@ Transform:
   m_Father: {fileID: 266874265}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &748547712 stripped
+--- !u!114 &672031658 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8690752168016233484, guid: f5ddf2d28f817ce42a7d59e707029842,
+  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
     type: 3}
   m_PrefabInstance: {fileID: 8690752169532022778}
   m_PrefabAsset: {fileID: 0}
@@ -733,7 +733,7 @@ PrefabInstance:
         type: 3}
       propertyPath: provider
       value: 
-      objectReference: {fileID: 748547712}
+      objectReference: {fileID: 672031658}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: UsePhotoSerias
@@ -752,7 +752,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: UseCustomUrl
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
