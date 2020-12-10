@@ -25,6 +25,8 @@ namespace ARVRLab.VPSService
         private bool sendOnlyFeatures;
         private bool alwaysForceVPS;
 
+        IRequestVPS requestVPS = new HttpClientRequestVPS();
+
         /// <summary>
         /// Событие ошибки локализации
         /// </summary>
@@ -124,14 +126,14 @@ namespace ARVRLab.VPSService
                     yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
 
                     Debug.Log("Sending VPS Localization Request...");
-                    var locRequestVPS = new RequestVPS(settings.Url);
+                    requestVPS.SetUrl(settings.Url);
 
-                    yield return locRequestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
+                    yield return requestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
                     Debug.Log("VPS Localization answer recieved!");
 
-                    if (locRequestVPS.GetStatus() == LocalisationStatus.VPS_READY)
+                    if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                     {
-                        var response = locRequestVPS.GetResponce();
+                        var response = requestVPS.GetResponce();
                         tracking.SetGuidPointcloud(response.GuidPointcloud);
 
                         locationState.Status = LocalisationStatus.VPS_READY;
@@ -143,11 +145,11 @@ namespace ARVRLab.VPSService
                     else
                     {
                         locationState.Status = LocalisationStatus.GPS_ONLY;
-                        locationState.Error = locRequestVPS.GetErrorCode();
+                        locationState.Error = requestVPS.GetErrorCode();
                         locationState.Localisation = null;
 
-                        OnErrorHappend?.Invoke(locRequestVPS.GetErrorCode());
-                        Debug.LogErrorFormat("VPS Request Error: {0}", locRequestVPS.GetErrorCode());
+                        OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
+                        Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
                     }
 
                     yield return new WaitForSeconds(settings.Timeout);
@@ -168,7 +170,7 @@ namespace ARVRLab.VPSService
 
                 Meta = DataCollector.CollectData(provider, !isCalibration);
 
-                RequestVPS requestVPS = new RequestVPS(settings.Url);
+                requestVPS.SetUrl(settings.Url);
 
                 // если отправляем фичи - получаем их
                 if (sendOnlyFeatures)

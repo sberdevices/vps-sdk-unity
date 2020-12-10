@@ -2,17 +2,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using ARVRLab.ARVRLab.VPSService.JSONs;
+using Asyncoroutine;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace ARVRLab.VPSService
 {
-    /// <summary>
-    /// Запрос к серверу VPS
-    /// </summary>
-    public class RequestVPS
+    public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
         // api для локализации через серию фотографий
@@ -20,11 +18,11 @@ namespace ARVRLab.VPSService
         // api для стандартной работы
         private string api_path = "vps/api/v1/job";
 
-        private int timeout = 15;
+        private int timeout = 5;
 
         private LocationState locationState = new LocationState();
 
-        public RequestVPS(string url)
+        public void SetUrl(string url)
         {
             serverUrl = url;
         }
@@ -42,11 +40,12 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            WWWForm form = new WWWForm();
+            MultipartFormDataContent form = new MultipartFormDataContent();
 
             if (embedding != null)
             {
-                form.AddBinaryData("embedding", embedding, "data.embd");
+                HttpContent embd = new ByteArrayContent(embedding);
+                form.Add(embd, "embedding", "data.embd");
             }
             else
             {
@@ -56,12 +55,14 @@ namespace ARVRLab.VPSService
                     Debug.LogError("Can't read camera image! Please, check image format!");
                     yield break;
                 }
-                form.AddBinaryData("image", binaryImage, CreateFileName());
+                HttpContent img = new ByteArrayContent(binaryImage);
+                form.Add(img, "image", CreateFileName());
             }
 
-            form.AddField("json", meta);
+            HttpContent metaContent = new StringContent(meta);
+            form.Add(metaContent, "json");
 
-            yield return SendRequest(uri, form);
+            yield return Task.Run(() => SendRequest(uri, form)).AsCoroutine();
         }
 
         /// <summary>
@@ -79,22 +80,24 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            WWWForm form = new WWWForm();
-
+            MultipartFormDataContent form = new MultipartFormDataContent();
             for (int i = 0; i < data.Count; i++)
             {
                 if (data[i].Embedding != null)
                 {
-                    form.AddBinaryData("embd" + i, data[i].Embedding, "data.embd");
+                    HttpContent embd = new ByteArrayContent(data[i].Embedding);
+                    form.Add(embd, "embd" + i, "data.embd");
                 }
                 else
                 {
-                    form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
+                    HttpContent img = new ByteArrayContent(data[i].image);
+                    form.Add(img, "mes" + i, CreateFileName());
                 }
-                form.AddField("mes" + i, data[i].meta);
-            }
 
-            yield return SendRequest(uri, form);
+                HttpContent meta = new StringContent(data[i].meta);
+                form.Add(meta, "mes" + i);
+            }
+            yield return Task.Run(() => SendRequest(uri, form)).AsCoroutine();
         }
 
         /// <summary>
@@ -152,47 +155,24 @@ namespace ARVRLab.VPSService
             locationState.Localisation = Localisation;
         }
 
-        private IEnumerator SendRequest(string uri, WWWForm form)
+        private void SendRequest(string uri, MultipartFormDataContent form)
         {
-            using (UnityWebRequest www = UnityWebRequest.Post(uri, form))
+            using (var client = new HttpClient())
             {
-                www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+                var result = client.PostAsync(uri, form);
+                string resultContent = result.Result.Content.ReadAsStringAsync().Result;
+                Debug.Log(resultContent);
 
-                www.timeout = timeout;
-                www.SendWebRequest();
-                while (!www.isDone)
-                {
-                    Debug.Log(www.uploadProgress);
-                    yield return null;
-                }
-
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    Debug.LogError("Network error: " + www.error);
-                    yield break;
-                }
-
-                Debug.Log("Request finished with code: " + www.responseCode);
-
-                if (www.responseCode != 200)
-                {
-                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                    yield break;
-                }
-                string response = www.downloadHandler.text;
-
-                Debug.Log("Request Finished Successfully!\n" + response);
                 LocationState deserialized = null;
                 try
                 {
-                    deserialized = DataCollector.Deserialize(response);
+                    deserialized = DataCollector.Deserialize(resultContent);
                 }
                 catch (Exception e)
                 {
                     Debug.LogError(e);
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                    yield break;
+                    return;
                 }
 
                 if (deserialized != null)
@@ -204,7 +184,7 @@ namespace ARVRLab.VPSService
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                     Debug.LogError("There is no data come from server");
-                    yield break;
+                    return;
                 }
             }
         }
