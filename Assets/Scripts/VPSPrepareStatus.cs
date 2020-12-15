@@ -29,6 +29,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         public IEnumerator DownloadNeural()
         {
+            yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
             using (UnityWebRequest www = UnityWebRequest.Get(url))
             {
                 www.SendWebRequest();
