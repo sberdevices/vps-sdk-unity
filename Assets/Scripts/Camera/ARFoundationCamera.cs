@@ -39,7 +39,6 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
-            cameraManager.frameReceived += UpdateBuffer;
 
             TagretResolution.width = desiredResolution.x;
             TagretResolution.height = desiredResolution.y;
@@ -104,11 +103,13 @@ namespace ARVRLab.VPSService
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
             // Получаем ссылку на массив байтов текущей текстуры
-            var raw = texture.GetRawTextureData<byte>();
+            FreeBufferMemory();
+            //buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
+            buffer = texture.GetRawTextureData<byte>();
             try
             {
                 // Копируем байты из изображения с камеры в текстуру
-                image.Convert(conversionParams, new IntPtr(raw.GetUnsafePtr()), raw.Length);
+                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
             }
             finally
             {
@@ -116,7 +117,10 @@ namespace ARVRLab.VPSService
                 image.Dispose();
             }
             texture.Apply();
+        }
 
+        public Texture2D GetFrame()
+        {
             // Необходимо создать новую текстуру, так как старая в формате R8 и не принимает каналы g и b
             if (returnedTexture == null)
             {
@@ -136,45 +140,6 @@ namespace ARVRLab.VPSService
             returnedTexture.Apply();
 
             array.Dispose();
-            raw.Dispose();
-        }
-
-        /// <summary>
-        /// Обновляет текстуру в буффере
-        /// </summary>
-        private unsafe void UpdateBuffer(ARCameraFrameEventArgs args)
-        {
-            // Пытаемся получить последнее изображение с камеры
-            XRCpuImage image;
-            if (!cameraManager.TryAcquireLatestCpuImage(out image))
-            {
-                return;
-            }
-
-            var format = TextureFormat.R8;
-
-            // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
-            var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
-            // Задаем downscale до нужного разрешения
-            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
-
-            FreeBufferMemory();
-            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
-
-            try
-            {
-                // Копируем байты из изображения с камеры в текстуру
-                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
-            }
-            finally
-            {
-                // Высвобождаем память
-                image.Dispose();
-            }
-        }
-
-        public Texture2D GetFrame()
-        {
             return returnedTexture;
         }
 
@@ -202,7 +167,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return returnedTexture != null;
+            return texture != null;
         }
 
         public NativeArray<byte> GetImageArray()

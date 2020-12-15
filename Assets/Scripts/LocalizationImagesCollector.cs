@@ -17,15 +17,15 @@ namespace ARVRLab.VPSService
         // Список фото, меты и pose, откуда были сделаны
         private List<RequestLocalizationData> localizationData;
         // Использовать дистанцию или по таймауту?
-        private bool useDistance = true;
+        //private bool useDistance = true;
         // Задержка между фотографиями
         private float timeout = 1;
         // Расстояние между фотографиями
-        private float distance = 0.5f;
+        //private float distance = 0.5f;
 
         private MobileVPS mobileVPS;
 
-        private Vector3 predPos = Vector3.zero;
+        //private Vector3 predPos = Vector3.zero;
 
         public static event System.Action OnPhotoAdded;
         public static event System.Action OnSeriaIsReady;
@@ -48,85 +48,13 @@ namespace ARVRLab.VPSService
         /// <param name="provider">Provider.</param>
         public IEnumerator StartCollectPhoto(ServiceProvider provider, bool sendOnlyFeatures)
         {
-            Texture2D Image;
-            string Meta;
-            byte[] Embedding;
-
-            // Повторная проверка доступности камеры
-            var camera = provider.GetCamera();
-            if (camera == null)
-            {
-                Debug.LogError("Camera is not available");
-                yield break;
-            }
-
-            // Повторная проверка доступности трекинга
-            var tracking = provider.GetTracking();
-            if (tracking == null)
-            {
-                Debug.LogError("Tracking is not available");
-                yield break;
-            }
-
             var arFoundationApplyer = provider.GetARFoundationApplyer();
-            useDistance = arFoundationApplyer != null;
-            useDistance = false; // работаем по таймауту
-            if (!useDistance)
-            {
-                Debug.Log("ArFoundationApplyer is not available. Using timeout");
-            }
 
             Debug.Log("Start collect photo");
             for (int i = 0; i < photosInSeria; i++)
             {
-                yield return new WaitUntil(() => camera.IsCameraReady());
-
-                Image = camera.GetFrame();
-                if (Image == null)
-                {
-                    Debug.LogError("Image from camera is not available");
-                    yield break;
-                }
-
-                Meta = DataCollector.CollectData(provider, true);
-
-                // если отправляем фичи - получаем их
-                if (sendOnlyFeatures)
-                {
-                    NativeArray<byte> input = camera.GetImageArray();
-                    if (input == null || input.Length == 0)
-                    {
-                        Debug.LogError("Cannot take camera image as ByteArray");
-                        yield return null;
-                        continue;
-                    }
-
-                    var task = mobileVPS.GetFeaturesAsync(input);
-                    while (!task.IsCompleted)
-                        yield return null;
-
-                    Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
-                }
-                else
-                {
-                    Embedding = null;
-                }
-
-                localizationData[i].image = Image.EncodeToJPG();
-                localizationData[i].meta = Meta;
-                localizationData[i].pose = provider.GetARFoundationApplyer().GetCurrentPose();
-                localizationData[i].Embedding = Embedding;
-
-                predPos = arFoundationApplyer.GetCurrentPose().position;
-
-                if (useDistance)
-                {
-                    yield return new WaitUntil(() => Vector3.Distance(predPos, arFoundationApplyer.GetCurrentPose().position) > distance);
-                }
-                else
-                {
-                    yield return new WaitForSeconds(timeout);
-                }
+                yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
+                yield return new WaitForSeconds(timeout);
                 OnPhotoAdded?.Invoke();
             }
             OnSeriaIsReady?.Invoke();
@@ -135,6 +63,50 @@ namespace ARVRLab.VPSService
         public List<RequestLocalizationData> GetLocalizationData()
         {
             return localizationData;
+        }
+
+        private IEnumerator AddPhoto(ServiceProvider provider, bool sendOnlyFeatures, RequestLocalizationData currentData)
+        {
+            ICamera camera = provider.GetCamera();
+
+            Texture2D Image = camera.GetFrame();
+            if (Image == null)
+            {
+                Debug.LogError("Image from camera is not available");
+                yield break;
+            }
+
+            string Meta = DataCollector.CollectData(provider, true);
+
+            // если отправляем фичи - получаем их
+            byte[] Embedding;
+            byte[] ImageBytes;
+            if (sendOnlyFeatures)
+            {
+                NativeArray<byte> input = camera.GetImageArray();
+                if (input == null || input.Length == 0)
+                {
+                    Debug.LogError("Cannot take camera image as ByteArray");
+                    yield break;
+                }
+
+                var task = mobileVPS.GetFeaturesAsync(input);
+                while (!task.IsCompleted)
+                    yield return null;
+
+                Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
+                ImageBytes = null;
+            }
+            else
+            {
+                ImageBytes = Image.EncodeToJPG();
+                Embedding = null;
+            }
+
+            currentData.image = ImageBytes;
+            currentData.meta = Meta;
+            currentData.pose = provider.GetARFoundationApplyer().GetCurrentPose();
+            currentData.Embedding = Embedding;
         }
     }
 }
