@@ -30,7 +30,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
         /// </summary>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta, byte[] embedding = null)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
             string uri = Path.Combine(serverUrl, api_path);
 
@@ -42,22 +42,38 @@ namespace ARVRLab.VPSService
 
             MultipartFormDataContent form = new MultipartFormDataContent();
 
-            if (embedding != null)
+            var binaryImage = GetByteArrayFromImage(image);
+            if (binaryImage == null)
             {
-                HttpContent embd = new ByteArrayContent(embedding);
-                form.Add(embd, "embedding", "data.embd");
+                Debug.LogError("Can't read camera image! Please, check image format!");
+                yield break;
             }
-            else
+            HttpContent img = new ByteArrayContent(binaryImage);
+            form.Add(img, "image", CreateFileName());
+
+            HttpContent metaContent = new StringContent(meta);
+            form.Add(metaContent, "json");
+
+            yield return Task.Run(() => SendRequest(uri, form)).AsCoroutine();
+        }
+
+        /// <summary>
+        /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
+        /// </summary>
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        {
+            string uri = Path.Combine(serverUrl, api_path);
+
+            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                var binaryImage = GetByteArrayFromImage(image);
-                if (binaryImage == null)
-                {
-                    Debug.LogError("Can't read camera image! Please, check image format!");
-                    yield break;
-                }
-                HttpContent img = new ByteArrayContent(binaryImage);
-                form.Add(img, "image", CreateFileName());
+                Debug.LogError("URL is incorrect: " + uri);
+                yield break;
             }
+
+            MultipartFormDataContent form = new MultipartFormDataContent();
+
+            HttpContent embd = new ByteArrayContent(embedding);
+            form.Add(embd, "embedding", "data.embd");
 
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");

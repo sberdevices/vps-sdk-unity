@@ -34,7 +34,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
         /// </summary>
-        public IEnumerator SendVpsRequest(Texture2D image, string meta, byte[] embedding = null)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
             string uri = Path.Combine(serverUrl, api_path);
 
@@ -46,20 +46,32 @@ namespace ARVRLab.VPSService
 
             WWWForm form = new WWWForm();
 
-            if (embedding != null)
+            var binaryImage = GetByteArrayFromImage(image);
+            if (binaryImage == null)
             {
-                form.AddBinaryData("embedding", embedding, "data.embd");
+                Debug.LogError("Can't read camera image! Please, check image format!");
+                yield break;
             }
-            else
+            form.AddBinaryData("image", binaryImage, CreateFileName());
+
+            form.AddField("json", meta);
+
+            yield return SendRequest(uri, form);
+        }
+
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        {
+            string uri = Path.Combine(serverUrl, api_path);
+
+            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                var binaryImage = GetByteArrayFromImage(image);
-                if (binaryImage == null)
-                {
-                    Debug.LogError("Can't read camera image! Please, check image format!");
-                    yield break;
-                }
-                form.AddBinaryData("image", binaryImage, CreateFileName());
+                Debug.LogError("URL is incorrect: " + uri);
+                yield break;
             }
+
+            WWWForm form = new WWWForm();
+
+            form.AddBinaryData("embedding", embedding, "data.embd");
 
             form.AddField("json", meta);
 

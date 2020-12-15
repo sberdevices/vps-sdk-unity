@@ -69,13 +69,6 @@ namespace ARVRLab.VPSService
         {
             ICamera camera = provider.GetCamera();
 
-            Texture2D Image = camera.GetFrame();
-            if (Image == null)
-            {
-                Debug.LogError("Image from camera is not available");
-                yield break;
-            }
-
             string Meta = DataCollector.CollectData(provider, true);
 
             // если отправляем фичи - получаем их
@@ -99,6 +92,13 @@ namespace ARVRLab.VPSService
             }
             else
             {
+                Texture2D Image = camera.GetFrame();
+                if (Image == null)
+                {
+                    Debug.LogError("Image from camera is not available");
+                    yield break;
+                }
+
                 ImageBytes = Image.EncodeToJPG();
                 Embedding = null;
             }

@@ -156,15 +156,6 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                Image = camera.GetFrame();
-
-                if (Image == null)
-                {
-                    Debug.LogError("Image from camera is not available");
-                    yield return null;
-                    continue;
-                }
-
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
 
@@ -191,11 +182,20 @@ namespace ARVRLab.VPSService
                     Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
                     Debug.Log("Sending VPS Request...");
-                    yield return requestVPS.SendVpsRequest(Image, Meta, Embedding);
+                    yield return requestVPS.SendVpsRequest(Embedding, Meta);
                 }
                 // иначе отправляем только фото и мету
                 else
                 {
+                    Image = camera.GetFrame();
+
+                    if (Image == null)
+                    {
+                        Debug.LogError("Image from camera is not available");
+                        yield return null;
+                        continue;
+                    }
+
                     Debug.Log("Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Image, Meta);
                 }
