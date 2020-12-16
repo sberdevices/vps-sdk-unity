@@ -180,5 +180,14 @@ namespace ARVRLab.VPSService
         {
             return vpsPreparing != null && vpsPreparing.IsReady();
         }
+
+        /// <summary>
+        /// Сбрасывает текущий трекинг
+        /// </summary>
+        public void ResetTracking()
+        {
+            provider.GetARFoundationApplyer()?.ResetTracking();
+            provider.GetTracking().GetLocalTracking().IsLocalisedFloor = false;
+        }
     }
 }

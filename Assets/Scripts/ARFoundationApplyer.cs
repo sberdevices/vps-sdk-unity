@@ -127,5 +127,12 @@ namespace ARVRLab.VPSService
                 yield return null;
             }
         }
+
+        public void ResetTracking()
+        {
+            StopAllCoroutines();
+            arSessionOrigin.transform.position = Vector3.zero;
+            arSessionOrigin.transform.rotation = Quaternion.identity;
+        }
     }
 }
