@@ -131,8 +131,11 @@ namespace ARVRLab.VPSService
         public void ResetTracking()
         {
             StopAllCoroutines();
-            arSessionOrigin.transform.position = Vector3.zero;
-            arSessionOrigin.transform.rotation = Quaternion.identity;
+            if (arSessionOrigin != null)
+            {
+                arSessionOrigin.transform.position = Vector3.zero;
+                arSessionOrigin.transform.rotation = Quaternion.identity;
+            }
         }
     }
 }
