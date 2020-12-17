@@ -104,7 +104,6 @@ namespace ARVRLab.VPSService
 
             // Получаем ссылку на массив байтов текущей текстуры
             FreeBufferMemory();
-            //buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
             buffer = texture.GetRawTextureData<byte>();
             try
             {

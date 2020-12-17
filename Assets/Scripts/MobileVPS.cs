@@ -13,7 +13,6 @@ namespace ARVRLab.VPSService
 {
     public class MobileVPS
     {
-        public static string NeuronTime = "";
         private const string FileName = "hfnet_i8_960.tflite";
 
         Interpreter interpreter;
@@ -66,11 +65,6 @@ namespace ARVRLab.VPSService
                 }
             }
 
-            //==================
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
-            //==================
-
             interpreter.SetInputTensorData(0, input);
 
             interpreter.Invoke();
@@ -79,14 +73,6 @@ namespace ARVRLab.VPSService
             interpreter.GetOutputTensorData(1, output.keyPoints);
             interpreter.GetOutputTensorData(2, output.descriptors);
             interpreter.GetOutputTensorData(3, output.scores);
-
-            //==================
-            stopWatch.Stop();
-            TimeSpan ts = stopWatch.Elapsed;
-            NeuronTime = String.Format("{0:00}:{1:00}",
-                ts.Seconds, ts.Milliseconds / 10);
-            Debug.Log("Neuron Time " + NeuronTime);
-            //==================
 
             return output;
         }

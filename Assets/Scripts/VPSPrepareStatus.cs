@@ -36,7 +36,6 @@ namespace ARVRLab.VPSService
                 while (!www.isDone)
                 {
                     progress = www.downloadProgress;
-                    Debug.Log(progress);
                     yield return null;
                 }
                 // после окончания скачивания прогресс равен единице
