@@ -29,28 +29,33 @@ namespace ARVRLab.VPSService
         /// </summary>
         public IEnumerator DownloadNeural()
         {
-            yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
-            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            while (true)
             {
-                www.SendWebRequest();
-                while (!www.isDone)
+                yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
+                using (UnityWebRequest www = UnityWebRequest.Get(url))
                 {
+                    www.SendWebRequest();
+                    while (!www.isDone)
+                    {
+                        progress = www.downloadProgress;
+                        yield return null;
+                    }
+
+                    // проверка ошибки
+                    if (www.isNetworkError || www.isHttpError)
+                    {
+                        Debug.LogError("Can't download mobile vps network: " + www.error);
+                        yield return null;
+                        continue;
+                    }
+
+                    // после окончания скачивания прогресс равен единице
                     progress = www.downloadProgress;
-                    yield return null;
+                    File.WriteAllBytes(dataPath, www.downloadHandler.data);
+                    Debug.Log("Mobile vps network downloaded successfully!");
+                    OnVPSReady?.Invoke();
+                    break;
                 }
-                // после окончания скачивания прогресс равен единице
-                progress = www.downloadProgress;
-
-                // проверка ошибки
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    Debug.LogError("Can't download mobile vps network: " + www.error);
-                    yield break;
-                }
-
-                File.WriteAllBytes(dataPath, www.downloadHandler.data);
-                Debug.Log("Mobile vps network downloaded successfully!");
-                OnVPSReady?.Invoke();
             }
         }
 
