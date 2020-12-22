@@ -175,6 +175,7 @@ namespace ARVRLab.VPSService
         {
             using (var client = new HttpClient())
             {
+                client.Timeout = TimeSpan.FromSeconds(timeout);
                 var result = client.PostAsync(uri, form);
                 string resultContent = result.Result.Content.ReadAsStringAsync().Result;
                 Debug.Log(resultContent);
