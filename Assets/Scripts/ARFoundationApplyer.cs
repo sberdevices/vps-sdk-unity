@@ -85,9 +85,11 @@ namespace ARVRLab.VPSService
 
             correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition; // ToDo: тут нужен CustomStartPose - подумать
 
-            var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
-            var qrot = Quaternion.Inverse(CustomStartPose.rotation) * rot;
-            correctedResult.LocalRotationY = qrot.eulerAngles.y;
+            //var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
+            //var qrot = Quaternion.Inverse(CustomStartPose.rotation) * rot;
+            //correctedResult.LocalRotationY = qrot.eulerAngles.y;
+            correctedResult.LocalRotationY = localisation.LocalRotationY + arSessionOrigin.transform.localRotation.eulerAngles.y - CustomStartPose.rotation.eulerAngles.y;
+            Debug.Log("Result: " + correctedResult.LocalRotationY);
 
             Debug.Log("LocalisationDone happend");
             Debug.Log(correctedResult.LocalPosition);
