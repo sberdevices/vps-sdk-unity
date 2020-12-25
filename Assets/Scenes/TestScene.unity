@@ -571,6 +571,106 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 2321813929324591559}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1902949979
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1902949980}
+  - component: {fileID: 1902949984}
+  - component: {fileID: 1902949983}
+  - component: {fileID: 1902949982}
+  - component: {fileID: 1902949981}
+  m_Layer: 0
+  m_Name: MockSeriaData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1902949980
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 8690752169532022780}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1902949981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd02725ba891a49449e75fd0f61396f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImagesPath: /Users/admin/arnavigation/Modules/VPSServise/Assets/Images/Serias3
+  CustomPoses:
+  - {fileID: 4900000, guid: edd8397f4aa464d53972767ca1855dcf, type: 3}
+  - {fileID: 4900000, guid: 481029effa403423c97c6817480551eb, type: 3}
+  - {fileID: 4900000, guid: 86b12b858ef2e440e9a0cf3e3697b2de, type: 3}
+  - {fileID: 4900000, guid: e12e44d9b74964628a9075148608602e, type: 3}
+  - {fileID: 4900000, guid: eadc9e53240914aeda95dc32f7603bee, type: 3}
+  Buiding: 0
+--- !u!114 &1902949982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7823e6ecdaaf846a380791ece4320198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FakeTextures:
+  - {fileID: 2800000, guid: 18af521e34a434f4997257f25fe85d1f, type: 3}
+  - {fileID: 2800000, guid: 9d25c66031eb44dcab2c366911ccee96, type: 3}
+  - {fileID: 2800000, guid: 4e6eb07ab32034329b200efcb6ddbd48, type: 3}
+  - {fileID: 2800000, guid: 02a52b4ac8b71472c9e0fe6cd30f9313, type: 3}
+  - {fileID: 2800000, guid: e62bec71d18aa4124a6f92bc2a7d34d8, type: 3}
+--- !u!114 &1902949983
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed06d6416b04d408c86713f3aae87128, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Latitude: 54.875
+  Longitude: 48.6543
+--- !u!114 &1902949984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arFoundationApplyer: {fileID: 8690752169532022779}
+  PhotosInSeria: 5
 --- !u!1 &1992666612
 GameObject:
   m_ObjectHideFlags: 0
@@ -764,6 +864,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: VpsSettingsCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 2321813929524441094, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 271.22607
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813929524441094, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -51.30713
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813930010801541, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 271.22607
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813930010801541, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -113.92139
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813930888837650, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 271.22607
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813930888837650, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -176.53613
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6935d6aa6e7d94d52af230c4800c9919, type: 3}
 --- !u!1001 &8690752169532022778
@@ -846,7 +976,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
-      value: http://fd458b367683.ngrok.io/polytech
+      value: http://6b801077eb1c.ngrok.io/polytech
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -876,12 +1006,12 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: SendOnlyFeatures
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultServerType
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752168016233475, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -892,7 +1022,7 @@ PrefabInstance:
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 5071ea4b3cf2f46bc83067987e84bc42, type: 3}
+      objectReference: {fileID: 2800000, guid: 18af521e34a434f4997257f25fe85d1f, type: 3}
     - target: {fileID: 8690752169563304430, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: Buiding
@@ -900,3 +1030,21 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
+--- !u!114 &8690752169532022779 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8690752167743118256, guid: f5ddf2d28f817ce42a7d59e707029842,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690752169532022778}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3a16450c05a945f9993a854fc114e65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &8690752169532022780 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8690752167743118258, guid: f5ddf2d28f817ce42a7d59e707029842,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690752169532022778}
+  m_PrefabAsset: {fileID: 0}

@@ -13,7 +13,7 @@ namespace ARVRLab.VPSService
 
         [Tooltip("Фото в серии для первой локализации")]
         [SerializeField]
-        private int PhotosInSeria = 3;
+        public int PhotosInSeria = 5;
 
         private new ICamera camera;
         private IServiceGPS gps;
