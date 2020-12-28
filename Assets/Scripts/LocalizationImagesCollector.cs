@@ -16,21 +16,19 @@ namespace ARVRLab.VPSService
         private int photosInSeria;
         // Список фото, меты и pose, откуда были сделаны
         private List<RequestLocalizationData> localizationData;
-        // Использовать дистанцию или по таймауту?
-        //private bool useDistance = true;
+        // Использовать угол или по таймауту?
+        private bool useAngle = true;
         // Задержка между фотографиями
         private float timeout = 1;
         // Расстояние между фотографиями
-        //private float distance = 0.5f;
+        private const float angle = 30f;
 
-        private MobileVPS mobileVPS;
-
-        //private Vector3 predPos = Vector3.zero;
+        private float predAngle = 0f;
 
         public static event System.Action OnPhotoAdded;
         public static event System.Action OnSeriaIsReady;
 
-        public LocalizationImagesCollector(int PhotosInSeria)
+        public LocalizationImagesCollector(int PhotosInSeria, bool usingAngle = false)
         {
             photosInSeria = PhotosInSeria;
             localizationData = new List<RequestLocalizationData>();
@@ -38,7 +36,7 @@ namespace ARVRLab.VPSService
             {
                 localizationData.Add(new RequestLocalizationData());
             }
-            mobileVPS = new MobileVPS();
+            useAngle = usingAngle;
         }
 
         /// <summary>
@@ -48,14 +46,23 @@ namespace ARVRLab.VPSService
         /// <param name="provider">Provider.</param>
         public IEnumerator StartCollectPhoto(ServiceProvider provider, bool sendOnlyFeatures)
         {
-            var arFoundationApplyer = provider.GetARFoundationApplyer();
+            var tracking = provider.GetTracking();
 
             Debug.Log("Start collect photo");
             for (int i = 0; i < photosInSeria; i++)
             {
                 yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
-                yield return new WaitForSeconds(timeout);
                 OnPhotoAdded?.Invoke();
+                predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;
+
+                if (useAngle)
+                {
+                    yield return new WaitUntil(() => Mathf.Abs(Mathf.DeltaAngle(predAngle, tracking.GetLocalTracking().Rotation.eulerAngles.y)) > angle);
+                }
+                else
+                {
+                    yield return new WaitForSeconds(timeout);
+                }
             }
             OnSeriaIsReady?.Invoke();
         }
@@ -83,7 +90,7 @@ namespace ARVRLab.VPSService
                     yield break;
                 }
 
-                var task = mobileVPS.GetFeaturesAsync(input);
+                var task = provider.GetMobileVPS().GetFeaturesAsync(input);
                 while (!task.IsCompleted)
                     yield return null;
 

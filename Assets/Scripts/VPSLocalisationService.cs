@@ -189,5 +189,14 @@ namespace ARVRLab.VPSService
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().GetLocalTracking().IsLocalisedFloor = false;
         }
+
+        private void Awake()
+        {
+            for (var i = 0; i < transform.childCount; i++)
+            {
+                transform.GetChild(i).gameObject.SetActive(false);
+            }
+            provider.gameObject.SetActive(true);
+        }
     }
 }

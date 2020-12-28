@@ -36,7 +36,7 @@ namespace ARVRLab.VPSService
 
         public void Init()
         {
-            imagesCollector = new LocalizationImagesCollector(PhotosInSeria);
+            imagesCollector = new LocalizationImagesCollector(PhotosInSeria, false);
             mobileVPS = new MobileVPS();
         }
 

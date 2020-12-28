@@ -18,7 +18,7 @@ namespace ARVRLab.VPSService
         // api для стандартной работы
         private string api_path = "vps/api/v1/job";
 
-        private int timeout = 5;
+        private int timeout = 15;
 
         private LocationState locationState = new LocationState();
 
@@ -175,10 +175,20 @@ namespace ARVRLab.VPSService
         {
             using (var client = new HttpClient())
             {
-                //client.Timeout = TimeSpan.FromSeconds(timeout);
-                var result = client.PostAsync(uri, form);
-                string resultContent = result.Result.Content.ReadAsStringAsync().Result;
-                Debug.Log(resultContent);
+                client.Timeout = TimeSpan.FromSeconds(timeout);
+                string resultContent = "";
+                try
+                {
+                    var result = client.PostAsync(uri, form);
+
+                    resultContent = result.Result.Content.ReadAsStringAsync().Result;
+                    Debug.Log(resultContent);
+                }
+                catch (Exception ex)
+                {
+                    UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
+                    return;
+                }
 
                 LocationState deserialized = null;
                 try
