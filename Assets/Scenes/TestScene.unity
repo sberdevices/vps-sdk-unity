@@ -474,18 +474,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &328731589 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
-    type: 3}
-  m_PrefabInstance: {fileID: 8690752169532022778}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1336693106
 GameObject:
   m_ObjectHideFlags: 0
@@ -617,7 +605,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd02725ba891a49449e75fd0f61396f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ImagesPath: /Users/admin/arnavigation/Modules/VPSServise/Assets/Images/Serias3
+  ImagesPath: /Users/admin/arnavigation/Modules/VPSServise/Assets/Images/Rotation/8
   CustomPoses:
   - {fileID: 4900000, guid: edd8397f4aa464d53972767ca1855dcf, type: 3}
   - {fileID: 4900000, guid: 481029effa403423c97c6817480551eb, type: 3}
@@ -972,7 +960,7 @@ PrefabInstance:
         type: 3}
       propertyPath: provider
       value: 
-      objectReference: {fileID: 328731589}
+      objectReference: {fileID: 1902949984}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
