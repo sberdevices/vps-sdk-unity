@@ -29,6 +29,8 @@ namespace ARVRLab.VPSService
 
         private SimpleJob job;
 
+        public static Semaphore semaphore = new Semaphore(1);
+
         private void Awake()
         {
             cameraManager = FindObjectOfType<ARCameraManager>();
@@ -82,6 +84,11 @@ namespace ARVRLab.VPSService
         /// </summary>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
+            if (!semaphore.CheckState())
+                return;
+
+            semaphore.TakeOne();
+
             // Пытаемся получить последнее изображение с камеры
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
@@ -115,6 +122,8 @@ namespace ARVRLab.VPSService
                 // Высвобождаем память
                 image.Dispose();
             }
+
+            semaphore.Free();
             texture.Apply();
         }
 

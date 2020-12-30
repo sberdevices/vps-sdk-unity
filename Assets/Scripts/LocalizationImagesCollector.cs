@@ -96,20 +96,20 @@ namespace ARVRLab.VPSService
             byte[] ImageBytes;
             if (sendOnlyFeatures)
             {
+                yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
+                ARFoundationCamera.semaphore.TakeOne();
                 NativeArray<byte> input = camera.GetImageArray();
                 if (input == null || input.Length == 0)
                 {
                     Debug.LogError("Cannot take camera image as ByteArray");
                     yield break;
                 }
-                NativeArray<byte> copy = new NativeArray<byte>(input.Length, Allocator.TempJob);
-                copy.CopyFrom(input);
 
-                var task = provider.GetMobileVPS().GetFeaturesAsync(copy);
+                var task = provider.GetMobileVPS().GetFeaturesAsync(input);
                 while (!task.IsCompleted)
                     yield return null;
 
-                copy.Dispose();
+                ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
                 ImageBytes = null;
             }

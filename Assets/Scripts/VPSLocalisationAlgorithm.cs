@@ -168,6 +168,8 @@ namespace ARVRLab.VPSService
                 if (sendOnlyFeatures)
                 {
                     MobileVPS mobileVPS = provider.GetMobileVPS();
+                    yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
+                    ARFoundationCamera.semaphore.TakeOne();
                     NativeArray<byte> input = camera.GetImageArray();
                     if (input == null || input.Length == 0)
                     {
@@ -175,14 +177,12 @@ namespace ARVRLab.VPSService
                         yield return null;
                         continue;
                     }
-                    NativeArray<byte> copy = new NativeArray<byte>(input.Length, Allocator.TempJob);
-                    copy.CopyFrom(input);
 
-                    var task = mobileVPS.GetFeaturesAsync(copy);
+                    var task = mobileVPS.GetFeaturesAsync(input);
                     while (!task.IsCompleted)
                         yield return null;
 
-                    copy.Dispose();
+                    ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
                     Debug.Log("Sending VPS Request...");
