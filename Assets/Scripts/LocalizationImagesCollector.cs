@@ -21,9 +21,12 @@ namespace ARVRLab.VPSService
         // Задержка между фотографиями
         private float timeout = 1;
         // Расстояние между фотографиями
-        private const float angle = 30f;
+        private const float angle = 25f;
 
         private float predAngle = 0f;
+
+        private const float MaxAngleX = 30;
+        private const float MaxAngleZ = 30;
 
         public static event System.Action OnPhotoAdded;
         public static event System.Action OnSeriaIsReady;
@@ -51,18 +54,28 @@ namespace ARVRLab.VPSService
             Debug.Log("Start collect photo");
             for (int i = 0; i < photosInSeria; i++)
             {
+                if (i != 0)
+                {
+                    if (useAngle)
+                    {
+                        Vector3 curAngle;
+                        do
+                        {
+                            yield return null;
+                            curAngle = tracking.GetLocalTracking().Rotation.eulerAngles;
+                        }
+                        while (!CheckTakePhotoConditions(curAngle));
+                        yield return new WaitUntil(() => Mathf.Abs(Mathf.DeltaAngle(predAngle, tracking.GetLocalTracking().Rotation.eulerAngles.y)) > angle);
+                    }
+                    else
+                    {
+                        yield return new WaitForSeconds(timeout);
+                    }
+                }
+
                 yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
                 OnPhotoAdded?.Invoke();
                 predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;
-
-                if (useAngle)
-                {
-                    yield return new WaitUntil(() => Mathf.Abs(Mathf.DeltaAngle(predAngle, tracking.GetLocalTracking().Rotation.eulerAngles.y)) > angle);
-                }
-                else
-                {
-                    yield return new WaitForSeconds(timeout);
-                }
             }
             OnSeriaIsReady?.Invoke();
         }
@@ -89,11 +102,14 @@ namespace ARVRLab.VPSService
                     Debug.LogError("Cannot take camera image as ByteArray");
                     yield break;
                 }
+                NativeArray<byte> copy = new NativeArray<byte>(input.Length, Allocator.TempJob);
+                copy.CopyFrom(input);
 
-                var task = provider.GetMobileVPS().GetFeaturesAsync(input);
+                var task = provider.GetMobileVPS().GetFeaturesAsync(copy);
                 while (!task.IsCompleted)
                     yield return null;
 
+                copy.Dispose();
                 Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
                 ImageBytes = null;
             }
@@ -114,6 +130,12 @@ namespace ARVRLab.VPSService
             currentData.meta = Meta;
             currentData.pose = provider.GetARFoundationApplyer().GetCurrentPose();
             currentData.Embedding = Embedding;
+        }
+
+        private bool CheckTakePhotoConditions(Vector3 curAngle)
+        {
+            return (curAngle.x < MaxAngleX || curAngle.x > 360 - MaxAngleX) &&
+            (curAngle.z < MaxAngleZ || curAngle.z > 360 - MaxAngleZ);
         }
     }
 }

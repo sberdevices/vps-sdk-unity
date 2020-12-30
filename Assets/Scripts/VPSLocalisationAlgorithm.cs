@@ -139,6 +139,7 @@ namespace ARVRLab.VPSService
                         locationState.Status = LocalisationStatus.VPS_READY;
                         locationState.Error = ErrorCode.NO_ERROR;
                         locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response, imagesCollector.GetLocalizationData()[response.Img_id].pose);
+                        
 
                         OnLocalisationHappend?.Invoke(locationState);
                     }
@@ -174,11 +175,14 @@ namespace ARVRLab.VPSService
                         yield return null;
                         continue;
                     }
+                    NativeArray<byte> copy = new NativeArray<byte>(input.Length, Allocator.TempJob);
+                    copy.CopyFrom(input);
 
-                    var task = mobileVPS.GetFeaturesAsync(input);
+                    var task = mobileVPS.GetFeaturesAsync(copy);
                     while (!task.IsCompleted)
                         yield return null;
 
+                    copy.Dispose();
                     Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
                     Debug.Log("Sending VPS Request...");
