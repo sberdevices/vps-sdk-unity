@@ -89,8 +89,8 @@ namespace ARVRLab.VPSService
         {
             ICamera camera = provider.GetCamera();
 
-            string Meta = DataCollector.CollectData(provider, true);
-
+            string Meta;
+            Pose pose;
             // если отправляем фичи - получаем их
             byte[] Embedding;
             byte[] ImageBytes;
@@ -98,6 +98,10 @@ namespace ARVRLab.VPSService
             {
                 yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
                 ARFoundationCamera.semaphore.TakeOne();
+
+                Meta = DataCollector.CollectData(provider, true);
+                pose = provider.GetARFoundationApplyer().GetCurrentPose();
+
                 NativeArray<byte> input = camera.GetImageArray();
                 if (input == null || input.Length == 0)
                 {
@@ -115,6 +119,8 @@ namespace ARVRLab.VPSService
             }
             else
             {
+                Meta = DataCollector.CollectData(provider, true);
+                pose = provider.GetARFoundationApplyer().GetCurrentPose();
                 Texture2D Image = camera.GetFrame();
                 if (Image == null)
                 {
@@ -128,7 +134,7 @@ namespace ARVRLab.VPSService
 
             currentData.image = ImageBytes;
             currentData.meta = Meta;
-            currentData.pose = provider.GetARFoundationApplyer().GetCurrentPose();
+            currentData.pose = pose;
             currentData.Embedding = Embedding;
         }
 
