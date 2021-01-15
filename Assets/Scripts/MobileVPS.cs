@@ -22,6 +22,9 @@ namespace ARVRLab.VPSService
 
         private int width, height;
 
+        private CancellationTokenSource tokenSource;
+        private CancellationToken cancelToken;
+
         public MobileVPS()
         {
             var options = new InterpreterOptions
@@ -46,9 +49,21 @@ namespace ARVRLab.VPSService
             interpreter?.Dispose();
         }
 
+        public void StopTask()
+        {
+            tokenSource.Cancel();
+        }
+
         public async Task<HfnetResult> GetFeaturesAsync(NativeArray<byte> buffer)
         {
-            return await Task.Run(() => doInference(buffer));
+            if (tokenSource != null)
+            {
+                tokenSource.Dispose();
+            }
+            tokenSource = new CancellationTokenSource();
+            cancelToken = tokenSource.Token;
+
+            return await Task.Run(() => doInference(buffer), cancelToken);
         }
 
         private HfnetResult doInference(NativeArray<byte> buffer)
@@ -58,6 +73,12 @@ namespace ARVRLab.VPSService
             {
                 for (int j = 0; j < height; j++)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        Debug.Log("Mobile VPS task canceled");
+                        return null;
+                    }
+
                     //против часовой - работает (хотя по логики так фичи вверх ногами)
                     input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
                     //по часовой - по логике так, но не работает

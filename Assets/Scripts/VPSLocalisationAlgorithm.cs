@@ -64,7 +64,9 @@ namespace ARVRLab.VPSService
 
         public void Stop()
         {
+            provider.GetMobileVPS().StopTask();
             localisationService.StopAllCoroutines();
+            ARFoundationCamera.semaphore.Free();
         }
 
         /// <summary>

@@ -73,6 +73,7 @@ namespace ARVRLab.VPSService
                     }
                 }
 
+                yield return new WaitUntil(() => CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles));
                 yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
                 OnPhotoAdded?.Invoke();
                 predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;

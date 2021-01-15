@@ -83,7 +83,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     orientation = 0,
                     mirrorX = false,
                     // При билде поменять
-                    mirrorY = false // Ошибка может быть здесь
+                    mirrorY = true // Ошибка может быть здесь
                 },
 
                 intrinsics = new Intrinsics
