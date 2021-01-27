@@ -51,7 +51,10 @@ namespace ARVRLab.VPSService
 
         public void StopTask()
         {
-            tokenSource.Cancel();
+            if (tokenSource != null)
+            {
+                tokenSource.Cancel();
+            }
         }
 
         public async Task<HfnetResult> GetFeaturesAsync(NativeArray<byte> buffer)
