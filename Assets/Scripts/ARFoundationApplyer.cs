@@ -83,12 +83,11 @@ namespace ARVRLab.VPSService
         {
             LocalisationResult correctedResult = new LocalisationResult();
 
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition; // ToDo: тут нужен CustomStartPose - подумать
+            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
 
             var rot = Quaternion.Euler(0, localisation.LocalRotationY, 0);
             var qrot = Quaternion.Inverse(CustomStartPose.rotation) * rot;
             correctedResult.LocalRotationY = qrot.eulerAngles.y;
-            //correctedResult.LocalRotationY = localisation.LocalRotationY + arSessionOrigin.transform.localRotation.eulerAngles.y - CustomStartPose.rotation.eulerAngles.y;
 
             StopAllCoroutines();
 
@@ -133,6 +132,8 @@ namespace ARVRLab.VPSService
             {
                 arSessionOrigin.transform.position = Vector3.zero;
                 arSessionOrigin.transform.rotation = Quaternion.identity;
+                arSessionOrigin.camera.transform.position = Vector3.zero;
+                arSessionOrigin.camera.transform.rotation = Quaternion.identity;
             }
         }
     }

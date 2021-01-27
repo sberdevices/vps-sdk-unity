@@ -82,8 +82,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     orientation = 0,
                     mirrorX = false,
-                    // При билде поменять
-                    mirrorY = true // Ошибка может быть здесь
+#if UNITY_EDITOR
+                    mirrorY = false
+#else
+                    mirrorY = true // на устройстве обязательно отражать
+#endif
+
                 },
 
                 intrinsics = new Intrinsics
