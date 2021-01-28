@@ -24,11 +24,6 @@ namespace ARVRLab.VPSService
             if (Application.isEditor)
                 return;
 
-            // для андроида запрашиваем разрешение отдельно
-#if UNITY_ANDROID
-            UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
-#endif
-
             gpsData = new GPSData();
             compassData = new CompassData();
         }
@@ -113,6 +108,10 @@ namespace ARVRLab.VPSService
             enabled = enable;
             if (enabled)
             {
+                // для андроида запрашиваем разрешение отдельно
+#if UNITY_ANDROID
+                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
+#endif
                 StartCoroutine(StartGPS());
             }
             else
