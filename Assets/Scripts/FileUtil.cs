@@ -13,10 +13,7 @@ namespace TensorFlowLite
                 path = Path.Combine(Application.persistentDataPath, path);
             }
 
-            if (Application.platform != RuntimePlatform.Android)
-            {
-                path = "file://" + path;
-            }
+            path = "file://" + path;
 
             var request = UnityWebRequest.Get(path);
             request.SendWebRequest();
