@@ -108,8 +108,8 @@ namespace ARVRLab.VPSService
             // если смещение больше MaxInterpolationDistance - перемещаем мгновенно
             if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
             {
-                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotationY);
                 arSessionOrigin.transform.localPosition = NewPosition;
+                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotationY);
                 yield break;
             }
 
