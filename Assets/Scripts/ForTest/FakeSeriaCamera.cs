@@ -7,11 +7,21 @@ namespace ARVRLab.VPSService
 {
     public class FakeSeriaCamera : MonoBehaviour, ICamera
     {
+        [Tooltip("Разрешение, в котором будут отправляться фотографии")]
+        private Vector2Int desiredResolution = new Vector2Int(960, 540);
+
         public Texture2D[] FakeTextures;
 
         private int Counter = 0;
 
         private NativeArray<byte> buffer;
+
+        private float resizeCoefficient = 1.0f;
+
+        private void Start()
+        {
+            resizeCoefficient = desiredResolution.x / FakeTextures[0].width;
+        }
 
         public Vector2 GetFocalPixelLength()
         {
@@ -57,6 +67,11 @@ namespace ARVRLab.VPSService
             {
                 buffer.Dispose();
             }
+        }
+
+        public float GetResizeCoefficient()
+        {
+            return resizeCoefficient;
         }
     }
 }
