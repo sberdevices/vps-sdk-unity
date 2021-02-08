@@ -16,6 +16,7 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Разрешение, в котором будут отправляться фотографии")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
+        private float resizeCoefficient = 1.0f;
 
         public Resolution TagretResolution;
 
@@ -75,6 +76,7 @@ namespace ARVRLab.VPSService
                     Debug.LogError("Не удалось получить HD разрешение!");
                     // Берем наилучшее возможное
                     cameraManager.currentConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
+                    resizeCoefficient = TagretResolution.width / cameraManager.currentConfiguration.Value.width;
                 }
             }
         }
@@ -196,7 +198,7 @@ namespace ARVRLab.VPSService
             FreeBufferMemory();
         }
 
-        public struct SimpleJob : IJobParallelFor
+        private struct SimpleJob : IJobParallelFor
         {
             public NativeArray<Color> array;
             private Color color;
@@ -208,6 +210,11 @@ namespace ARVRLab.VPSService
                 color.b = array[i].r;
                 array[i] = color;
             }
+        }
+
+        public float GetResizeCoefficient()
+        {
+            return resizeCoefficient;
         }
     }
 }

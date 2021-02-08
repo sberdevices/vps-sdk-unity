@@ -12,5 +12,6 @@ namespace ARVRLab.VPSService
         Vector2 GetFocalPixelLength();
         Vector2 GetPrincipalPoint();
         NativeArray<byte> GetImageArray();
+        float GetResizeCoefficient();
     }
 }

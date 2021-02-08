@@ -39,6 +39,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
+            float resizeCoef = Provider.GetCamera().GetResizeCoefficient();
 
             var attrib = new RequestAttributes
             {
@@ -92,10 +93,10 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 intrinsics = new Intrinsics
                 {
-                    fx = FocalPixelLength.x,
-                    fy = FocalPixelLength.y,
-                    cx = PrincipalPoint.x,
-                    cy = PrincipalPoint.y
+                    fx = FocalPixelLength.x * resizeCoef,
+                    fy = FocalPixelLength.y * resizeCoef,
+                    cx = PrincipalPoint.x * resizeCoef,
+                    cy = PrincipalPoint.y * resizeCoef
                 },
 
                 forced_localization = forceVPS
