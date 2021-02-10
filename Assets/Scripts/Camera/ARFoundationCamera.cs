@@ -34,6 +34,8 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
+            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
+
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
@@ -101,6 +103,7 @@ namespace ARVRLab.VPSService
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
+                Debug.Log("Не удалось получить изображение с камеры!");
                 return;
             }
 
@@ -118,12 +121,16 @@ namespace ARVRLab.VPSService
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
             // Получаем ссылку на массив байтов текущей текстуры
-            FreeBufferMemory();
-            buffer = texture.GetRawTextureData<byte>();
+            var raw = texture.GetRawTextureData<byte>();
+
             try
             {
                 // Копируем байты из изображения с камеры в текстуру
-                image.Convert(conversionParams, new IntPtr(buffer.GetUnsafePtr()), buffer.Length);
+                image.Convert(conversionParams, new IntPtr(raw.GetUnsafePtr()), raw.Length);
+            }
+            catch(Exception ex)
+            {
+                Debug.LogException(ex);
             }
             finally
             {
@@ -131,8 +138,9 @@ namespace ARVRLab.VPSService
                 image.Dispose();
             }
 
-            semaphore.Free();
+            buffer.CopyFrom(raw);
             texture.Apply();
+            semaphore.Free();
         }
 
         public Texture2D GetFrame()
@@ -193,7 +201,7 @@ namespace ARVRLab.VPSService
 
         private void FreeBufferMemory()
         {
-            if (buffer.IsCreated)
+            if (buffer != null && buffer.IsCreated)
             {
                 buffer.Dispose();
             }
