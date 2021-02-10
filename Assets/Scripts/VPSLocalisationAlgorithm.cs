@@ -162,7 +162,7 @@ namespace ARVRLab.VPSService
                 // запомним текущию позицию
                 arRFoundationApplyer?.LocalisationStart();
 
-                Meta = DataCollector.CollectData(provider, !isCalibration);
+                Meta = DataCollector.CollectData(provider, !isCalibration, sendOnlyFeatures);
 
                 requestVPS.SetUrl(settings.Url);
 

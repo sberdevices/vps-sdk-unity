@@ -100,7 +100,7 @@ namespace ARVRLab.VPSService
                 yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
                 ARFoundationCamera.semaphore.TakeOne();
 
-                Meta = DataCollector.CollectData(provider, true);
+                Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
                 NativeArray<byte> input = camera.GetImageArray();
@@ -120,7 +120,7 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                Meta = DataCollector.CollectData(provider, true);
+                Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
                 Texture2D Image = camera.GetFrame();
                 if (Image == null)

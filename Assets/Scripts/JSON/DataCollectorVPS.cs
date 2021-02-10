@@ -10,7 +10,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     /// </summary>
     public static class DataCollector
     {
-        public static RequestStruct CollectDataAttributes(ServiceProvider Provider, bool forceVPS = false)
+        private static RequestStruct CollectDataAttributes(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
@@ -81,7 +81,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 imageTransform = new ImageTransform
                 {
-                    orientation = 0,
+                    orientation = sendOnlyFeatures ? 1 : 0,
                     mirrorX = false,
 #if UNITY_EDITOR
                     mirrorY = false
@@ -93,10 +93,10 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 intrinsics = new Intrinsics
                 {
-                    fx = FocalPixelLength.x * resizeCoef,
-                    fy = FocalPixelLength.y * resizeCoef,
-                    cx = PrincipalPoint.x * resizeCoef,
-                    cy = PrincipalPoint.y * resizeCoef
+                    fx = sendOnlyFeatures ? FocalPixelLength.y * resizeCoef : FocalPixelLength.x * resizeCoef,
+                    fy = sendOnlyFeatures ? FocalPixelLength.x * resizeCoef : FocalPixelLength.y * resizeCoef,
+                    cx = sendOnlyFeatures ? PrincipalPoint.y * resizeCoef : PrincipalPoint.x * resizeCoef,
+                    cy = sendOnlyFeatures ? PrincipalPoint.x * resizeCoef : PrincipalPoint.y * resizeCoef
                 },
 
                 forced_localization = forceVPS
@@ -128,9 +128,9 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// <returns>The data.</returns>
         /// <param name="Provider">Provider.</param>
         /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static string CollectData(ServiceProvider Provider, bool forceVPS = false)
+        public static string CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
         {
-            var communicationStruct = CollectDataAttributes(Provider, forceVPS);
+            var communicationStruct = CollectDataAttributes(Provider, forceVPS, sendOnlyFeatures);
             var json = JsonUtility.ToJson(communicationStruct);
 
             Debug.Log(json);

@@ -70,13 +70,19 @@ namespace ARVRLab.VPSService
                 }
 
                 // Пытаемся получить разрешение 1920x1080
-                cameraManager.currentConfiguration = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
+                var _1920x1080 = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
+                cameraManager.currentConfiguration = _1920x1080;
                 if (cameraManager.currentConfiguration == null)
                 {
                     Debug.LogError("Не удалось получить HD разрешение!");
                     // Берем наилучшее возможное
-                    cameraManager.currentConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
-                    resizeCoefficient = TagretResolution.width / cameraManager.currentConfiguration.Value.width;
+                    var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
+                    cameraManager.currentConfiguration = bestConfiguration;
+                    resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
+                }
+                else
+                {
+                    resizeCoefficient = (float)TagretResolution.width / (float)_1920x1080.width;
                 }
             }
         }
