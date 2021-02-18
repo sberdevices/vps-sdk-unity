@@ -129,7 +129,7 @@ namespace ARVRLab.VPSService
                     yield break;
                 }
 
-                ImageBytes = Image.EncodeToJPG();
+                ImageBytes = Image.EncodeToJPG(100);
                 Embedding = null;
             }
 

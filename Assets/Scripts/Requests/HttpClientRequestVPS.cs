@@ -154,7 +154,7 @@ namespace ARVRLab.VPSService
 
         private byte[] GetByteArrayFromImage(Texture2D image)
         {
-            byte[] bytesOfImage = image.EncodeToJPG();
+            byte[] bytesOfImage = image.EncodeToJPG(100);
             return bytesOfImage;
         }
 
