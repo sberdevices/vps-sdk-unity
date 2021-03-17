@@ -99,9 +99,9 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     cy = sendOnlyFeatures ? PrincipalPoint.x * resizeCoef : PrincipalPoint.y * resizeCoef
                 },
 
-                forced_localization = forceVPS
+                forced_localization = forceVPS,
 
-
+                version = 1
             };
 
 

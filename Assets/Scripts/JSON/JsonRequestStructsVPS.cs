@@ -27,6 +27,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public Intrinsics intrinsics;
 
         public bool forced_localization;
+
+        public int version;
 	}
 
     [Serializable]
