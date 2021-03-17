@@ -23,12 +23,12 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            resizeCoefficient = desiredResolution.x / FakeTexture.width;
+            resizeCoefficient = (float)desiredResolution.x / (float)FakeTexture.width;
         }
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1396.5250f, 1396.5250f);
+            return new Vector2(722.1238403320312f, 722.1238403320312f);
         }
 
         public Texture2D GetFrame()
@@ -45,7 +45,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(FakeTexture.width * 0.5f, FakeTexture.height * 0.5f);
+            return new Vector2(479.7787170410156f, 359.7473449707031f);
         }
 
         public bool IsCameraReady()
