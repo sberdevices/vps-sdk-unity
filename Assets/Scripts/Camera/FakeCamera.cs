@@ -7,14 +7,14 @@ using UnityEngine.UI;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// Фейковая камера - выдает заданную картинку
+    /// Return FakeTexture image
     /// </summary>
     public class FakeCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Разрешение, в котором будут отправляться фотографии")]
+        [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
 
-        [Tooltip("Текстура, которая будет отправлена")]
+        [Tooltip("Texture for sending")]
         public Texture2D FakeTexture;
 
         private NativeArray<byte> buffer;

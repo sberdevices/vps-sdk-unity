@@ -5,16 +5,16 @@ using UnityEngine;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// Получение GPS координат и значение компаса
+    /// Getting GPS coordinates and compass
     /// </summary>
     public class UnityGPS : MonoBehaviour, IServiceGPS
     {
         private GPSData gpsData;
         private CompassData compassData;
 
-        // максимальное время ожидания инициализации
+        // max initialization time
         private int maxWait = 20;
-        // период обновления данных gps
+        // update gps timeout
         private const float timeToUpdate = 3;
 
         private new bool enabled = true;
@@ -30,7 +30,7 @@ namespace ARVRLab.VPSService
 
         private IEnumerator StartGPS()
         {
-            // Проверяем, что gps доступен
+            // check gps available
             if (!Input.location.isEnabledByUser)
             {
                 gpsData.status = GPSStatus.Failed;
@@ -38,18 +38,18 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            // Запускаем 
+            // start gps 
             Input.location.Start(0f, 0f);
             Input.compass.enabled = true;
 
-            // Ждем инициализации
+            // initialization
             while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
             {
                 yield return new WaitForSeconds(1);
                 maxWait--;
             }
 
-            // Если не получилось инициализировать в течении maxWait секунд - выход по таймауту
+            // timeout exit
             if (maxWait < 1)
             {
                 gpsData.status = GPSStatus.Failed;
@@ -57,7 +57,7 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            // Проверка на ошибку соединения
+            // check connection
             if (Input.location.status == LocationServiceStatus.Failed)
             {
                 Debug.LogError("GPS: Unable to determine device location");
@@ -108,7 +108,7 @@ namespace ARVRLab.VPSService
             enabled = enable;
             if (enabled)
             {
-                // для андроида запрашиваем разрешение отдельно
+                // for android ask permission here
 #if UNITY_ANDROID
                 UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
 #endif

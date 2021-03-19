@@ -6,7 +6,7 @@ using UnityEngine;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// Фейковый GPS - выдает заданные данные
+    /// Return fake gps data 
     /// </summary>
     public class FakeGPS : MonoBehaviour, IServiceGPS
     {

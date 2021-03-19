@@ -54,7 +54,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Переводит результаты работы нейронки в массив байт
+        /// Pack mobileVPS result to byte array
         /// </summary>
         private static byte[] ConvertFloatToByteArray(float[] floats)
         {
@@ -65,7 +65,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Переводит результаты работы нейронки в массив байт
+        /// Pack mobileVPS result to byte array
         /// </summary>
         private static byte[] ConvertFloatToByteArray(float[,] floats)
         {

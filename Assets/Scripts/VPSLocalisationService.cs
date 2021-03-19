@@ -5,23 +5,23 @@ using UnityEngine;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// API сервиса VPS
+    /// API VPS Service
     /// </summary>
     public class VPSLocalisationService : MonoBehaviour
     {
-        [Tooltip("Запускать VPS сразу?")]
+        [Tooltip("Start VPS in OnAwake?")]
         public bool StartOnAwake;
 
-        [Tooltip("Какие брать данные с камеры, GPS...")]
+        [Tooltip("Which camera, GPS and tracking use")]
         public ServiceProvider provider;
 
-        [Tooltip("Использовать пайплайн с локализацией по серии снимков?")]
+        [Tooltip("Use photo seria pipeline?")]
         public bool UsePhotoSerias;
-        [Tooltip("Отправлять фичи или фотку?")]
+        [Tooltip("Send features or photo?")]
         public bool SendOnlyFeatures;
-        [Tooltip("Всегда слать force vps?")]
+        [Tooltip("Always send force vps?")]
         public bool AlwaysForce;
-        [Tooltip("Отправлять позицию GPS?")]
+        [Tooltip("Send GPS?")]
         public bool SendGPS;
 
         [Header("Default VPS Settings")]
@@ -29,7 +29,7 @@ namespace ARVRLab.VPSService
         public ServerType defaultServerType;
 
         [Header("Custom URL")]
-        [Tooltip("Использовать кастомную ссылку?")]
+        [Tooltip("Use custom url?")]
         public bool UseCustomUrl;
         public string CustomUrl = "";
 
@@ -37,17 +37,14 @@ namespace ARVRLab.VPSService
         private VPSPrepareStatus vpsPreparing;
 
         /// <summary>
-        /// Событие ошибки локализации
+        /// Event localisation error
         /// </summary>
         public event System.Action<ErrorCode> OnErrorHappend;
 
         /// <summary>
-        /// Событие успешной локализации
+        /// Event localisation success
         /// </summary>
         public event System.Action<LocationState> OnPositionUpdated;
-
-        private bool isMock;
-        private LocationState mockLocation;
 
         private VPSLocalisationAlgorithm algorithm;
 
@@ -85,7 +82,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Запускает сервис VPS c настройками по умолчанию
+        /// Start VPS service with default settings
         /// </summary>
         public void StartVPS()
         {
@@ -93,7 +90,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Запускает сервис VPS c заданными настройками
+        /// Start VPS service with settings
         /// </summary>
         public void StartVPS(SettingsVPS settings)
         {
@@ -112,7 +109,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Останавливает работу сервиса VPS
+        /// Stop VPS service
         /// </summary>
         public void StopVps()
         {
@@ -120,14 +117,10 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает результат последней локализации
+        /// Get latest localisation result
         /// </summary>
         public LocationState GetLatestPose()
         {
-            if (isMock)
-                return mockLocation;
-
-            // null ref если алгоритм не запущен - выводим ошибку и возвращаем null
             if (algorithm == null)
             {
                 Debug.LogError("VPS service is not running. Use StartVPS before");
@@ -137,36 +130,15 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Задает тестовый результат запроса локализации
+        /// Цas there at least one successful localisation?
         /// </summary>
-        public void SetMockLocation(LocalisationResult mock_location)
-        {
-            mockLocation = new LocationState();
-
-            mockLocation.Localisation = mock_location;
-            mockLocation.Status = LocalisationStatus.VPS_READY;
-            mockLocation.Error = ErrorCode.NO_ERROR;
-        }
-
-        /// <summary>
-        /// Включает/выключает тестовый режим 
-        /// </summary>
-        public void SetMockMode(bool is_mock)
-        {
-            isMock = is_mock;
-        }
-
-        /// <summary>
-        /// Была ли локализация?
-        /// </summary>
-        /// <returns><c>true</c>, if localized was ised, <c>false</c> otherwise.</returns>
         public bool IsLocalized()
         {
             return provider.GetTracking().GetLocalTracking().IsLocalisedFloor;
         }
 
         /// <summary>
-        /// Возвращает прогресс скачивания от 0 до 1
+        /// Get download mobileVPS progress (between 0 and 1)
         /// </summary>
         public float GetPreparingProgress()
         {
@@ -174,7 +146,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Проверяет, скачана ли нейронка
+        /// Is mobileVPS ready?
         /// </summary>
         public bool IsReady()
         {
@@ -182,7 +154,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Сбрасывает текущий трекинг
+        /// Reset current tracking
         /// </summary>
         public void ResetTracking()
         {

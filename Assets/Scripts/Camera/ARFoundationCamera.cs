@@ -14,7 +14,7 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Разрешение, в котором будут отправляться фотографии")]
+        [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
         private float resizeCoefficient = 1.0f;
 
@@ -53,7 +53,6 @@ namespace ARVRLab.VPSService
         {   
             job = new SimpleJob();
 
-            // Если список доступных разрешений пустой
             while (configurations.Length == 0)
             {
                 if ((cameraManager == null) || (cameraManager.subsystem == null) || !cameraManager.subsystem.running)
@@ -62,7 +61,7 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                // Пытаемся получить доступные разрешения
+                // Try to get available resolutions
                 configurations = cameraManager.GetConfigurations(Allocator.Temp);
 
                 if (!configurations.IsCreated || (configurations.Length <= 0))
@@ -71,13 +70,13 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                // Пытаемся получить разрешение 1920x1080
+                // Try to get 1920x1080 resolution
                 var _1920x1080 = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
                 cameraManager.currentConfiguration = _1920x1080;
                 if (cameraManager.currentConfiguration == null)
                 {
-                    Debug.LogError("Не удалось получить HD разрешение!");
-                    // Берем наилучшее возможное
+                    Debug.LogError("Can't take HD resolution!");
+                    // Get the best resolution
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
                     resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
@@ -90,7 +89,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Обновляет значение texture
+        /// Update texture 
         /// </summary>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
@@ -99,7 +98,7 @@ namespace ARVRLab.VPSService
 
             semaphore.TakeOne();
 
-            // Пытаемся получить последнее изображение с камеры
+            // Get latest camera image
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
@@ -109,23 +108,22 @@ namespace ARVRLab.VPSService
 
             var format = TextureFormat.R8;
 
-            // Создаем текстуру
+            // Create texture
             if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
             {
                 texture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
             }
 
-            // Настраиваем параметры: задаем формат, отражаем по горизонтали (лево | право)
+            // Set parametrs: format, horizontal mirror (left | right)
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
-            // Задаем downscale до нужного разрешения
+            // Set downscale resolution
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
-            // Получаем ссылку на массив байтов текущей текстуры
             var raw = texture.GetRawTextureData<byte>();
 
             try
             {
-                // Копируем байты из изображения с камеры в текстуру
+                // Convert XRCpuImage to texture
                 image.Convert(conversionParams, new IntPtr(raw.GetUnsafePtr()), raw.Length);
             }
             catch(Exception ex)
@@ -134,7 +132,7 @@ namespace ARVRLab.VPSService
             }
             finally
             {
-                // Высвобождаем память
+                // Free memory
                 image.Dispose();
             }
 
@@ -145,7 +143,7 @@ namespace ARVRLab.VPSService
 
         public Texture2D GetFrame()
         {
-            // Необходимо создать новую текстуру, так как старая в формате R8 и не принимает каналы g и b
+            // Need to create new texture in RGB format
             if (returnedTexture == null)
             {
                 returnedTexture = new Texture2D(TagretResolution.width, TagretResolution.height, TextureFormat.RGBA32, false);

@@ -71,7 +71,7 @@ namespace ARVRLab.VPSService
 
         private HfnetResult doInference(NativeArray<byte> buffer)
         {
-            // заполняем input - преобразуем байты во флоат, поворачиваем и зеркалим изображение
+            // for input - convert bytes to float, rotate and mirror image
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
@@ -82,10 +82,7 @@ namespace ARVRLab.VPSService
                         return null;
                     }
 
-                    //против часовой - работает (хотя по логики так фичи вверх ногами)
                     input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
-                    //по часовой - по логике так, но не работает
-                    //input0[j, i, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
                 }
             }
 

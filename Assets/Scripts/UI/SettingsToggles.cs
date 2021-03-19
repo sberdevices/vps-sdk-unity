@@ -23,7 +23,11 @@ namespace ARVRLab.VPSService
             AlwaysForce.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
             SendGPS.onValueChanged.AddListener((value) => VPS.SendGPS = value);
 
-            RestartVPSButton.onClick.AddListener(() => VPS.StartVPS());
+            RestartVPSButton.onClick.AddListener(() =>
+            {
+                VPS.ResetTracking();
+                VPS.StartVPS();
+            });
         }
 
         private void Start()

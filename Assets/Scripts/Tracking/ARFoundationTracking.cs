@@ -46,7 +46,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Значения трекинга обновляются только при запросе на выдачу
+        /// Tracking updates only on request
         /// </summary>
         /// <returns>The local tracking.</returns>
         public TrackingData GetLocalTracking()

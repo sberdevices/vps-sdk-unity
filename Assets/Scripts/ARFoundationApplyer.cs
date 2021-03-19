@@ -11,10 +11,10 @@ namespace ARVRLab.VPSService
 
         private Pose startPose;
 
-        [Tooltip("Максимальное расстояние, на котором применяется интерполяция")]
+        [Tooltip("Max distance for interpolation")]
         public float MaxInterpolationDistance = 5;
 
-        [Tooltip("Скорость интерполяции")]
+        [Tooltip("Interpolation speed")]
         public float LerpSpeed = 2.0f;
 
         private void Start()
@@ -27,7 +27,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Сохраняем pose камеры перед отправкой запроса на сервер
+        /// Save camera pose before sending request
         /// </summary>
         public void LocalisationStart()
         {
@@ -37,7 +37,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает текущую pose камеры
+        /// Get current camera pose
         /// </summary>
         public Pose GetCurrentPose()
         {
@@ -47,7 +47,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Применяем полученные transform и возвращает скорректированную с учетом поправки ARFoundation локализацию
+        /// Apply taked transform and return adjusted ARFoundation localisation
         /// </summary>
         /// <returns>The VPST ransform.</returns>
         /// <param name="localisation">Localisation.</param>
@@ -73,8 +73,8 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Применяем полученные transform и возвращает скорректированную с учетом поправки ARFoundation локализацию
-        /// относительно заданной стартовой позиции
+        /// Apply taked transform and return adjusted ARFoundation localisation
+        /// relative to a custom start position
         /// </summary>
         /// <returns>The VPST ransform.</returns>
         /// <param name="localisation">Localisation.</param>
@@ -91,21 +91,20 @@ namespace ARVRLab.VPSService
 
             StopAllCoroutines();
 
-            // важно учитывать был ли это force vps или нет
             StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotationY));
 
             return correctedResult;
         }
 
         /// <summary>
-        /// Применяем NewPosition и NewRotationY с использованием интерполяции
+        /// Apply NewPosition and NewRotationY with interpolation
         /// </summary>
         /// <returns>The position and rot.</returns>
         /// <param name="NewPosition">New position.</param>
         /// <param name="NewRotationY">New rotation y.</param>
         IEnumerator UpdatePosAndRot(Vector3 NewPosition, float NewRotationY)
         {
-            // если смещение больше MaxInterpolationDistance - перемещаем мгновенно
+            // if the offset is greater than MaxInterpolationDistance - move instantly
             if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
             {
                 arSessionOrigin.transform.localPosition = NewPosition;

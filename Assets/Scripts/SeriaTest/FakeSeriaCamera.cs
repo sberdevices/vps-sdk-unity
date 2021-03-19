@@ -7,7 +7,7 @@ namespace ARVRLab.VPSService
 {
     public class FakeSeriaCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Разрешение, в котором будут отправляться фотографии")]
+        [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
 
         public Texture2D[] FakeTextures;

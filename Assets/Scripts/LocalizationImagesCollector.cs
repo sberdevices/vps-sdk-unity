@@ -8,19 +8,19 @@ using UnityEngine;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// Собирает серию фотографий для отправки на сервер локализации
+    /// Collects a series of photos to send to the localization server
     /// </summary>
     public class LocalizationImagesCollector
     {
-        // Кол-во фотографий в серии
+        // Number of photos in seria
         private int photosInSeria;
-        // Список фото, меты и pose, откуда были сделаны
+        // List of photo, meta and poses
         private List<RequestLocalizationData> localizationData;
-        // Использовать угол или по таймауту?
+        // Using angle or timeout between photos?
         private bool useAngle = true;
-        // Задержка между фотографиями
+        // Delay between photos
         private float timeout = 1;
-        // Расстояние между фотографиями
+        // Angle between photos
         private const float angle = 25f;
 
         private float predAngle = 0f;
@@ -43,7 +43,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Делаем фото и собираем в список с интервалом timeout
+        /// Take photo and add it to list
         /// </summary>
         /// <returns>The image.</returns>
         /// <param name="provider">Provider.</param>
@@ -92,7 +92,7 @@ namespace ARVRLab.VPSService
 
             string Meta;
             Pose pose;
-            // если отправляем фичи - получаем их
+            // if send features - get them
             byte[] Embedding;
             byte[] ImageBytes;
             if (sendOnlyFeatures)

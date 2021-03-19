@@ -10,7 +10,7 @@ using System;
 namespace ARVRLab.VPSService
 {
     /// <summary>
-    /// Внутреннее управление VPS
+    /// Internal management VPS
     /// </summary>
     public class VPSLocalisationAlgorithm
     {
@@ -28,21 +28,21 @@ namespace ARVRLab.VPSService
         IRequestVPS requestVPS = new HttpClientRequestVPS();
 
         /// <summary>
-        /// Событие ошибки локализации
+        /// Event localisation error
         /// </summary>
         public event System.Action<ErrorCode> OnErrorHappend;
 
         /// <summary>
-        /// Событие успешной локализации
+        /// Event localisation success
         /// </summary>
         public event System.Action<LocationState> OnLocalisationHappend;
 
         /// <summary>
-        /// Конструктор
+        /// Constructor
         /// </summary>
-        /// <param name="vps_servise">Родительский GameObject, для запуска корутин</param>
-        /// <param name="vps_provider">Провайдер камеры, gps и трекинга</param>
-        /// <param name="vps_settings">Настройки</param>
+        /// <param name="vps_servise">Parent GameObject, for start coroutine</param>
+        /// <param name="vps_provider">Provider to get camera, gps and tracking</param>
+        /// <param name="vps_settings">Settings</param>
         public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool usePhotoSerias, bool onlyFeatures,
                                         bool alwaysForce, bool sendGps)
         {
@@ -70,7 +70,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает последний доступный Location state. Location state обновляется в LocalisationRoutine()
+        /// Get latest available Location state (updated in LocalisationRoutine())
         /// </summary>
         /// <returns></returns>
         public LocationState GetLocationRequest()
@@ -79,7 +79,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Главный цикл процесса. Проверяет готовность всех сервисов, отправляет запрос (force / не force), применяет полученную локализацию в случае успеха
+        /// Main cycle. Check readiness every service, send request (force / не force), apply the resulting localization if success
         /// </summary>
         /// <returns>The routine.</returns>
         public IEnumerator LocalisationRoutine()
@@ -115,7 +115,7 @@ namespace ARVRLab.VPSService
             {
                 yield return new WaitUntil(() => camera.IsCameraReady());
 
-                // проверим, должен ли VPS сделать запрос в режиме локализации или в режиме докалибровки
+                // send localisation (force) or calibration (not force) request?
                 bool isCalibration;
                 if (alwaysForceVPS)
                     isCalibration = false;
@@ -159,14 +159,14 @@ namespace ARVRLab.VPSService
                     continue;
                 }
 
-                // запомним текущию позицию
+                // remember current pose
                 arRFoundationApplyer?.LocalisationStart();
 
                 Meta = DataCollector.CollectData(provider, !isCalibration, sendOnlyFeatures);
 
                 requestVPS.SetUrl(settings.Url);
 
-                // если отправляем фичи - получаем их
+                // if send features - send them
                 if (sendOnlyFeatures)
                 {
                     MobileVPS mobileVPS = provider.GetMobileVPS();
@@ -190,7 +190,7 @@ namespace ARVRLab.VPSService
                     Debug.Log("Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Embedding, Meta);
                 }
-                // иначе отправляем только фото и мету
+                // if not - send only photo and meta
                 else
                 {
                     Image = camera.GetFrame();

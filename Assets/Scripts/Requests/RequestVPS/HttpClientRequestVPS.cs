@@ -10,12 +10,15 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Requst to VPS server
+    /// </summary>
     public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api для локализации через серию фотографий
+        // api for seria photo localization
         private string api_path_firstloc = "vps/api/v1/first_loc/job";
-        // api для стандартной работы
+        // api for one photo localisation
         private string api_path = "vps/api/v1/job";
 
         private int timeout = 15;
@@ -28,7 +31,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
+        /// Send requst: image and meta and выходы нейронки для извлечения фичей
         /// </summary>
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
@@ -58,7 +61,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Отправка запроса: изображение, meta-данные и выходы нейронки для извлечения фичей
+        /// Send requst: image and meta and mobileVPS result
         /// </summary>
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
         {
@@ -82,7 +85,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Отправка запроса: серия изображений и meta-данные к ним
+        /// Send requst: photo seria and meta 
         /// </summary>
         /// <returns>The vps localization request.</returns>
         /// <param name="data">Data.</param>
@@ -117,7 +120,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает статус последнего запроса
+        /// Get latest request status
         /// </summary>
         /// <returns>The status.</returns>
         public LocalisationStatus GetStatus()
@@ -126,7 +129,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает ошибку последнего запроса
+        /// Get latest request error
         /// </summary>
         /// <returns>The error code.</returns>
         public ErrorCode GetErrorCode()
@@ -135,7 +138,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Выдает ответ на последний запрос
+        /// Get latest request responce
         /// </summary>
         /// <returns>The responce.</returns>
         public LocalisationResult GetResponce()
@@ -159,7 +162,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Обновляет данные последнего ответа от сервера
+        /// Update latest response data
         /// </summary>
         /// <param name="Status">Status.</param>
         /// <param name="Error">Error.</param>

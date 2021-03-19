@@ -17,7 +17,7 @@ namespace ARVRLab.VPSService
         public VPSPrepareStatus()
         {
             dataPath = Path.Combine(Application.persistentDataPath, "hfnet_i8_960.tflite");
-            // если файл уже закачан, прогресс равен единице
+            // if mobileVPS already ready
             if (IsReady())
             {
                 progress = 1;
@@ -25,7 +25,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Корутина загрузки с сервера
+        /// Download mobileVPS
         /// </summary>
         public IEnumerator DownloadNeural()
         {
@@ -41,7 +41,7 @@ namespace ARVRLab.VPSService
                         yield return null;
                     }
 
-                    // проверка ошибки
+                    // check error
                     if (www.isNetworkError || www.isHttpError)
                     {
                         Debug.LogError("Can't download mobile vps network: " + www.error);
@@ -49,7 +49,6 @@ namespace ARVRLab.VPSService
                         continue;
                     }
 
-                    // после окончания скачивания прогресс равен единице
                     progress = www.downloadProgress;
                     File.WriteAllBytes(dataPath, www.downloadHandler.data);
                     Debug.Log("Mobile vps network downloaded successfully!");
@@ -60,7 +59,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Возвращает прогресс скачивания от 0 до 1
+        /// Get download progress (between 0 and 1)
         /// </summary>
         public float GetProgress()
         {
@@ -68,7 +67,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Проверяет, скачана ли нейронка
+        /// Is mobileVPS ready?
         /// </summary>
         public bool IsReady()
         {

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
     /// <summary>
-    /// Упавковка и распаковка JSON 
+    /// Serialization and deserealisation JSON 
     /// </summary>
     public static class DataCollector
     {
@@ -123,7 +123,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         }
 
         /// <summary>
-        /// Упаковывает все необходимы данные в json для отправки на сервер
+        /// Serialize all data in json
         /// </summary>
         /// <returns>The data.</returns>
         /// <param name="Provider">Provider.</param>
@@ -138,7 +138,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         }
 
         /// <summary>
-        /// Распаковываем ответ от сервера
+        /// Deserialize server responce
         /// </summary>
         /// <returns>The deserialize.</returns>
         /// <param name="json">Json.</param>
@@ -146,8 +146,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
 
-            // ToDo: Сервер выдает ImgId в поле id сессии. Нужно добавить дополнительное для
-            // него доп. поле в json и обработать здесь
             int id;
             bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
 

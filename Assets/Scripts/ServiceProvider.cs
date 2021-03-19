@@ -7,11 +7,11 @@ namespace ARVRLab.VPSService
     // TODO: Зарефактероить в мега-класс, с множеством настроек
     public class ServiceProvider : MonoBehaviour
     {
-        [Tooltip("Для применения полученной локализации")]
+        [Tooltip("To apply resulting localization")]
         [SerializeField]
         private ARFoundationApplyer arFoundationApplyer;
 
-        [Tooltip("Фото в серии для первой локализации")]
+        [Tooltip("Number photos in seria")]
         [SerializeField]
         public int PhotosInSeria = 5;
 

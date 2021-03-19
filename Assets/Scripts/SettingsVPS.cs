@@ -6,7 +6,9 @@ namespace ARVRLab.VPSService
 {
     public class SettingsVPS
     {
+        // Server url
         public string Url = "";
+        // Delay between sending
         public float Timeout = 5;
 
         public SettingsVPS(VPSBuilding building, ServerType serverType)

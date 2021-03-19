@@ -7,13 +7,13 @@ namespace ARVRLab.VPSService
     public enum ServerType { Prod, Stage, Dev };
 
     /// <summary>
-    /// Класс для генерирования ссылки
+    /// Generation server url
     /// </summary>
     public static class URLController
     {
-        // Заготовка для ссылки:
-        // 0 - подсервер
-        // 1 - имя проекта
+        // Blank for url:
+        // 0 - subserver
+        // 1 - building name
         // 2 - location id
         const string urlBlank = "http{0}://{1}api.{2}.vps.arvr.sberlabs.com/{3}";
 
