@@ -396,6 +396,18 @@ Transform:
   m_Father: {fileID: 266874265}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &938322973 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690752169532022778}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1336693106
 GameObject:
   m_ObjectHideFlags: 0
@@ -508,7 +520,6 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 86b12b858ef2e440e9a0cf3e3697b2de, type: 3}
   - {fileID: 4900000, guid: e12e44d9b74964628a9075148608602e, type: 3}
   - {fileID: 4900000, guid: eadc9e53240914aeda95dc32f7603bee, type: 3}
-  Buiding: 0
 --- !u!114 &1902949982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -976,7 +987,7 @@ PrefabInstance:
         type: 3}
       propertyPath: provider
       value: 
-      objectReference: {fileID: 1902949984}
+      objectReference: {fileID: 938322973}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
@@ -1016,6 +1027,16 @@ PrefabInstance:
         type: 3}
       propertyPath: defaultServerType
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultBuildingGuid
+      value: eeb38592-4a3c-4d4b-b4c6-38fd68331521
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultBuildingName
+      value: bootcamp
       objectReference: {fileID: 0}
     - target: {fileID: 8690752168016233475, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}

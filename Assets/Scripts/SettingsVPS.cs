@@ -11,9 +11,9 @@ namespace ARVRLab.VPSService
         // Delay between sending
         public float Timeout = 5;
 
-        public SettingsVPS(VPSBuilding building, ServerType serverType)
+        public SettingsVPS(string buildingName, string buildingGuid, ServerType serverType)
         {
-            Url = URLController.CreateURL(building, serverType);
+            Url = URLController.CreateURL(buildingName, buildingGuid, serverType);
         }
 
         public SettingsVPS(string customUrl)

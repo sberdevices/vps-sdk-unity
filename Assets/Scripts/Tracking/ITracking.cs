@@ -6,9 +6,9 @@ namespace ARVRLab.VPSService
 {
     public interface ITracking
     {
+        void SetDefaultBuilding(string defaultBuilding);
         TrackingData GetLocalTracking();
         void SetGuidPointcloud(string guid);
+        void ResetTracking();
     }
-
-    public enum VPSBuilding { Bootcamp, Polytech };
 }

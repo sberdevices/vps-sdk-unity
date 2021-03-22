@@ -21,7 +21,7 @@ namespace ARVRLab.VPSService
 
         private SettingsVPS settings;
 
-        private bool usingPhotoSerias;
+        private bool usingPhotoSeries;
         private bool sendOnlyFeatures;
         private bool alwaysForceVPS;
 
@@ -43,13 +43,13 @@ namespace ARVRLab.VPSService
         /// <param name="vps_servise">Parent GameObject, for start coroutine</param>
         /// <param name="vps_provider">Provider to get camera, gps and tracking</param>
         /// <param name="vps_settings">Settings</param>
-        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool usePhotoSerias, bool onlyFeatures,
+        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool usePhotoSeries, bool onlyFeatures,
                                         bool alwaysForce, bool sendGps)
         {
             localisationService = vps_servise;
             provider = vps_provider;
 
-            usingPhotoSerias = usePhotoSerias;
+            usingPhotoSeries = usePhotoSeries;
             sendOnlyFeatures = onlyFeatures;
             alwaysForceVPS = alwaysForce;
 
@@ -122,7 +122,7 @@ namespace ARVRLab.VPSService
                 else
                     isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
 
-                if (!isCalibration && usingPhotoSerias)
+                if (!isCalibration && usingPhotoSeries)
                 {
                     LocalizationImagesCollector imagesCollector = provider.GetImageCollector();
                     yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);

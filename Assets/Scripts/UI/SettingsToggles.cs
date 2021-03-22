@@ -18,7 +18,7 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            UsePhotoSerias.onValueChanged.AddListener((value) => VPS.UsePhotoSerias = value);
+            UsePhotoSerias.onValueChanged.AddListener((value) => VPS.UsePhotoSeries = value);
             SendOnlyFeatures.onValueChanged.AddListener((value) => VPS.SendOnlyFeatures = value);
             AlwaysForce.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
             SendGPS.onValueChanged.AddListener((value) => VPS.SendGPS = value);
@@ -32,7 +32,7 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            UsePhotoSerias.isOn = VPS.UsePhotoSerias;
+            UsePhotoSerias.isOn = VPS.UsePhotoSeries;
             SendOnlyFeatures.isOn = VPS.SendOnlyFeatures;
             AlwaysForce.isOn = VPS.AlwaysForce;
             SendGPS.isOn = VPS.SendGPS;

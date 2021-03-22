@@ -16,7 +16,7 @@ namespace ARVRLab.VPSService
         public ServiceProvider provider;
 
         [Tooltip("Use photo seria pipeline?")]
-        public bool UsePhotoSerias;
+        public bool UsePhotoSeries;
         [Tooltip("Send features or photo?")]
         public bool SendOnlyFeatures;
         [Tooltip("Always send force vps?")]
@@ -25,7 +25,10 @@ namespace ARVRLab.VPSService
         public bool SendGPS;
 
         [Header("Default VPS Settings")]
-        public VPSBuilding defaultBuilding;
+        [Tooltip("bootcamp, polytech")]
+        public string defaultBuildingName;
+        [Tooltip("eeb38592-4a3c-4d4b-b4c6-38fd68331521, Polytech")]
+        public string defaultBuildingGuid;
         public ServerType defaultServerType;
 
         [Header("Custom URL")]
@@ -74,8 +77,10 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                defaultSettings = new SettingsVPS(defaultBuilding, defaultServerType);
+                defaultSettings = new SettingsVPS(defaultBuildingName, defaultBuildingGuid, defaultServerType);
             }
+
+            provider.GetTracking().SetDefaultBuilding(defaultBuildingGuid);
 
             if (StartOnAwake)
                 StartVPS(defaultSettings);
@@ -102,7 +107,7 @@ namespace ARVRLab.VPSService
 
             StopVps();
 
-            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSerias, SendOnlyFeatures, AlwaysForce, SendGPS);
+            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSeries, SendOnlyFeatures, AlwaysForce, SendGPS);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
             algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);
@@ -157,9 +162,9 @@ namespace ARVRLab.VPSService
         /// Reset current tracking
         /// </summary>
         public void ResetTracking()
-        {
+        {;
             provider.GetARFoundationApplyer()?.ResetTracking();
-            provider.GetTracking().GetLocalTracking().IsLocalisedFloor = false;
+            provider.GetTracking().ResetTracking();
         }
 
         private void Awake()

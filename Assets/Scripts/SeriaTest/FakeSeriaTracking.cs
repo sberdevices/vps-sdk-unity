@@ -17,8 +17,6 @@ namespace ARVRLab.VPSService
 
         public TextAsset[] CustomPoses;
 
-        public VPSBuilding Buiding;
-
         private void Awake()
         {
             string [] files = Directory.GetFiles(ImagesPath);
@@ -50,14 +48,6 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            if (Buiding == VPSBuilding.Bootcamp)
-            {
-                DefaultGuidPointcloud = "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-            }
-            else if (Buiding == VPSBuilding.Polytech)
-            {
-                DefaultGuidPointcloud = "Polytech";
-            }
             trackingData = new TrackingData
             {
                 GuidPointcloud = DefaultGuidPointcloud
@@ -88,6 +78,26 @@ namespace ARVRLab.VPSService
         {
             trackingData.GuidPointcloud = guid;
             trackingData.IsLocalisedFloor = true;
+        }
+
+        public void SetDefaultBuilding(string defaultBuilding)
+        {
+            if (trackingData == null)
+            {
+                trackingData = new TrackingData()
+                {
+                    GuidPointcloud = defaultBuilding
+                };
+            }
+        }
+
+        public void ResetTracking()
+        {
+            if (trackingData != null)
+            {
+                trackingData.GuidPointcloud = DefaultGuidPointcloud;
+                trackingData.IsLocalisedFloor = false;
+            }
         }
     }
 }

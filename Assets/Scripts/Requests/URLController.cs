@@ -17,35 +17,9 @@ namespace ARVRLab.VPSService
         // 2 - location id
         const string urlBlank = "http{0}://{1}api.{2}.vps.arvr.sberlabs.com/{3}";
 
-        public static string CreateURL(VPSBuilding building, ServerType serverType)
+        public static string CreateURL(string buildingName, string buildingGuid, ServerType serverType)
         {
-            return string.Format(urlBlank, GetSecure(serverType), GetServerApi(serverType), GetBuildingName(building), GetLocationId(building));
-        }
-
-        private static string GetLocationId(VPSBuilding building)
-        {
-            switch(building)
-            {
-                case VPSBuilding.Bootcamp:
-                    return "eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-                case VPSBuilding.Polytech:
-                    return "polytech";
-                default:
-                    return "";
-            }
-        }
-
-        private static string GetBuildingName(VPSBuilding building)
-        {
-            switch (building)
-            {
-                case VPSBuilding.Bootcamp:
-                    return "bootcamp";
-                case VPSBuilding.Polytech:
-                    return "polytech";
-                default:
-                    return "";
-            }
+            return string.Format(urlBlank, GetSecure(serverType), GetServerApi(serverType), buildingName, buildingGuid);
         }
 
         private static string GetServerApi(ServerType type)
