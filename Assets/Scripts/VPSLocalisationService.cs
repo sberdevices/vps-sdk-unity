@@ -51,25 +51,15 @@ namespace ARVRLab.VPSService
 
         private VPSLocalisationAlgorithm algorithm;
 
-        private void Start()
+        private IEnumerator Start()
         {
             if (!provider)
             {
                 Debug.LogError("Please, select provider for VPS service!");
-                return;
+                yield break;
             }
 
             vpsPreparing = new VPSPrepareStatus();
-
-            if (!IsReady())
-            {
-                vpsPreparing.OnVPSReady += () => provider.Init();
-                StartCoroutine(vpsPreparing.DownloadNeural());
-            }
-            else
-            {
-                provider.Init();
-            }
 
             if (UseCustomUrl)
             {
@@ -80,10 +70,27 @@ namespace ARVRLab.VPSService
                 defaultSettings = new SettingsVPS(defaultBuildingName, defaultBuildingGuid, defaultServerType);
             }
 
+            if (!IsReady())
+            {
+                yield return vpsPreparing.DownloadNeural();
+                provider.Init();
+            }
+            else
+            {
+                provider.Init();
+            }
             provider.GetTracking().SetDefaultBuilding(defaultBuildingGuid);
 
             if (StartOnAwake)
                 StartVPS(defaultSettings);
+        }
+
+        private void OnApplicationPause(bool pause)
+        {
+            if (pause)
+                return;
+
+            ResetTracking();
         }
 
         /// <summary>
@@ -165,6 +172,7 @@ namespace ARVRLab.VPSService
         {;
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().ResetTracking();
+            Debug.Log("Tracking reseted");
         }
 
         private void Awake()

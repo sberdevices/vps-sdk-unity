@@ -31,13 +31,19 @@ namespace ARVRLab.VPSService
         {
             while (true)
             {
+                if (Application.internetReachability == NetworkReachability.NotReachable)
+                {
+                    Debug.Log("No internet to download MobileVPS");
+                }
                 yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
                 using (UnityWebRequest www = UnityWebRequest.Get(url))
                 {
                     www.SendWebRequest();
+                    Debug.Log("Start downloading MobileVPS");
                     while (!www.isDone)
                     {
                         progress = www.downloadProgress;
+                        Debug.Log("Current progress: " + progress);
                         yield return null;
                     }
 
