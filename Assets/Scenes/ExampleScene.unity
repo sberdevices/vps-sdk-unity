@@ -547,11 +547,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ImagesPath: /Users/admin/arnavigation/Modules/VPSServise/Assets/Images/Serias2
   CustomPoses:
-  - {fileID: 4900000, guid: edd8397f4aa464d53972767ca1855dcf, type: 3}
-  - {fileID: 4900000, guid: 481029effa403423c97c6817480551eb, type: 3}
-  - {fileID: 4900000, guid: 86b12b858ef2e440e9a0cf3e3697b2de, type: 3}
-  - {fileID: 4900000, guid: e12e44d9b74964628a9075148608602e, type: 3}
-  - {fileID: 4900000, guid: eadc9e53240914aeda95dc32f7603bee, type: 3}
+  - {fileID: 4900000, guid: 324eca03f84b749038c60f59568b3d23, type: 3}
+  - {fileID: 4900000, guid: 1611df46d19da4fac872fbbf9c977ed5, type: 3}
+  - {fileID: 4900000, guid: e110b8661bb764d0ea29ec3123988ed1, type: 3}
+  - {fileID: 4900000, guid: bc5ae4925084547cdaf0368dbffdaf36, type: 3}
+  - {fileID: 4900000, guid: b15ab672e822b403d9c49b2ccc09ef25, type: 3}
 --- !u!114 &1902949982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -565,11 +565,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FakeTextures:
-  - {fileID: 2800000, guid: 18af521e34a434f4997257f25fe85d1f, type: 3}
-  - {fileID: 2800000, guid: 9d25c66031eb44dcab2c366911ccee96, type: 3}
-  - {fileID: 2800000, guid: 4e6eb07ab32034329b200efcb6ddbd48, type: 3}
-  - {fileID: 2800000, guid: 02a52b4ac8b71472c9e0fe6cd30f9313, type: 3}
-  - {fileID: 2800000, guid: e62bec71d18aa4124a6f92bc2a7d34d8, type: 3}
+  - {fileID: 2800000, guid: 64e157b4d67584066a35a7f32c2bc3ca, type: 3}
+  - {fileID: 2800000, guid: f3ed2cd8cf440464a9e43197e9aec5d7, type: 3}
+  - {fileID: 2800000, guid: e11a17e34f9704bdeab7f58cf81e0803, type: 3}
+  - {fileID: 2800000, guid: 1505074142acb4fa48788dd73f76fbe5, type: 3}
+  - {fileID: 2800000, guid: a4904af6532cc495da398b5be9ab83d8, type: 3}
 --- !u!114 &1902949983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -739,7 +739,7 @@ PrefabInstance:
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 6a70ceb7df35340c58bc3299fbb12098, type: 3}
+      objectReference: {fileID: 2800000, guid: 1c0d2504c4afb4394aee919f13286abf, type: 3}
     - target: {fileID: 8690752169563304430, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: Buiding
