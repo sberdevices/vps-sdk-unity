@@ -1,9 +1,19 @@
-﻿using System.Collections;using System.Collections.Generic;using System.IO;
+﻿using System;
+using System.Collections;using System.Collections.Generic;using System.IO;
 using Unity.Collections;using UnityEngine;using UnityEngine.Rendering;
 using UnityEngine.UI;using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService{    /// <summary>    /// Return FakeTexture image    /// </summary>    public class FakeCamera : MonoBehaviour, ICamera    {        [Tooltip("Target photo resolution")]        private Vector2Int desiredResolution = new Vector2Int(960, 540);        [Tooltip("Texture for sending")]
-        public Texture2D FakeTexture;        private Texture2D ppFakeTexture;        private NativeArray<byte> buffer;        private Image mockImage;                private float resizeCoefficient = 1.0f;                private void Start()        {            Preprocess();            resizeCoefficient = (float)desiredResolution.x / (float)ppFakeTexture.width;            ShowMockFrame(FakeTexture);        }        public Vector2 GetFocalPixelLength()        {            return new Vector2(722.1238403320312f, 722.1238403320312f);        }        public Texture2D GetFrame()        {            return ppFakeTexture;        }        public NativeArray<byte> GetImageArray()        {            FreeBufferMemory();            buffer = new NativeArray<byte>(ppFakeTexture.GetRawTextureData(), Allocator.Persistent); // 960*540*4            return buffer;        }        public Vector2 GetPrincipalPoint()        {            return new Vector2(479.7787170410156f, 359.7473449707031f);        }        public bool IsCameraReady()        {            return ppFakeTexture != null;        }        private void OnDestroy()        {            FreeBufferMemory();        }        private void FreeBufferMemory()        {            if (buffer.IsCreated)            {                buffer.Dispose();            }        }        public float GetResizeCoefficient()        {            return resizeCoefficient;        }        private void Preprocess()
+        public Texture2D FakeTexture;        private Texture2D ppFakeTexture;        private NativeArray<byte> buffer;        private Image mockImage;                private float resizeCoefficient = 1.0f;                private void Start()        {            Preprocess();            resizeCoefficient = (float)desiredResolution.x / (float)ppFakeTexture.width;            ShowMockFrame(FakeTexture);            PrepareApplyer();        }
+
+        private void PrepareApplyer()
+        {
+            var applyer = FindObjectOfType<ARFoundationApplyer>();
+            if (applyer)
+                applyer.RotateOnlyY = false;
+        }
+
+        public Vector2 GetFocalPixelLength()        {            return new Vector2(722.1238403320312f, 722.1238403320312f);        }        public Texture2D GetFrame()        {            return ppFakeTexture;        }        public NativeArray<byte> GetImageArray()        {            FreeBufferMemory();            buffer = new NativeArray<byte>(ppFakeTexture.GetRawTextureData(), Allocator.Persistent); // 960*540*4            return buffer;        }        public Vector2 GetPrincipalPoint()        {            return new Vector2(479.7787170410156f, 359.7473449707031f);        }        public bool IsCameraReady()        {            return ppFakeTexture != null;        }        private void OnDestroy()        {            FreeBufferMemory();        }        private void FreeBufferMemory()        {            if (buffer.IsCreated)            {                buffer.Dispose();            }        }        public float GetResizeCoefficient()        {            return resizeCoefficient;        }        private void Preprocess()
         {
             Color32[] original = FakeTexture.GetPixels32();
             Color32[] rotated = new Color32[original.Length];

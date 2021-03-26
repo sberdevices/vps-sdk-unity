@@ -1024,6 +1024,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 8690752167743118256, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: RotateOnlyY
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118258, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: m_RootOrder
@@ -1102,7 +1107,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: AlwaysForce
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1127,7 +1132,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: SendOnlyFeatures
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1158,7 +1163,7 @@ PrefabInstance:
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 8ef594066068f48deb78378717da2a17, type: 3}
+      objectReference: {fileID: 2800000, guid: fe51ef2d20280164788818821bb6d499, type: 3}
     - target: {fileID: 8690752169563304430, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: Buiding

@@ -153,7 +153,9 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             {
                 LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
                 communicationStruct.data.attributes.location.relative.z),
-                LocalRotationY = communicationStruct.data.attributes.location.relative.pitch,
+                LocalRotation = new Vector3(communicationStruct.data.attributes.location.relative.roll,
+                                            communicationStruct.data.attributes.location.relative.pitch,
+                                            communicationStruct.data.attributes.location.relative.yaw),
                 Img_id = checkImgId ? id : -1,
                 //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
                 //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
