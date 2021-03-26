@@ -4,7 +4,13 @@ using Unity.Collections;using UnityEngine;using UnityEngine.Rendering;
 using UnityEngine.UI;using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService{    /// <summary>    /// Return FakeTexture image    /// </summary>    public class FakeCamera : MonoBehaviour, ICamera    {        [Tooltip("Target photo resolution")]        private Vector2Int desiredResolution = new Vector2Int(960, 540);        [Tooltip("Texture for sending")]
-        public Texture2D FakeTexture;        private Texture2D ppFakeTexture;        private NativeArray<byte> buffer;        private Image mockImage;                private float resizeCoefficient = 1.0f;                private void Start()        {            Preprocess();            resizeCoefficient = (float)desiredResolution.x / (float)ppFakeTexture.width;            ShowMockFrame(FakeTexture);            PrepareApplyer();        }
+        public Texture2D FakeTexture;        private Texture2D ppFakeTexture;        private NativeArray<byte> buffer;        private Image mockImage;                private float resizeCoefficient = 1.0f;                private void Start()        {            Preprocess();            resizeCoefficient = (float)desiredResolution.x / (float)ppFakeTexture.width;
+
+            if (Application.isEditor)
+            {
+                ShowMockFrame(FakeTexture);
+                PrepareApplyer();
+            }        }
 
         private void PrepareApplyer()
         {
