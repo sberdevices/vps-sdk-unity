@@ -53,7 +53,16 @@ namespace ARVRLab.VPSService{    /// <summary>    /// Return FakeTexture imag
                 var canvasGO = new GameObject("FakeCamera");
                 var canvas = canvasGO.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
-                canvas.worldCamera = FindObjectOfType<Camera>();
+
+                var camera = FindObjectOfType<Camera>();
+                if (!camera)
+                {
+                    Debug.LogError("No virtual camera on scene!");
+                    return;
+                }
+
+                canvas.worldCamera = camera;
+                canvas.planeDistance = camera.farClipPlane - 10f;
 
                 var imgGO = new GameObject("FakeFrame");
                 var imgTransform = imgGO.AddComponent<RectTransform>();
