@@ -4,7 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/TestScene.unity
+    guid: e7dc35790c2224ab582d9b4538e51241
   m_configObjects:
     com.unity.xr.arcore.PlayerSettings: {fileID: 11400000, guid: ea29a9a9a65b740aa88c5170db8c1075,
       type: 2}
