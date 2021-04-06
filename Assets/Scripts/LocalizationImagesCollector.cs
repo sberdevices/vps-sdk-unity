@@ -110,7 +110,9 @@ namespace ARVRLab.VPSService
                     yield break;
                 }
 
-                var task = provider.GetMobileVPS().GetFeaturesAsync(input);
+                MobileVPS mobileVPS = provider.GetMobileVPS();
+                yield return new WaitWhile(() => mobileVPS.Working);
+                var task = mobileVPS.GetFeaturesAsync(input);
                 while (!task.IsCompleted)
                     yield return null;
 
