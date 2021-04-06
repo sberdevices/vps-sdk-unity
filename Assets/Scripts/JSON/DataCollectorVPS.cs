@@ -101,7 +101,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 forced_localization = forceVPS,
 
-                version = 0
+                version = 1
             };
 
 
