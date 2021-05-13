@@ -31,4 +31,10 @@
                 yield return vpsPreparing.DownloadNeural();
             }
             provider.Init(true);
-        }    }}
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.T))
+                ResetTracking();        }
+    }}
