@@ -31,6 +31,9 @@ namespace ARVRLab.VPSService
         public static event System.Action OnPhotoAdded;
         public static event System.Action OnSeriaIsReady;
 
+        System.Diagnostics.Stopwatch stopWatch;
+        float neuronTime = 0;
+
         public LocalizationImagesCollector(int PhotosInSeria, bool usingAngle = false)
         {
             photosInSeria = PhotosInSeria;
@@ -69,7 +72,8 @@ namespace ARVRLab.VPSService
                     }
                     else
                     {
-                        yield return new WaitForSeconds(timeout);
+                        yield return new WaitForSeconds(timeout - neuronTime);
+                        neuronTime = 0;
                     }
                 }
 
@@ -113,8 +117,13 @@ namespace ARVRLab.VPSService
                 MobileVPS mobileVPS = provider.GetMobileVPS();
                 yield return new WaitWhile(() => mobileVPS.Working);
                 var task = mobileVPS.GetFeaturesAsync(input);
+                stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
                 while (!task.IsCompleted)
                     yield return null;
+                stopWatch.Stop();
+                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
+                Debug.Log("Neuron time = " + neuronTime);
 
                 ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
