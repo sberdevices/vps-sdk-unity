@@ -15,11 +15,14 @@
                     Debug.LogError("MobileVPS is not ready. Start downloading...");
                     return;
                 }            }            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSeries, SendOnlyFeatures, AlwaysForce, SendGPS);            algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);            algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);        }        /// <summary>        /// Stop VPS service        /// </summary>        public void StopVps()        {            algorithm?.Stop();        }        /// <summary>        /// Get latest localisation result        /// </summary>        public LocationState GetLatestPose()        {            if (algorithm == null)            {                Debug.LogError("VPS service is not running. Use StartVPS before");                return null;            }            return algorithm.GetLocationRequest();        }        /// <summary>        /// Цas there at least one successful localisation?        /// </summary>        public bool IsLocalized()        {            return provider.GetTracking().GetLocalTracking().IsLocalisedFloor;        }        /// <summary>        /// Get download mobileVPS progress (between 0 and 1)        /// </summary>        public float GetPreparingProgress()        {            return vpsPreparing.GetProgress();        }        /// <summary>        /// Is mobileVPS ready?        /// </summary>        public bool IsReady()        {            return vpsPreparing?.GetProgress() == 1;        }        /// <summary>        /// Reset current tracking        /// </summary>        public void ResetTracking()        {;            provider.GetARFoundationApplyer()?.ResetTracking();            provider.GetTracking().ResetTracking();            Debug.Log("Tracking reseted");        }        private void Awake()        {
-//#if UNITY_EDITOR
-//            provider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
-//#else
-//            provider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
-//#endif
+            if (provider == null)
+            {
+#if UNITY_EDITOR
+                provider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
+#else
+                provider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
+#endif
+            }
             for (var i = 0; i < transform.childCount; i++)            {                transform.GetChild(i).gameObject.SetActive(false);            }            provider.gameObject.SetActive(true);        }        private IEnumerator DownloadMobileVps()
         {
             if (vpsPreparing == null)
@@ -32,9 +35,4 @@
             }
             provider.Init(true);
         }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.T))
-                ResetTracking();        }
     }}
