@@ -71,8 +71,8 @@ namespace ARVRLab.VPSService
                 }
 
                 // Try to get 1920x1080 resolution
-                var _1920x1080 = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
-                if (_1920x1080.width != 1920 || _1920x1080.height != 1080)
+                var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
+                if (hdConfig == default)
                 {
                     Debug.LogError("Can't take HD resolution!");
                     // Get the best resolution
@@ -82,8 +82,8 @@ namespace ARVRLab.VPSService
                 }
                 else
                 {
-                    cameraManager.currentConfiguration = _1920x1080;
-                    resizeCoefficient = (float)TagretResolution.width / (float)_1920x1080.width;
+                    cameraManager.currentConfiguration = hdConfig;
+                    resizeCoefficient = (float)TagretResolution.width / (float)hdConfig.width;
                 }
             }
         }
