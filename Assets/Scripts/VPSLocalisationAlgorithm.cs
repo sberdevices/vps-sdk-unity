@@ -193,7 +193,6 @@ namespace ARVRLab.VPSService
                         yield return null;
                     stopWatch.Stop();
                     neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
-                    Debug.Log("Neuron time = " + neuronTime);
 
                     ARFoundationCamera.semaphore.Free();
 

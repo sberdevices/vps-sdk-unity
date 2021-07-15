@@ -586,18 +586,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1462605043 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8690752168016233484, guid: f5ddf2d28f817ce42a7d59e707029842,
-    type: 3}
-  m_PrefabInstance: {fileID: 8690752169532022778}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1902949979
 GameObject:
   m_ObjectHideFlags: 0
@@ -1123,7 +1111,7 @@ PrefabInstance:
         type: 3}
       propertyPath: provider
       value: 
-      objectReference: {fileID: 1462605043}
+      objectReference: {fileID: 8690752169532022781}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
@@ -1157,7 +1145,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: SendOnlyFeatures
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1178,6 +1166,11 @@ PrefabInstance:
         type: 3}
       propertyPath: UsePhotoSeries
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultUrl
+      value: https://vps.arvr.sberlabs.com/polytech/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752168016233475, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1214,3 +1207,15 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8690752169532022778}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8690752169532022781 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690752169532022778}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
