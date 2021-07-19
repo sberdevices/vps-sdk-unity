@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using SystemHalf;
 using TensorFlowLite;
 using Unity.Collections;
 using UnityEngine;
@@ -111,10 +112,38 @@ namespace ARVRLab.VPSService
                 ts.Milliseconds / 10);
             Debug.Log("RunTime " + elapsedTime);
 
-            interpreter.GetOutputTensorData(0, output.globalDescriptor);
-            interpreter.GetOutputTensorData(1, output.keyPoints);
-            interpreter.GetOutputTensorData(2, output.descriptors);
-            interpreter.GetOutputTensorData(3, output.scores);
+            float[] globalDescriptor = new float[4096];
+            interpreter.GetOutputTensorData(0, globalDescriptor);
+
+            float[,] keyPoints = new float[400, 2];
+            interpreter.GetOutputTensorData(1, keyPoints);
+
+            float[,] descriptors = new float[400, 256];
+            interpreter.GetOutputTensorData(2, descriptors);
+
+            float[] scores = new float[400];
+            interpreter.GetOutputTensorData(3, scores);
+
+            stopWatch.Restart();
+
+            output.setGlobalDescriptor(globalDescriptor);
+
+            output.setKeyPoints(keyPoints);
+
+            output.setDescriptors(descriptors);
+
+            output.setScores(scores);
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan ts1 = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts1.Hours, ts1.Minutes, ts1.Seconds,
+                ts1.Milliseconds / 10);
+            Debug.Log("GovnoTime " + elapsedTime1);
+
             Working = false;
             return output;
         }
@@ -122,17 +151,64 @@ namespace ARVRLab.VPSService
 
     public class HfnetResult
     {
-        public float[] globalDescriptor;
-        public float[,] keyPoints;
-        public float[,] descriptors;
-        public float[] scores;
+        public byte[] globalDescriptor;
+        public byte[] keyPoints;
+        public byte[] descriptors;
+        public byte[] scores;
 
         public HfnetResult()
         {
-            globalDescriptor = new float[4096];
-            keyPoints = new float[400, 2];
-            descriptors = new float[400, 256];
-            scores = new float[400];
+            globalDescriptor = new byte[4096 * 2];
+            keyPoints = new byte[400 * 2 * 2];
+            descriptors = new byte[400 * 256 * 2];
+            scores = new byte[400 * 2];
+        }
+
+        public void setGlobalDescriptor(float[] globDesc)
+        {
+            for (int i = 0; i < 4096 * 2; i += 2)
+            {
+                byte[] gd = float16.GetBytes(new float16(globDesc[i / 2]));
+                globalDescriptor[i] = gd[0];
+                globalDescriptor[i+1] = gd[1];
+            }
+        }
+
+        public void setKeyPoints(float[,] points)
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    byte[] kp = float16.GetBytes(new float16(points[i,j]));
+                    keyPoints[i * 2 * 2 + j * 2] = kp[0];
+                    keyPoints[i * 2 * 2 + j * 2 + 1] = kp[1];
+                }
+            }
+        }
+
+        public void setDescriptors(float[,] descs)
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                for (int j = 0; j < 256; j++)
+                {
+                    byte[] d = float16.GetBytes(new float16(descs[i, j]));
+                    descriptors[i * 256 * 2 + j * 2] = d[0];
+                    descriptors[i * 256 * 2 + j * 2 + 1] = d[1];
+                }
+            }
+        }
+
+
+        public void setScores(float[] scrs)
+        {
+            for (int i = 0; i < 400 * 2; i += 2)
+            {
+                byte[] s = float16.GetBytes(new float16(scrs[i / 2]));
+                scores[i] = s[0];
+                scores[i + 1] = s[1];
+            }
         }
     }
 }

@@ -2,77 +2,46 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using SystemHalf;
 using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
     public static class EMBDCollector
     {
-        public static byte[] ConvertToEMBD(byte fileVersion, byte neuralId, float[,] keyPoints, float[] scores, float[,] descriptors, float[] globalDescriptor)
+        public static byte[] ConvertToEMBD(byte fileVersion, byte neuralId, byte[] keyPoints, byte[] scores, byte[] descriptors, byte[] globalDescriptor)
         {
             List<byte> embd = new List<byte>();
 
             embd.Add(fileVersion);
             embd.Add(neuralId);
 
-            string keyPointsString = Convert.ToBase64String(ConvertFloatToByteArray(keyPoints));
-            string scoresString = Convert.ToBase64String(ConvertFloatToByteArray(scores));
-            string descriptorsString = Convert.ToBase64String(ConvertFloatToByteArray(descriptors));
-            string globalDescriptorString = Convert.ToBase64String(ConvertFloatToByteArray(globalDescriptor));
+            byte[] keyPointsLength = BitConverter.GetBytes(keyPoints.Length);
+            byte[] scoresLength = BitConverter.GetBytes(scores.Length);
+            byte[] descriptorsLength = BitConverter.GetBytes(descriptors.Length);
+            byte[] globalDescriptorLength = BitConverter.GetBytes(globalDescriptor.Length);
 
-            byte[] bytes;
-
-            bytes = BitConverter.GetBytes(keyPointsString.Length);
             if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
+            {
+                Array.Reverse(keyPointsLength);
+                Array.Reverse(scoresLength);
+                Array.Reverse(descriptorsLength);
+                Array.Reverse(globalDescriptorLength);
+            }
 
-            embd.AddRange(bytes);
-            embd.AddRange(Encoding.ASCII.GetBytes(keyPointsString));
+            embd.AddRange(keyPointsLength);
+            embd.AddRange(keyPoints);
 
-            bytes = BitConverter.GetBytes(scoresString.Length);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
+            embd.AddRange(scoresLength);
+            embd.AddRange(scores);
 
-            embd.AddRange(bytes);
-            embd.AddRange(Encoding.ASCII.GetBytes(scoresString));
+            embd.AddRange(descriptorsLength);
+            embd.AddRange(descriptors);
 
-            bytes = BitConverter.GetBytes(descriptorsString.Length);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            embd.AddRange(bytes);
-            embd.AddRange(Encoding.ASCII.GetBytes(descriptorsString));
-
-            bytes = BitConverter.GetBytes(globalDescriptorString.Length);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(bytes);
-
-            embd.AddRange(bytes);
-            embd.AddRange(Encoding.ASCII.GetBytes(globalDescriptorString));
+            embd.AddRange(globalDescriptorLength);
+            embd.AddRange(globalDescriptor);
 
             return embd.ToArray();
-        }
-
-        /// <summary>
-        /// Pack mobileVPS result to byte array
-        /// </summary>
-        private static byte[] ConvertFloatToByteArray(float[] floats)
-        {
-            var byteArray = new byte[floats.Length * 4];
-            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
-
-            return byteArray;
-        }
-
-        /// <summary>
-        /// Pack mobileVPS result to byte array
-        /// </summary>
-        private static byte[] ConvertFloatToByteArray(float[,] floats)
-        {
-            var byteArray = new byte[floats.Length * 4];
-            Buffer.BlockCopy(floats, 0, byteArray, 0, byteArray.Length);
-
-            return byteArray;
         }
     }
 }

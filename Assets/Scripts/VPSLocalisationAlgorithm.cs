@@ -196,7 +196,7 @@ namespace ARVRLab.VPSService
 
                     ARFoundationCamera.semaphore.Free();
 
-                    Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
+                    Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
                     Debug.Log("Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Embedding, Meta);
