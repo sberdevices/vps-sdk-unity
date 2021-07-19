@@ -65,7 +65,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(479.7787170410156f, 359.7473449707031f);
+            return new Vector2(480f, 270f);
         }
 
         public bool IsCameraReady()
