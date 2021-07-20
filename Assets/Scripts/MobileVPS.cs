@@ -164,7 +164,7 @@ namespace ARVRLab.VPSService
         {
             for (int i = 0; i < 4096; i++)
             {
-                byte[] gd = Float16Converter.SingleToHalf(globDesc[i]);
+                byte[] gd = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i]));
                 globalDescriptor[i * 2] = gd[0];
                 globalDescriptor[i * 2 + 1] = gd[1];
             }
@@ -176,7 +176,7 @@ namespace ARVRLab.VPSService
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    byte[] kp = Float16Converter.SingleToHalf(points[i, j]);
+                    byte[] kp = BitConverter.GetBytes(Mathf.FloatToHalf(points[i, j]));
                     keyPoints[i * 2 * 2 + j * 2] = kp[0];
                     keyPoints[i * 2 * 2 + j * 2 + 1] = kp[1];
                 }
@@ -189,7 +189,7 @@ namespace ARVRLab.VPSService
             {
                 for (int j = 0; j < 256; j++)
                 {
-                    byte[] d = Float16Converter.SingleToHalf(descs[i, j]);
+                    byte[] d = BitConverter.GetBytes(Mathf.FloatToHalf(descs[i, j]));
                     descriptors[i * 256 * 2 + j * 2] = d[0];
                     descriptors[i * 256 * 2 + j * 2 + 1] = d[1];
                 }
@@ -201,7 +201,7 @@ namespace ARVRLab.VPSService
         {
             for (int i = 0; i < 400; i++)
             {
-                byte[] s = Float16Converter.SingleToHalf(scrs[i]);
+                byte[] s = BitConverter.GetBytes(Mathf.FloatToHalf(scrs[i]));
                 scores[i * 2] = s[0];
                 scores[i * 2 + 1] = s[1];
             }
