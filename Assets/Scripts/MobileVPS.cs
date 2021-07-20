@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using SystemHalf;
 using TensorFlowLite;
 using Unity.Collections;
 using UnityEngine;
@@ -127,11 +126,8 @@ namespace ARVRLab.VPSService
             stopWatch.Restart();
 
             output.setGlobalDescriptor(globalDescriptor);
-
             output.setKeyPoints(keyPoints);
-
             output.setDescriptors(descriptors);
-
             output.setScores(scores);
 
             stopWatch.Stop();
@@ -141,8 +137,8 @@ namespace ARVRLab.VPSService
             // Format and display the TimeSpan value.
             string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts1.Hours, ts1.Minutes, ts1.Seconds,
-                ts1.Milliseconds / 10);
-            Debug.Log("GovnoTime " + elapsedTime1);
+                ts1.Milliseconds);
+            Debug.Log("PostProcessTime " + elapsedTime1);
 
             Working = false;
             return output;
@@ -166,11 +162,11 @@ namespace ARVRLab.VPSService
 
         public void setGlobalDescriptor(float[] globDesc)
         {
-            for (int i = 0; i < 4096 * 2; i += 2)
+            for (int i = 0; i < 4096; i++)
             {
-                byte[] gd = float16.GetBytes(new float16(globDesc[i / 2]));
-                globalDescriptor[i] = gd[0];
-                globalDescriptor[i+1] = gd[1];
+                byte[] gd = Float16Converter.SingleToHalf(globDesc[i]);
+                globalDescriptor[i * 2] = gd[0];
+                globalDescriptor[i * 2 + 1] = gd[1];
             }
         }
 
@@ -180,7 +176,7 @@ namespace ARVRLab.VPSService
             {
                 for (int j = 0; j < 2; j++)
                 {
-                    byte[] kp = float16.GetBytes(new float16(points[i,j]));
+                    byte[] kp = Float16Converter.SingleToHalf(points[i, j]);
                     keyPoints[i * 2 * 2 + j * 2] = kp[0];
                     keyPoints[i * 2 * 2 + j * 2 + 1] = kp[1];
                 }
@@ -193,7 +189,7 @@ namespace ARVRLab.VPSService
             {
                 for (int j = 0; j < 256; j++)
                 {
-                    byte[] d = float16.GetBytes(new float16(descs[i, j]));
+                    byte[] d = Float16Converter.SingleToHalf(descs[i, j]);
                     descriptors[i * 256 * 2 + j * 2] = d[0];
                     descriptors[i * 256 * 2 + j * 2 + 1] = d[1];
                 }
@@ -203,11 +199,11 @@ namespace ARVRLab.VPSService
 
         public void setScores(float[] scrs)
         {
-            for (int i = 0; i < 400 * 2; i += 2)
+            for (int i = 0; i < 400; i++)
             {
-                byte[] s = float16.GetBytes(new float16(scrs[i / 2]));
-                scores[i] = s[0];
-                scores[i + 1] = s[1];
+                byte[] s = Float16Converter.SingleToHalf(scrs[i]);
+                scores[i * 2] = s[0];
+                scores[i * 2 + 1] = s[1];
             }
         }
     }
