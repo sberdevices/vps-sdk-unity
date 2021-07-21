@@ -126,7 +126,7 @@ namespace ARVRLab.VPSService
                 Debug.Log("Neuron time = " + neuronTime);
 
                 ARFoundationCamera.semaphore.Free();
-                Embedding = EMBDCollector.ConvertToEMBD(0, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
+                Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
                 ImageBytes = null;
             }
             else

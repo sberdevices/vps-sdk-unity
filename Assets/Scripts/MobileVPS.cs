@@ -111,10 +111,35 @@ namespace ARVRLab.VPSService
                 ts.Milliseconds / 10);
             Debug.Log("RunTime " + elapsedTime);
 
-            interpreter.GetOutputTensorData(0, output.globalDescriptor);
-            interpreter.GetOutputTensorData(1, output.keyPoints);
-            interpreter.GetOutputTensorData(2, output.descriptors);
-            interpreter.GetOutputTensorData(3, output.scores);
+            float[] globalDescriptor = new float[4096];
+            interpreter.GetOutputTensorData(0, globalDescriptor);
+
+            float[,] keyPoints = new float[400, 2];
+            interpreter.GetOutputTensorData(1, keyPoints);
+
+            float[,] descriptors = new float[400, 256];
+            interpreter.GetOutputTensorData(2, descriptors);
+
+            float[] scores = new float[400];
+            interpreter.GetOutputTensorData(3, scores);
+
+            stopWatch.Restart();
+
+            output.setGlobalDescriptor(globalDescriptor);
+            output.setKeyPoints(keyPoints);
+            output.setDescriptors(descriptors);
+            output.setScores(scores);
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan ts1 = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts1.Hours, ts1.Minutes, ts1.Seconds,
+                ts1.Milliseconds);
+            Debug.Log("PostProcessTime " + elapsedTime1);
+
             Working = false;
             return output;
         }
@@ -122,17 +147,64 @@ namespace ARVRLab.VPSService
 
     public class HfnetResult
     {
-        public float[] globalDescriptor;
-        public float[,] keyPoints;
-        public float[,] descriptors;
-        public float[] scores;
+        public byte[] globalDescriptor;
+        public byte[] keyPoints;
+        public byte[] descriptors;
+        public byte[] scores;
 
         public HfnetResult()
         {
-            globalDescriptor = new float[4096];
-            keyPoints = new float[400, 2];
-            descriptors = new float[400, 256];
-            scores = new float[400];
+            globalDescriptor = new byte[4096 * 2];
+            keyPoints = new byte[400 * 2 * 2];
+            descriptors = new byte[400 * 256 * 2];
+            scores = new byte[400 * 2];
+        }
+
+        public void setGlobalDescriptor(float[] globDesc)
+        {
+            for (int i = 0; i < 4096; i++)
+            {
+                byte[] gd = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i]));
+                globalDescriptor[i * 2] = gd[0];
+                globalDescriptor[i * 2 + 1] = gd[1];
+            }
+        }
+
+        public void setKeyPoints(float[,] points)
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    byte[] kp = BitConverter.GetBytes(Mathf.FloatToHalf(points[i, j]));
+                    keyPoints[i * 2 * 2 + j * 2] = kp[0];
+                    keyPoints[i * 2 * 2 + j * 2 + 1] = kp[1];
+                }
+            }
+        }
+
+        public void setDescriptors(float[,] descs)
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                for (int j = 0; j < 256; j++)
+                {
+                    byte[] d = BitConverter.GetBytes(Mathf.FloatToHalf(descs[i, j]));
+                    descriptors[i * 256 * 2 + j * 2] = d[0];
+                    descriptors[i * 256 * 2 + j * 2 + 1] = d[1];
+                }
+            }
+        }
+
+
+        public void setScores(float[] scrs)
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                byte[] s = BitConverter.GetBytes(Mathf.FloatToHalf(scrs[i]));
+                scores[i * 2] = s[0];
+                scores[i * 2 + 1] = s[1];
+            }
         }
     }
 }
