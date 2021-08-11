@@ -29,7 +29,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public bool forced_localization;
 
         public int version;
-	}
+
+        public string user_id;
+
+        public double timestamp;
+    }
 
     [Serializable]
 	public class RequestLocation
