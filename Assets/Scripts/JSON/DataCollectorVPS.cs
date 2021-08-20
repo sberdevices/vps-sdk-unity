@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using ARVRLab.VPSService;
@@ -40,6 +41,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
             float resizeCoef = Provider.GetCamera().GetResizeCoefficient();
+
+            const string userId = "user_id";
+            if (!PlayerPrefs.HasKey(userId))
+            {
+                PlayerPrefs.SetString(userId, System.Guid.NewGuid().ToString());
+            }
 
             var attrib = new RequestAttributes
             {
@@ -101,8 +108,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 forced_localization = forceVPS,
 
-                version = 1
-            };
+                version = 1,
+
+                user_id = PlayerPrefs.GetString(userId),
+
+                timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d
+        };
 
 
             var data = new RequestData
