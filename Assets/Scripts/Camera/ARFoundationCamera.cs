@@ -16,6 +16,7 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
+        private float cropCoefficient = 9f / 16f;
         private float resizeCoefficient = 1.0f;
 
         public Resolution TagretResolution;
@@ -34,8 +35,6 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
-
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
@@ -79,12 +78,21 @@ namespace ARVRLab.VPSService
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
                     resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
+
+                    RectInt resolution = Crop(bestConfiguration.width, bestConfiguration.height);
+                    TagretResolution.width = resolution.width;
+                    TagretResolution.height = resolution.height;
                 }
                 else
                 {
                     cameraManager.currentConfiguration = hdConfig;
                     resizeCoefficient = (float)TagretResolution.width / (float)hdConfig.width;
+
+                    RectInt resolution = Crop(hdConfig.width, hdConfig.height);
+                    TagretResolution.width = resolution.width;
+                    TagretResolution.height = resolution.height;
                 }
+                buffer = new NativeArray<byte>(TagretResolution.width * TagretResolution.height, Allocator.Persistent);
             }
         }
 
@@ -108,16 +116,18 @@ namespace ARVRLab.VPSService
 
             var format = TextureFormat.R8;
 
+            RectInt croppedRect = Crop(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
             // Create texture
-            if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
+            if (texture == null || texture.width != TagretResolution.width || texture.height != TagretResolution.height)
             {
-                texture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
+                texture = new Texture2D(TagretResolution.width, TagretResolution.height, format, false);
             }
 
             // Set parametrs: format, horizontal mirror (left | right)
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
+            conversionParams.inputRect = croppedRect;
             // Set downscale resolution
-            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
+            conversionParams.outputDimensions = new Vector2Int(TagretResolution.width, TagretResolution.height);
 
             var raw = texture.GetRawTextureData<byte>();
 
@@ -165,7 +175,28 @@ namespace ARVRLab.VPSService
             return returnedTexture;
         }
 
-        public Vector2 GetFocalPixelLength()
+        private RectInt Crop(int width, int height)
+        {
+            int requiredWidth = width;
+            int requiredHeight = (int)(width * cropCoefficient);
+            int xpos = 0;
+            int ypos = 0;
+
+            if (requiredHeight > height)
+            {
+                requiredHeight = height;
+                requiredWidth = (int)(width * (1 / cropCoefficient));
+                xpos = (width - requiredWidth) / 2;
+            }
+            else
+            {
+                ypos = (height - requiredHeight) / 2;
+            }
+
+            return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
+        }
+
+            public Vector2 GetFocalPixelLength()
         {
             XRCameraIntrinsics intrins;
             if (cameraManager.TryGetIntrinsics(out intrins))
