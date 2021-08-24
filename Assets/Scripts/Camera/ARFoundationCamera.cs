@@ -118,16 +118,16 @@ namespace ARVRLab.VPSService
 
             RectInt croppedRect = Crop(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
             // Create texture
-            if (texture == null || texture.width != TagretResolution.width || texture.height != TagretResolution.height)
+            if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
             {
-                texture = new Texture2D(TagretResolution.width, TagretResolution.height, format, false);
+                texture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
             }
 
             // Set parametrs: format, horizontal mirror (left | right)
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
             conversionParams.inputRect = croppedRect;
             // Set downscale resolution
-            conversionParams.outputDimensions = new Vector2Int(TagretResolution.width, TagretResolution.height);
+            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
             var raw = texture.GetRawTextureData<byte>();
 
