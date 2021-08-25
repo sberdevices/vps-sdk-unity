@@ -19,8 +19,6 @@ namespace ARVRLab.VPSService
         private float cropCoefficient = 9f / 16f;
         private float resizeCoefficient = 1.0f;
 
-        public Resolution TagretResolution;
-
         private ARCameraManager cameraManager;
         private Texture2D texture;
         private Texture2D returnedTexture;
@@ -35,6 +33,8 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
+            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
+
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
@@ -43,9 +43,6 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
-
-            TagretResolution.width = desiredResolution.x;
-            TagretResolution.height = desiredResolution.y;
         }
 
         private IEnumerator Start()
@@ -71,28 +68,19 @@ namespace ARVRLab.VPSService
 
                 // Try to get 1920x1080 resolution
                 var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
-                RectInt currentResolution;
                 if (hdConfig == default)
                 {
                     Debug.LogError("Can't take HD resolution!");
                     // Get the best resolution
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
-                    resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
-
-                    currentResolution = Crop(bestConfiguration.width, bestConfiguration.height);
+                    resizeCoefficient = (float)desiredResolution.x / (float)bestConfiguration.width;
                 }
                 else
                 {
                     cameraManager.currentConfiguration = hdConfig;
-                    resizeCoefficient = (float)TagretResolution.width / (float)hdConfig.width;
-
-                    currentResolution = Crop(hdConfig.width, hdConfig.height);
+                    resizeCoefficient = (float)desiredResolution.x / (float)hdConfig.width;
                 }
-
-                TagretResolution.width = currentResolution.width;
-                TagretResolution.height = currentResolution.height;
-                buffer = new NativeArray<byte>(TagretResolution.width * TagretResolution.height, Allocator.Persistent);
             }
         }
 
@@ -116,7 +104,7 @@ namespace ARVRLab.VPSService
 
             var format = TextureFormat.R8;
 
-            RectInt croppedRect = Crop(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
+            RectInt croppedRect = GetCropRect(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
             // Create texture
             if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
             {
@@ -156,7 +144,7 @@ namespace ARVRLab.VPSService
             // Need to create new texture in RGB format
             if (returnedTexture == null)
             {
-                returnedTexture = new Texture2D(TagretResolution.width, TagretResolution.height, TextureFormat.RGBA32, false);
+                returnedTexture = new Texture2D(desiredResolution.x, desiredResolution.y, TextureFormat.RGBA32, false);
             }
 
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
@@ -175,7 +163,8 @@ namespace ARVRLab.VPSService
             return returnedTexture;
         }
 
-        private RectInt Crop(int width, int height)
+        // Calculate 16x9 part of image
+        private RectInt GetCropRect(int width, int height)
         {
             int requiredWidth = width;
             int requiredHeight = (int)(width * cropCoefficient);
@@ -196,7 +185,7 @@ namespace ARVRLab.VPSService
             return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
         }
 
-            public Vector2 GetFocalPixelLength()
+        public Vector2 GetFocalPixelLength()
         {
             XRCameraIntrinsics intrins;
             if (cameraManager.TryGetIntrinsics(out intrins))
