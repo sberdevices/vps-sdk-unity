@@ -16,9 +16,8 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
+        private float cropCoefficient = 9f / 16f;
         private float resizeCoefficient = 1.0f;
-
-        public Resolution TagretResolution;
 
         private ARCameraManager cameraManager;
         private Texture2D texture;
@@ -44,9 +43,6 @@ namespace ARVRLab.VPSService
             }
 
             cameraManager.frameReceived += UpdateFrame;
-
-            TagretResolution.width = desiredResolution.x;
-            TagretResolution.height = desiredResolution.y;
         }
 
         private IEnumerator Start()
@@ -78,12 +74,12 @@ namespace ARVRLab.VPSService
                     // Get the best resolution
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
-                    resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
+                    resizeCoefficient = (float)desiredResolution.x / (float)bestConfiguration.width;
                 }
                 else
                 {
                     cameraManager.currentConfiguration = hdConfig;
-                    resizeCoefficient = (float)TagretResolution.width / (float)hdConfig.width;
+                    resizeCoefficient = (float)desiredResolution.x / (float)hdConfig.width;
                 }
             }
         }
@@ -108,6 +104,7 @@ namespace ARVRLab.VPSService
 
             var format = TextureFormat.R8;
 
+            RectInt croppedRect = GetCropRect(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
             // Create texture
             if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
             {
@@ -116,6 +113,7 @@ namespace ARVRLab.VPSService
 
             // Set parametrs: format, horizontal mirror (left | right)
             var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
+            conversionParams.inputRect = croppedRect;
             // Set downscale resolution
             conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
 
@@ -146,7 +144,7 @@ namespace ARVRLab.VPSService
             // Need to create new texture in RGB format
             if (returnedTexture == null)
             {
-                returnedTexture = new Texture2D(TagretResolution.width, TagretResolution.height, TextureFormat.RGBA32, false);
+                returnedTexture = new Texture2D(desiredResolution.x, desiredResolution.y, TextureFormat.RGBA32, false);
             }
 
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
@@ -163,6 +161,28 @@ namespace ARVRLab.VPSService
 
             array.Dispose();
             return returnedTexture;
+        }
+
+        // Calculate 16x9 part of image
+        private RectInt GetCropRect(int width, int height)
+        {
+            int requiredWidth = width;
+            int requiredHeight = (int)(width * cropCoefficient);
+            int xpos = 0;
+            int ypos = 0;
+
+            if (requiredHeight > height)
+            {
+                requiredHeight = height;
+                requiredWidth = (int)(width * (1 / cropCoefficient));
+                xpos = (width - requiredWidth) / 2;
+            }
+            else
+            {
+                ypos = (height - requiredHeight) / 2;
+            }
+
+            return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
         }
 
         public Vector2 GetFocalPixelLength()
