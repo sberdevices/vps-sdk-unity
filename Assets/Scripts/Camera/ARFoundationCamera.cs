@@ -71,6 +71,7 @@ namespace ARVRLab.VPSService
 
                 // Try to get 1920x1080 resolution
                 var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
+                RectInt currentResolution;
                 if (hdConfig == default)
                 {
                     Debug.LogError("Can't take HD resolution!");
@@ -79,19 +80,18 @@ namespace ARVRLab.VPSService
                     cameraManager.currentConfiguration = bestConfiguration;
                     resizeCoefficient = (float)TagretResolution.width / (float)bestConfiguration.width;
 
-                    RectInt resolution = Crop(bestConfiguration.width, bestConfiguration.height);
-                    TagretResolution.width = resolution.width;
-                    TagretResolution.height = resolution.height;
+                    currentResolution = Crop(bestConfiguration.width, bestConfiguration.height);
                 }
                 else
                 {
                     cameraManager.currentConfiguration = hdConfig;
                     resizeCoefficient = (float)TagretResolution.width / (float)hdConfig.width;
 
-                    RectInt resolution = Crop(hdConfig.width, hdConfig.height);
-                    TagretResolution.width = resolution.width;
-                    TagretResolution.height = resolution.height;
+                    currentResolution = Crop(hdConfig.width, hdConfig.height);
                 }
+
+                TagretResolution.width = currentResolution.width;
+                TagretResolution.height = currentResolution.height;
                 buffer = new NativeArray<byte>(TagretResolution.width * TagretResolution.height, Allocator.Persistent);
             }
         }
