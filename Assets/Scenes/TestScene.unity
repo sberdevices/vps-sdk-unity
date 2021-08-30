@@ -1172,7 +1172,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
-      value: 
+      value: http://7b95965db109.eu.ngrok.io/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1187,7 +1187,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: UseCustomUrl
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1227,7 +1227,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultUrl
-      value: https://vps.arvr.sberlabs.com/polytech/
+      value: https://vps.arvr.sberlabs.com/polytech-stage/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752168016233475, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1243,6 +1243,16 @@ PrefabInstance:
         type: 3}
       propertyPath: Buiding
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752169563304431, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: Latitude
+      value: 55.758778
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752169563304431, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: Longitude
+      value: 37.628006
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}

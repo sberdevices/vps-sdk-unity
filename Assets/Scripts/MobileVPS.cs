@@ -13,42 +13,58 @@ namespace ARVRLab.VPSService
 {
     public class MobileVPS
     {
-        private const string FileName = "hfnet_i8_960.tflite";
+        //private const string FileName = "hfnet_i8_960.tflite";
 
-        Interpreter interpreter;
+        private const string gbNeuronFileName = "mnv_0.5_mask_teacher_gray_32.tflite";
+        private const string hfnetNeuronFileName = "hfnet_f32_960_sp.tflite";
+
+        Interpreter gbInterpreter;
+        Interpreter hfnetInterpreter;
 
         private float[,,] input;
-        private HfnetResult output;
+        private HfnetResult hfnetResult;
+        private GbResult gbResult;
 
         private int width, height;
 
         private CancellationTokenSource tokenSource;
         private CancellationToken cancelToken;
 
-        public bool Working = false;
+        public bool GbIsWorking = false;
+        public bool HfnetIsWorking = false;
 
         public MobileVPS()
         {
             var options = new InterpreterOptions
             {
-                threads = 2,
+                threads = 2
             };
 
-            interpreter = new Interpreter(FileUtil.LoadFile(FileName), options);
-            interpreter.AllocateTensors();
+            var other = new InterpreterOptions
+            {
+                threads = 2
+            };
 
-            int[] idim0 = interpreter.GetInputTensorInfo(0).shape;
+            gbInterpreter = new Interpreter(FileUtil.LoadFile(gbNeuronFileName), options);
+            gbInterpreter.AllocateTensors();
+
+            hfnetInterpreter = new Interpreter(FileUtil.LoadFile(hfnetNeuronFileName), other);
+            hfnetInterpreter.AllocateTensors();
+
+            int[] idim0 = gbInterpreter.GetInputTensorInfo(0).shape;
             height = idim0[1]; // 960
             width = idim0[2]; // 540
             int channels = idim0[3]; //1
 
             input = new float[height, width, channels];
-            output = new HfnetResult();
+            hfnetResult = new HfnetResult();
+            gbResult = new GbResult();
         }
 
         ~MobileVPS()
         {
-            interpreter?.Dispose();
+            gbInterpreter?.Dispose();
+            hfnetInterpreter?.Dispose();
         }
 
         public void StopTask()
@@ -59,7 +75,7 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public async Task<HfnetResult> GetFeaturesAsync(NativeArray<byte> buffer)
+        public async Task<bool> StartPreprocess(NativeArray<byte> buffer)
         {
             if (tokenSource != null)
             {
@@ -68,26 +84,42 @@ namespace ARVRLab.VPSService
             tokenSource = new CancellationTokenSource();
             cancelToken = tokenSource.Token;
 
-            return await Task.Run(() => doInference(buffer), cancelToken);
+            return await Task.Run(() => Preprocess(buffer), cancelToken);
         }
 
-        private HfnetResult doInference(NativeArray<byte> buffer)
+        public async Task<HfnetResult> GetFeaturesAsync()
+        {
+            return await Task.Run(() => GetFeatures());
+        }
+
+        public async Task<GbResult> GetGlobalDescriptorAsync()
+        {
+            return await Task.Run(() => GetGlobalDescriptor());
+        }
+
+        private bool Preprocess(NativeArray<byte> buffer)
         {
             // for input - convert bytes to float, rotate and mirror image
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        Debug.LogError("Mobile VPS task canceled");
-                        return null;
-                    }
-
                     input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
                 }
+
+                if (cancelToken.IsCancellationRequested)
+                {
+                    Debug.LogError("Mobile VPS task canceled");
+                    return false;
+                }
             }
-            interpreter.SetInputTensorData(0, input);
+
+            return true;
+        }
+
+        private HfnetResult GetFeatures()
+        {
+            hfnetInterpreter.SetInputTensorData(0, input);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
@@ -95,79 +127,110 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                Working = true;
+                HfnetIsWorking = true;
             }
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
-            interpreter.Invoke();
+            //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            //stopWatch.Start();
+            hfnetInterpreter.Invoke();
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan ts = stopWatch.Elapsed;
+            //stopWatch.Stop();
+            //// Get the elapsed time as a TimeSpan value.
+            //TimeSpan ts = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
-            Debug.Log("RunTime " + elapsedTime);
-
-            float[] globalDescriptor = new float[4096];
-            interpreter.GetOutputTensorData(0, globalDescriptor);
+            //string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            //    ts.Hours, ts.Minutes, ts.Seconds,
+            //    ts.Milliseconds / 10);
+            //Debug.Log("RunTime " + elapsedTime);
 
             float[,] keyPoints = new float[400, 2];
-            interpreter.GetOutputTensorData(1, keyPoints);
+            hfnetInterpreter.GetOutputTensorData(0, keyPoints);
 
             float[,] descriptors = new float[400, 256];
-            interpreter.GetOutputTensorData(2, descriptors);
+            hfnetInterpreter.GetOutputTensorData(1, descriptors);
 
             float[] scores = new float[400];
-            interpreter.GetOutputTensorData(3, scores);
+            hfnetInterpreter.GetOutputTensorData(2, scores);
 
-            stopWatch.Restart();
+            //stopWatch.Restart();
 
-            output.setGlobalDescriptor(globalDescriptor);
-            output.setKeyPoints(keyPoints);
-            output.setDescriptors(descriptors);
-            output.setScores(scores);
+            hfnetResult.setKeyPoints(keyPoints);
+            hfnetResult.setDescriptors(descriptors);
+            hfnetResult.setScores(scores);
 
-            stopWatch.Stop();
+            //stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
-            TimeSpan ts1 = stopWatch.Elapsed;
+            //TimeSpan ts1 = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts1.Hours, ts1.Minutes, ts1.Seconds,
-                ts1.Milliseconds);
-            Debug.Log("PostProcessTime " + elapsedTime1);
+            //string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            //    ts1.Hours, ts1.Minutes, ts1.Seconds,
+            //    ts1.Milliseconds);
+            //Debug.Log("PostProcessTime " + elapsedTime1);
 
-            Working = false;
-            return output;
+            HfnetIsWorking = false;
+            return hfnetResult;
+        }
+
+        private GbResult GetGlobalDescriptor()
+        {
+            gbInterpreter.SetInputTensorData(0, input);
+            if (cancelToken.IsCancellationRequested)
+            {
+                Debug.LogError("Mobile VPS task canceled");
+                return null;
+            }
+            else
+            {
+                GbIsWorking = true;
+            }
+            //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            //stopWatch.Start();
+            gbInterpreter.Invoke();
+
+            //stopWatch.Stop();
+            //// Get the elapsed time as a TimeSpan value.
+            //TimeSpan ts = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            //string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            //    ts.Hours, ts.Minutes, ts.Seconds,
+            //    ts.Milliseconds / 10);
+            //Debug.Log("RunTime " + elapsedTime);
+
+            float[] globalDescriptor = new float[4096];
+            gbInterpreter.GetOutputTensorData(0, globalDescriptor);
+
+            //stopWatch.Restart();
+
+            gbResult.setGlobalDescriptor(globalDescriptor);
+
+            //stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            //TimeSpan ts1 = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            //string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+            //    ts1.Hours, ts1.Minutes, ts1.Seconds,
+            //    ts1.Milliseconds);
+            //Debug.Log("PostProcessTime " + elapsedTime1);
+
+            GbIsWorking = false;
+            return gbResult;
         }
     }
 
     public class HfnetResult
     {
-        public byte[] globalDescriptor;
         public byte[] keyPoints;
         public byte[] descriptors;
         public byte[] scores;
 
         public HfnetResult()
         {
-            globalDescriptor = new byte[4096 * 2];
             keyPoints = new byte[400 * 2 * 2];
             descriptors = new byte[400 * 256 * 2];
             scores = new byte[400 * 2];
-        }
-
-        public void setGlobalDescriptor(float[] globDesc)
-        {
-            for (int i = 0; i < 4096; i++)
-            {
-                byte[] gd = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i]));
-                globalDescriptor[i * 2] = gd[0];
-                globalDescriptor[i * 2 + 1] = gd[1];
-            }
         }
 
         public void setKeyPoints(float[,] points)
@@ -204,6 +267,26 @@ namespace ARVRLab.VPSService
                 byte[] s = BitConverter.GetBytes(Mathf.FloatToHalf(scrs[i]));
                 scores[i * 2] = s[0];
                 scores[i * 2 + 1] = s[1];
+            }
+        }
+    }
+
+    public class GbResult
+    {
+        public byte[] globalDescriptor;
+
+        public GbResult()
+        {
+            globalDescriptor = new byte[4096 * 2];
+        }
+
+        public void setGlobalDescriptor(float[] globDesc)
+        {
+            for (int i = 0; i < 4096; i++)
+            {
+                byte[] gd = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i]));
+                globalDescriptor[i * 2] = gd[0];
+                globalDescriptor[i * 2 + 1] = gd[1];
             }
         }
     }

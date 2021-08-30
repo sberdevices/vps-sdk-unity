@@ -185,19 +185,53 @@ namespace ARVRLab.VPSService
                         continue;
                     }
 
-                    yield return new WaitWhile(() => mobileVPS.Working);
-                    var task = mobileVPS.GetFeaturesAsync(input);
+                    yield return new WaitWhile(() => mobileVPS.HfnetIsWorking || mobileVPS.GbIsWorking);
+
                     stopWatch = new System.Diagnostics.Stopwatch();
                     stopWatch.Start();
-                    while (!task.IsCompleted)
+
+                    var preprocessTask = mobileVPS.StartPreprocess(input);
+                    while (!preprocessTask.IsCompleted)
+                        yield return null;
+
+                    stopWatch.Stop();
+                    TimeSpan ts = stopWatch.Elapsed;
+                    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                               ts.Hours, ts.Minutes, ts.Seconds,
+                                               ts.Milliseconds);
+                    Debug.Log("Preprocess: " + elapsedTime);
+
+                    if (!preprocessTask.Result)
+                    { 
+                        yield return null;
+                        continue;
+                    }
+
+                    stopWatch.Restart();
+                    var hfnetTask = mobileVPS.GetFeaturesAsync();
+                    while (!hfnetTask.IsCompleted)
+                        yield return null;
+
+                    stopWatch.Stop();
+                    ts = stopWatch.Elapsed;
+                    elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                               ts.Hours, ts.Minutes, ts.Seconds,
+                                               ts.Milliseconds);
+                    Debug.Log("Hfnet: " + elapsedTime);
+
+                    stopWatch.Restart();
+                    var gbTask = mobileVPS.GetGlobalDescriptorAsync();
+                    while (!gbTask.IsCompleted)
                         yield return null;
                     stopWatch.Stop();
-                    neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
+                    ts = stopWatch.Elapsed;
+                    elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                                               ts.Hours, ts.Minutes, ts.Seconds,
+                                               ts.Milliseconds);
+                    Debug.Log("GlobalDescriptor: " + elapsedTime);
 
                     ARFoundationCamera.semaphore.Free();
-
-                    Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
-
+                    Embedding = EMBDCollector.ConvertToEMBD(1, 2, hfnetTask.Result.keyPoints, hfnetTask.Result.scores, hfnetTask.Result.descriptors, gbTask.Result.globalDescriptor);
                     Debug.Log("Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Embedding, Meta);
                 }
