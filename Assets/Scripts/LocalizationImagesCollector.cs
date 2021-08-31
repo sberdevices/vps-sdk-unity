@@ -117,6 +117,9 @@ namespace ARVRLab.VPSService
 
                 yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
 
+                stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
+
                 var preprocessTask = mobileVPS.StartPreprocess(input);
                 while (!preprocessTask.IsCompleted)
                     yield return null;
@@ -130,6 +133,9 @@ namespace ARVRLab.VPSService
                 var imageEncoderTask = mobileVPS.GetGlobalDescriptorAsync();
                 while (!imageFeatureExtractorTask.IsCompleted || !imageEncoderTask.IsCompleted)
                     yield return null;
+
+                stopWatch.Stop();
+                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
 
                 ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);

@@ -13,8 +13,6 @@ namespace ARVRLab.VPSService
 {
     public class MobileVPS
     {
-        //private const string FileName = "hfnet_i8_960.tflite";
-
         private const string imageEncoderFileName = "mnv_0.5_mask_teacher_gray_32.tflite";
         private const string ImageFeatureExtractorFileName = "hfnet_f32_960_sp.tflite";
 
