@@ -199,7 +199,7 @@ namespace ARVRLab.VPSService
             }
             if (!IsReady())
             {
-                yield return vpsPreparing.DownloadNeural();
+                yield return vpsPreparing.DownloadNeurals();
             }
             provider.Init(true);
         }

@@ -99,37 +99,43 @@ namespace ARVRLab.VPSService
             // if send features - get them
             byte[] Embedding;
             byte[] ImageBytes;
-            //if (sendOnlyFeatures)
-            //{
-            //    yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
-            //    ARFoundationCamera.semaphore.TakeOne();
+            if (sendOnlyFeatures)
+            {
+                MobileVPS mobileVPS = provider.GetMobileVPS();
+                yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
+                ARFoundationCamera.semaphore.TakeOne();
 
-            //    Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
-            //    pose = provider.GetARFoundationApplyer().GetCurrentPose();
+                Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
+                pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
-            //    NativeArray<byte> input = camera.GetImageArray();
-            //    if (input == null || input.Length == 0)
-            //    {
-            //        Debug.LogError("Cannot take camera image as ByteArray");
-            //        yield break;
-            //    }
+                NativeArray<byte> input = camera.GetImageArray();
+                if (input == null || input.Length == 0)
+                {
+                    Debug.LogError("Cannot take camera image as ByteArray");
+                    yield break;
+                }
 
-            //    MobileVPS mobileVPS = provider.GetMobileVPS();
-            //    yield return new WaitWhile(() => mobileVPS.Working);
-            //    var task = mobileVPS.GetFeaturesAsync(input);
-            //    stopWatch = new System.Diagnostics.Stopwatch();
-            //    stopWatch.Start();
-            //    while (!task.IsCompleted)
-            //        yield return null;
-            //    stopWatch.Stop();
-            //    neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
-            //    Debug.Log("Neuron time = " + neuronTime);
+                yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
 
-            //    ARFoundationCamera.semaphore.Free();
-            //    Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
-            //    ImageBytes = null;
-            //}
-            //else
+                var preprocessTask = mobileVPS.StartPreprocess(input);
+                while (!preprocessTask.IsCompleted)
+                    yield return null;
+
+                if (!preprocessTask.Result)
+                {
+                    yield break;
+                }
+
+                var imageFeatureExtractorTask = mobileVPS.GetFeaturesAsync();
+                var imageEncoderTask = mobileVPS.GetGlobalDescriptorAsync();
+                while (!imageFeatureExtractorTask.IsCompleted || !imageEncoderTask.IsCompleted)
+                    yield return null;
+
+                ARFoundationCamera.semaphore.Free();
+                Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
+                ImageBytes = null;
+            }
+            else
             {
                 Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();

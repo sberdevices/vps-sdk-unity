@@ -15,56 +15,58 @@ namespace ARVRLab.VPSService
     {
         //private const string FileName = "hfnet_i8_960.tflite";
 
-        private const string gbNeuronFileName = "mnv_0.5_mask_teacher_gray_32.tflite";
-        private const string hfnetNeuronFileName = "hfnet_f32_960_sp.tflite";
+        private const string imageEncoderFileName = "mnv_0.5_mask_teacher_gray_32.tflite";
+        private const string ImageFeatureExtractorFileName = "hfnet_f32_960_sp.tflite";
 
-        Interpreter gbInterpreter;
-        Interpreter hfnetInterpreter;
+        Interpreter imageEncoderInterpreter;
+        Interpreter imageFeatureExtractorInterpreter;
 
         private float[,,] input;
-        private HfnetResult hfnetResult;
-        private GbResult gbResult;
+        private ImageFeatureExtractorResult imageFeatureExtractorResult;
+        private ImageEncoderResult imageEncoderResult;
 
         private int width, height;
 
         private CancellationTokenSource tokenSource;
         private CancellationToken cancelToken;
 
-        public bool GbIsWorking = false;
-        public bool HfnetIsWorking = false;
+        public bool ImageEncoderIsWorking = false;
+        public bool ImageFeatureExtractorIsWorking = false;
 
         public MobileVPS()
         {
-            var options = new InterpreterOptions
+            var imageEncoderOptions = new InterpreterOptions
             {
                 threads = 2
             };
+            //options.AddGpuDelegate();
 
-            var other = new InterpreterOptions
+            var imageFeatureExtractorOptions = new InterpreterOptions
             {
                 threads = 2
             };
+            imageFeatureExtractorOptions.AddGpuDelegate();
 
-            gbInterpreter = new Interpreter(FileUtil.LoadFile(gbNeuronFileName), options);
-            gbInterpreter.AllocateTensors();
+            imageEncoderInterpreter = new Interpreter(FileUtil.LoadFile(imageEncoderFileName), imageEncoderOptions);
+            imageEncoderInterpreter.AllocateTensors();
 
-            hfnetInterpreter = new Interpreter(FileUtil.LoadFile(hfnetNeuronFileName), other);
-            hfnetInterpreter.AllocateTensors();
+            imageFeatureExtractorInterpreter = new Interpreter(FileUtil.LoadFile(ImageFeatureExtractorFileName), imageFeatureExtractorOptions);
+            imageFeatureExtractorInterpreter.AllocateTensors();
 
-            int[] idim0 = gbInterpreter.GetInputTensorInfo(0).shape;
+            int[] idim0 = imageEncoderInterpreter.GetInputTensorInfo(0).shape;
             height = idim0[1]; // 960
             width = idim0[2]; // 540
             int channels = idim0[3]; //1
 
             input = new float[height, width, channels];
-            hfnetResult = new HfnetResult();
-            gbResult = new GbResult();
+            imageFeatureExtractorResult = new ImageFeatureExtractorResult();
+            imageEncoderResult = new ImageEncoderResult();
         }
 
         ~MobileVPS()
         {
-            gbInterpreter?.Dispose();
-            hfnetInterpreter?.Dispose();
+            imageEncoderInterpreter?.Dispose();
+            imageFeatureExtractorInterpreter?.Dispose();
         }
 
         public void StopTask()
@@ -87,12 +89,12 @@ namespace ARVRLab.VPSService
             return await Task.Run(() => Preprocess(buffer), cancelToken);
         }
 
-        public async Task<HfnetResult> GetFeaturesAsync()
+        public async Task<ImageFeatureExtractorResult> GetFeaturesAsync()
         {
             return await Task.Run(() => GetFeatures());
         }
 
-        public async Task<GbResult> GetGlobalDescriptorAsync()
+        public async Task<ImageEncoderResult> GetGlobalDescriptorAsync()
         {
             return await Task.Run(() => GetGlobalDescriptor());
         }
@@ -117,9 +119,9 @@ namespace ARVRLab.VPSService
             return true;
         }
 
-        private HfnetResult GetFeatures()
+        private ImageFeatureExtractorResult GetFeatures()
         {
-            hfnetInterpreter.SetInputTensorData(0, input);
+            imageFeatureExtractorInterpreter.SetInputTensorData(0, input);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
@@ -127,11 +129,11 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                HfnetIsWorking = true;
+                ImageFeatureExtractorIsWorking = true;
             }
             //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             //stopWatch.Start();
-            hfnetInterpreter.Invoke();
+            imageFeatureExtractorInterpreter.Invoke();
 
             //stopWatch.Stop();
             //// Get the elapsed time as a TimeSpan value.
@@ -144,19 +146,19 @@ namespace ARVRLab.VPSService
             //Debug.Log("RunTime " + elapsedTime);
 
             float[,] keyPoints = new float[400, 2];
-            hfnetInterpreter.GetOutputTensorData(0, keyPoints);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPoints);
 
             float[,] descriptors = new float[400, 256];
-            hfnetInterpreter.GetOutputTensorData(1, descriptors);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptors);
 
             float[] scores = new float[400];
-            hfnetInterpreter.GetOutputTensorData(2, scores);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(2, scores);
 
             //stopWatch.Restart();
 
-            hfnetResult.setKeyPoints(keyPoints);
-            hfnetResult.setDescriptors(descriptors);
-            hfnetResult.setScores(scores);
+            imageFeatureExtractorResult.setKeyPoints(keyPoints);
+            imageFeatureExtractorResult.setDescriptors(descriptors);
+            imageFeatureExtractorResult.setScores(scores);
 
             //stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
@@ -168,13 +170,13 @@ namespace ARVRLab.VPSService
             //    ts1.Milliseconds);
             //Debug.Log("PostProcessTime " + elapsedTime1);
 
-            HfnetIsWorking = false;
-            return hfnetResult;
+            ImageFeatureExtractorIsWorking = false;
+            return imageFeatureExtractorResult;
         }
 
-        private GbResult GetGlobalDescriptor()
+        private ImageEncoderResult GetGlobalDescriptor()
         {
-            gbInterpreter.SetInputTensorData(0, input);
+            imageEncoderInterpreter.SetInputTensorData(0, input);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
@@ -182,11 +184,11 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                GbIsWorking = true;
+                ImageEncoderIsWorking = true;
             }
             //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             //stopWatch.Start();
-            gbInterpreter.Invoke();
+            imageEncoderInterpreter.Invoke();
 
             //stopWatch.Stop();
             //// Get the elapsed time as a TimeSpan value.
@@ -199,11 +201,11 @@ namespace ARVRLab.VPSService
             //Debug.Log("RunTime " + elapsedTime);
 
             float[] globalDescriptor = new float[4096];
-            gbInterpreter.GetOutputTensorData(0, globalDescriptor);
+            imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptor);
 
             //stopWatch.Restart();
 
-            gbResult.setGlobalDescriptor(globalDescriptor);
+            imageEncoderResult.setGlobalDescriptor(globalDescriptor);
 
             //stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
@@ -215,18 +217,18 @@ namespace ARVRLab.VPSService
             //    ts1.Milliseconds);
             //Debug.Log("PostProcessTime " + elapsedTime1);
 
-            GbIsWorking = false;
-            return gbResult;
+            ImageEncoderIsWorking = false;
+            return imageEncoderResult;
         }
     }
 
-    public class HfnetResult
+    public class ImageFeatureExtractorResult
     {
         public byte[] keyPoints;
         public byte[] descriptors;
         public byte[] scores;
 
-        public HfnetResult()
+        public ImageFeatureExtractorResult()
         {
             keyPoints = new byte[400 * 2 * 2];
             descriptors = new byte[400 * 256 * 2];
@@ -271,11 +273,11 @@ namespace ARVRLab.VPSService
         }
     }
 
-    public class GbResult
+    public class ImageEncoderResult
     {
         public byte[] globalDescriptor;
 
-        public GbResult()
+        public ImageEncoderResult()
         {
             globalDescriptor = new byte[4096 * 2];
         }

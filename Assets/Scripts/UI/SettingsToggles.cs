@@ -38,7 +38,15 @@ namespace ARVRLab.VPSService
             RestartVPSButton.onClick.AddListener(() =>
             {
                 VPS.ResetTracking();
-                SettingsVPS settings = new SettingsVPS(VPS.defaultUrl, VPS.defaultBuildingGuid);
+                SettingsVPS settings;
+                if (VPS.UseCustomUrl)
+                {
+                    settings = new SettingsVPS(VPS.CustomUrl, VPS.defaultBuildingGuid);
+                }
+                else
+                {
+                    settings = new SettingsVPS(VPS.defaultUrl, VPS.defaultBuildingGuid);
+                }
                 VPS.StartVPS(settings);
                 HideToggles();
             });

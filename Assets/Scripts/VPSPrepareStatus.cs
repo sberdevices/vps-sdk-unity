@@ -6,61 +6,93 @@ using UnityEngine.Networking;
 
 namespace ARVRLab.VPSService
 {
+    public class DownloadNeuronStatus
+    {
+        private const string bucketPath = "https://testable1.s3pd01.sbercloud.ru/mobilevpstflite";
+
+        public string Name;
+        public string Url;
+        public string DataPath;
+        public float Progress;
+
+        public DownloadNeuronStatus(string name)
+        {
+            Name = name;
+            Url = Path.Combine(bucketPath, name);
+            DataPath = Path.Combine(Application.persistentDataPath, name);
+            Progress = 0f;
+        }
+    }
+
     public class VPSPrepareStatus
     {
-        private const string url = "https://testable1.s3pd01.sbercloud.ru/vpsmobiletflite/230421/hfnet_i8_960.tflite";
-        private string dataPath;
-        private float progress = 0;
+        private DownloadNeuronStatus imageEncoder;
+        private DownloadNeuronStatus imageFeatureExtractor;
 
         public event System.Action OnVPSReady;
 
         public VPSPrepareStatus()
         {
-            dataPath = Path.Combine(Application.persistentDataPath, "hfnet_i8_960.tflite");
+            imageEncoder = new DownloadNeuronStatus("mnv_0.5_mask_teacher_gray_32.tflite");
+            imageFeatureExtractor = new DownloadNeuronStatus("hfnet_f32_960_sp.tflite");
+
             // if mobileVPS already ready
             if (IsReady())
             {
-                progress = 1;
+                imageEncoder.Progress = 1;
+                imageFeatureExtractor.Progress = 1;
             }
         }
 
         /// <summary>
         /// Download mobileVPS
         /// </summary>
-        public IEnumerator DownloadNeural()
+        public IEnumerator DownloadNeurals()
         {
-            while (true)
+            while (!File.Exists(imageEncoder.DataPath) || !File.Exists(imageFeatureExtractor.DataPath))
             {
                 if (Application.internetReachability == NetworkReachability.NotReachable)
                 {
                     Debug.Log("No internet to download MobileVPS");
                 }
                 yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
-                using (UnityWebRequest www = UnityWebRequest.Get(url))
+                Debug.Log("Start downloading MobileVPS");
+
+                yield return DownloadNeural(imageFeatureExtractor);
+                yield return DownloadNeural(imageEncoder);
+            }
+
+            Debug.Log("Mobile vps network downloaded successfully!");
+            OnVPSReady?.Invoke();
+        }
+
+        public IEnumerator DownloadNeural(DownloadNeuronStatus neuron)
+        {
+            if (File.Exists(neuron.DataPath))
+            {
+                neuron.Progress = 1;
+                yield break;
+            }
+
+            using (UnityWebRequest www = UnityWebRequest.Get(neuron.Url))
+            {
+                www.SendWebRequest();
+                while (!www.isDone)
                 {
-                    www.SendWebRequest();
-                    Debug.Log("Start downloading MobileVPS");
-                    while (!www.isDone)
-                    {
-                        progress = www.downloadProgress;
-                        Debug.Log("Current progress: " + progress);
-                        yield return null;
-                    }
-
-                    // check error
-                    if (www.isNetworkError || www.isHttpError)
-                    {
-                        Debug.LogError("Can't download mobile vps network: " + www.error);
-                        yield return null;
-                        continue;
-                    }
-
-                    progress = www.downloadProgress;
-                    File.WriteAllBytes(dataPath, www.downloadHandler.data);
-                    Debug.Log("Mobile vps network downloaded successfully!");
-                    OnVPSReady?.Invoke();
-                    break;
+                    neuron.Progress = www.downloadProgress;
+                    Debug.Log(GetProgress());
+                    yield return null;
                 }
+
+                // check error
+                if (www.isNetworkError || www.isHttpError)
+                {
+                    Debug.LogError("Can't download mobile vps network: " + www.error);
+                    yield break;
+                }
+
+                neuron.Progress = www.downloadProgress;
+                File.WriteAllBytes(neuron.DataPath, www.downloadHandler.data);
             }
         }
 
@@ -69,7 +101,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         public float GetProgress()
         {
-            return progress;
+            return (imageEncoder.Progress + imageFeatureExtractor.Progress) / 2f;
         }
 
         /// <summary>
@@ -77,7 +109,7 @@ namespace ARVRLab.VPSService
         /// </summary>
         private bool IsReady()
         {
-            return File.Exists(dataPath);
+            return File.Exists(imageEncoder.DataPath) && File.Exists(imageFeatureExtractor.DataPath);
         }
     }
 }
