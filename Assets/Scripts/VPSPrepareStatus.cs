@@ -33,8 +33,8 @@ namespace ARVRLab.VPSService
 
         public VPSPrepareStatus()
         {
-            imageEncoder = new DownloadNeuronStatus("mnv_0.5_mask_teacher_gray_32.tflite");
-            imageFeatureExtractor = new DownloadNeuronStatus("hfnet_f32_960_sp.tflite");
+            imageEncoder = new DownloadNeuronStatus("mnv_960x540x1_4096.tflite");
+            imageFeatureExtractor = new DownloadNeuronStatus("msp_960x540x1_256_400.tflite");
 
             // if mobileVPS already ready
             if (IsReady())

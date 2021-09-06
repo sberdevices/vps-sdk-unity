@@ -13,11 +13,11 @@ namespace ARVRLab.VPSService
 {
     public class MobileVPS
     {
-        private const string imageEncoderFileName = "mnv_0.5_mask_teacher_gray_32.tflite";
-        private const string ImageFeatureExtractorFileName = "hfnet_f32_960_sp.tflite";
+        private const string ImageFeatureExtractorFileName = "msp_960x540x1_256_400.tflite";
+        private const string imageEncoderFileName = "mnv_960x540x1_4096.tflite";
 
-        Interpreter imageEncoderInterpreter;
         Interpreter imageFeatureExtractorInterpreter;
+        Interpreter imageEncoderInterpreter;
 
         private float[,,] input;
         private ImageFeatureExtractorResult imageFeatureExtractorResult;
@@ -28,28 +28,27 @@ namespace ARVRLab.VPSService
         private CancellationTokenSource tokenSource;
         private CancellationToken cancelToken;
 
-        public bool ImageEncoderIsWorking = false;
         public bool ImageFeatureExtractorIsWorking = false;
+        public bool ImageEncoderIsWorking = false;
 
         public MobileVPS()
         {
-            var imageEncoderOptions = new InterpreterOptions
-            {
-                threads = 2
-            };
-            //options.AddGpuDelegate();
-
             var imageFeatureExtractorOptions = new InterpreterOptions
             {
                 threads = 2
             };
             imageFeatureExtractorOptions.AddGpuDelegate();
 
-            imageEncoderInterpreter = new Interpreter(FileUtil.LoadFile(imageEncoderFileName), imageEncoderOptions);
-            imageEncoderInterpreter.AllocateTensors();
+            var imageEncoderOptions = new InterpreterOptions
+            {
+                threads = 2
+            };
 
             imageFeatureExtractorInterpreter = new Interpreter(FileUtil.LoadFile(ImageFeatureExtractorFileName), imageFeatureExtractorOptions);
             imageFeatureExtractorInterpreter.AllocateTensors();
+
+            imageEncoderInterpreter = new Interpreter(FileUtil.LoadFile(imageEncoderFileName), imageEncoderOptions);
+            imageEncoderInterpreter.AllocateTensors();
 
             int[] idim0 = imageEncoderInterpreter.GetInputTensorInfo(0).shape;
             height = idim0[1]; // 960
@@ -63,8 +62,8 @@ namespace ARVRLab.VPSService
 
         ~MobileVPS()
         {
-            imageEncoderInterpreter?.Dispose();
             imageFeatureExtractorInterpreter?.Dispose();
+            imageEncoderInterpreter?.Dispose();
         }
 
         public void StopTask()
