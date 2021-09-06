@@ -128,19 +128,7 @@ namespace ARVRLab.VPSService
             {
                 ImageFeatureExtractorIsWorking = true;
             }
-            //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            //stopWatch.Start();
             imageFeatureExtractorInterpreter.Invoke();
-
-            //stopWatch.Stop();
-            //// Get the elapsed time as a TimeSpan value.
-            //TimeSpan ts = stopWatch.Elapsed;
-
-            // Format and display the TimeSpan value.
-            //string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            //    ts.Hours, ts.Minutes, ts.Seconds,
-            //    ts.Milliseconds / 10);
-            //Debug.Log("RunTime " + elapsedTime);
 
             float[,] keyPoints = new float[400, 2];
             imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPoints);
@@ -151,21 +139,9 @@ namespace ARVRLab.VPSService
             float[] scores = new float[400];
             imageFeatureExtractorInterpreter.GetOutputTensorData(2, scores);
 
-            //stopWatch.Restart();
-
             imageFeatureExtractorResult.setKeyPoints(keyPoints);
             imageFeatureExtractorResult.setDescriptors(descriptors);
             imageFeatureExtractorResult.setScores(scores);
-
-            //stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            //TimeSpan ts1 = stopWatch.Elapsed;
-
-            // Format and display the TimeSpan value.
-            //string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            //    ts1.Hours, ts1.Minutes, ts1.Seconds,
-            //    ts1.Milliseconds);
-            //Debug.Log("PostProcessTime " + elapsedTime1);
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -183,36 +159,12 @@ namespace ARVRLab.VPSService
             {
                 ImageEncoderIsWorking = true;
             }
-            //System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            //stopWatch.Start();
             imageEncoderInterpreter.Invoke();
-
-            //stopWatch.Stop();
-            //// Get the elapsed time as a TimeSpan value.
-            //TimeSpan ts = stopWatch.Elapsed;
-
-            // Format and display the TimeSpan value.
-            //string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            //    ts.Hours, ts.Minutes, ts.Seconds,
-            //    ts.Milliseconds / 10);
-            //Debug.Log("RunTime " + elapsedTime);
 
             float[] globalDescriptor = new float[4096];
             imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptor);
 
-            //stopWatch.Restart();
-
             imageEncoderResult.setGlobalDescriptor(globalDescriptor);
-
-            //stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            //TimeSpan ts1 = stopWatch.Elapsed;
-
-            // Format and display the TimeSpan value.
-            //string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            //    ts1.Hours, ts1.Minutes, ts1.Seconds,
-            //    ts1.Milliseconds);
-            //Debug.Log("PostProcessTime " + elapsedTime1);
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;

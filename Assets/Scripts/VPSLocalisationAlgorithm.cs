@@ -187,19 +187,9 @@ namespace ARVRLab.VPSService
 
                     yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
 
-                    //stopWatch = new System.Diagnostics.Stopwatch();
-                    //stopWatch.Start();
-
                     var preprocessTask = mobileVPS.StartPreprocess(input);
                     while (!preprocessTask.IsCompleted)
                         yield return null;
-
-                    //stopWatch.Stop();
-                    //TimeSpan ts = stopWatch.Elapsed;
-                    //string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                    //                           ts.Hours, ts.Minutes, ts.Seconds,
-                    //                           ts.Milliseconds);
-                    //Debug.Log("Preprocess: " + elapsedTime);
 
                     if (!preprocessTask.Result)
                     { 
@@ -207,18 +197,10 @@ namespace ARVRLab.VPSService
                         continue;
                     }
 
-                    //stopWatch.Restart();
                     var imageFeatureExtractorTask = mobileVPS.GetFeaturesAsync();
                     var imageEncoderTask = mobileVPS.GetGlobalDescriptorAsync();
                     while (!imageFeatureExtractorTask.IsCompleted || !imageEncoderTask.IsCompleted)
                         yield return null;
-
-                    //stopWatch.Stop();
-                    //ts = stopWatch.Elapsed;
-                    //elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                    //                           ts.Hours, ts.Minutes, ts.Seconds,
-                    //                           ts.Milliseconds);
-                    //Debug.Log("Neuron: " + elapsedTime);
 
                     ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
