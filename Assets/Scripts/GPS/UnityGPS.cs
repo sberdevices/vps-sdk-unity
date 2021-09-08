@@ -109,9 +109,9 @@ namespace ARVRLab.VPSService
             if (enabled)
             {
                 // for android ask permission here
-#if UNITY_ANDROID
-                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
-#endif
+//#if UNITY_ANDROID
+//                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
+//#endif
                 StartCoroutine(StartGPS());
             }
             else
