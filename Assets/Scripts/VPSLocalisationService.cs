@@ -47,6 +47,11 @@ namespace ARVRLab.VPSService
         /// </summary>
         public event System.Action<LocationState> OnPositionUpdated;
 
+        /// <summary>
+        /// Event mobile vps is downloaded
+        /// </summary>
+        public event System.Action OnVPSReady;
+
         private VPSLocalisationAlgorithm algorithm;
 
         private IEnumerator Start()
@@ -66,14 +71,9 @@ namespace ARVRLab.VPSService
                 defaultSettings = new SettingsVPS(defaultUrl, defaultBuildingGuid);
             }
 
-            vpsPreparing = new VPSPrepareStatus();
             if (SendOnlyFeatures)
             {
                 yield return DownloadMobileVps();
-            }
-            else
-            {
-                provider.Init(false);
             }
 
             if (StartOnAwake)
@@ -189,19 +189,17 @@ namespace ARVRLab.VPSService
                 transform.GetChild(i).gameObject.SetActive(false);
             }
             provider.gameObject.SetActive(true);
+            vpsPreparing = new VPSPrepareStatus();
         }
 
         private IEnumerator DownloadMobileVps()
         {
-            if (vpsPreparing == null)
-            {
-                vpsPreparing = new VPSPrepareStatus();
-            }
+            vpsPreparing.OnVPSReady += () => OnVPSReady?.Invoke();
             if (!IsReady())
             {
                 yield return vpsPreparing.DownloadNeural();
             }
-            provider.Init(true);
+            provider.InitMobileVPS();
         }
     }
 }

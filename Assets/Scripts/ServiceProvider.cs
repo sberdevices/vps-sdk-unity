@@ -31,15 +31,12 @@ namespace ARVRLab.VPSService
             camera = GetComponent<ICamera>();
             gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
+            imagesCollector = new LocalizationImagesCollector(PhotosInSeria, false);
         }
 
-        public void Init(bool useMobileVps)
+        public void InitMobileVPS()
         {
-            if (imagesCollector == null)
-            {
-                imagesCollector = new LocalizationImagesCollector(PhotosInSeria, false);
-            }
-            if (useMobileVps && mobileVPS == null)
+            if (mobileVPS == null)
             {
                 mobileVPS = new MobileVPS();
             }
