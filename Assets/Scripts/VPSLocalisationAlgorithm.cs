@@ -131,11 +131,11 @@ namespace ARVRLab.VPSService
                     LocalizationImagesCollector imagesCollector = provider.GetImageCollector();
                     yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
 
-                    Debug.Log("Sending VPS Localization Request...");
+                    VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Localization Request...");
                     requestVPS.SetUrl(settings.Url);
 
                     yield return requestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
-                    Debug.Log("VPS Localization answer recieved!");
+                    VPSLogger.Log(LogLevel.DEBUG, "VPS Localization answer recieved!");
 
                     if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                     {
@@ -156,7 +156,7 @@ namespace ARVRLab.VPSService
                         locationState.Localisation = null;
 
                         OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
-                        Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
+                        VPSLogger.LogFormat(LogLevel.DEBUG, "VPS Request Error: {0}", requestVPS.GetErrorCode());
                     }
 
                     yield return new WaitForSeconds(settings.Timeout - neuronTime);
@@ -192,13 +192,14 @@ namespace ARVRLab.VPSService
                     while (!task.IsCompleted)
                         yield return null;
                     stopWatch.Stop();
-                    neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
+                    neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000f;
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "Neuron time = {0:f3}", neuronTime);
 
                     ARFoundationCamera.semaphore.Free();
 
                     Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
 
-                    Debug.Log("Sending VPS Request...");
+                    VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Embedding, Meta);
                 }
                 // if not - send only photo and meta
@@ -213,11 +214,11 @@ namespace ARVRLab.VPSService
                         continue;
                     }
 
-                    Debug.Log("Sending VPS Request...");
+                    VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Request...");
                     yield return requestVPS.SendVpsRequest(Image, Meta);
                 }
 
-                Debug.Log("VPS answer recieved!");
+                VPSLogger.Log(LogLevel.DEBUG, "VPS answer recieved!");
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {
@@ -237,7 +238,7 @@ namespace ARVRLab.VPSService
                     locationState.Localisation = null;
 
                     OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
-                    Debug.LogErrorFormat("VPS Request Error: {0}", requestVPS.GetErrorCode());
+                    VPSLogger.LogFormat(LogLevel.NONE, "VPS Request Error: {0}", requestVPS.GetErrorCode());
                 }
 
                 yield return new WaitForSeconds(settings.Timeout);

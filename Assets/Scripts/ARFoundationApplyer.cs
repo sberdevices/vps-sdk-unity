@@ -82,8 +82,8 @@ namespace ARVRLab.VPSService
                 correctedResult.LocalRotation = qrot.eulerAngles;
             }
 
-            Debug.Log("LocalisationDone happend");
-            Debug.Log(correctedResult.LocalPosition);
+            VPSLogger.Log(LogLevel.NONE, "LocalisationDone happend");
+            VPSLogger.Log(LogLevel.DEBUG, correctedResult.LocalPosition);
 
             StopAllCoroutines();
 
@@ -110,6 +110,9 @@ namespace ARVRLab.VPSService
                 var qrot = Quaternion.Inverse(CustomStartPose.rotation) * Quaternion.Euler(localisation.LocalRotation);
                 correctedResult.LocalRotation = qrot.eulerAngles;
             }
+
+            VPSLogger.Log(LogLevel.NONE, "LocalisationDone happend");
+            VPSLogger.Log(LogLevel.DEBUG, correctedResult.LocalPosition);
 
             StopAllCoroutines();
 

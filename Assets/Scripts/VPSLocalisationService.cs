@@ -171,7 +171,7 @@ namespace ARVRLab.VPSService
         {;
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().ResetTracking();
-            Debug.Log("Tracking reseted");
+            VPSLogger.Log(LogLevel.NONE, "Tracking reseted");
         }
 
         private void Awake()

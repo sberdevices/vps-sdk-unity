@@ -189,7 +189,7 @@ namespace ARVRLab.VPSService
                     yield break;
                 }
 
-                Debug.Log("Request finished with code: " + www.responseCode);
+                VPSLogger.LogFormat(LogLevel.DEBUG, "Request finished with code: {0}", www.responseCode);
 
                 if (www.responseCode != 200)
                 {
@@ -198,7 +198,7 @@ namespace ARVRLab.VPSService
                 }
                 string response = www.downloadHandler.text;
 
-                Debug.Log("Request Finished Successfully!\n" + response);
+                VPSLogger.LogFormat(LogLevel.DEBUG, "Request Finished Successfully!\n{0}", response);
                 LocationState deserialized = null;
                 try
                 {
@@ -213,7 +213,7 @@ namespace ARVRLab.VPSService
 
                 if (deserialized != null)
                 {
-                    Debug.Log("Server status " + deserialized.Status);
+                    VPSLogger.LogFormat(LogLevel.DEBUG, "Server status {0}", deserialized.Status);
                     locationState = deserialized;
                 }
                 else

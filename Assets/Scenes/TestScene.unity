@@ -810,6 +810,11 @@ PrefabInstance:
       propertyPath: VPS
       value: 
       objectReference: {fileID: 155717156}
+    - target: {fileID: 2321813929097405887, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: cameraManager
+      value: 
+      objectReference: {fileID: 296158844}
     - target: {fileID: 2321813929504952750, guid: 6935d6aa6e7d94d52af230c4800c9919,
         type: 3}
       propertyPath: m_AnchoredPosition.x

@@ -80,7 +80,7 @@ namespace ARVRLab.VPSService
                 {
                     if (cancelToken.IsCancellationRequested)
                     {
-                        Debug.LogError("Mobile VPS task canceled");
+                        VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
                         return null;
                     }
 
@@ -90,7 +90,7 @@ namespace ARVRLab.VPSService
             interpreter.SetInputTensorData(0, input);
             if (cancelToken.IsCancellationRequested)
             {
-                Debug.LogError("Mobile VPS task canceled");
+                VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
                 return null;
             }
             else
@@ -103,13 +103,13 @@ namespace ARVRLab.VPSService
 
             stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
-            TimeSpan ts = stopWatch.Elapsed;
+            TimeSpan neuronRunTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts.Hours, ts.Minutes, ts.Seconds,
-                ts.Milliseconds / 10);
-            Debug.Log("RunTime " + elapsedTime);
+            string neuronRunTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                neuronRunTS.Hours, neuronRunTS.Minutes, neuronRunTS.Seconds,
+                neuronRunTS.Milliseconds / 10);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "RunTime {0}", neuronRunTime);
 
             float[] globalDescriptor = new float[4096];
             interpreter.GetOutputTensorData(0, globalDescriptor);
@@ -132,13 +132,13 @@ namespace ARVRLab.VPSService
 
             stopWatch.Stop();
             // Get the elapsed time as a TimeSpan value.
-            TimeSpan ts1 = stopWatch.Elapsed;
+            TimeSpan postProcessTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string elapsedTime1 = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                ts1.Hours, ts1.Minutes, ts1.Seconds,
-                ts1.Milliseconds);
-            Debug.Log("PostProcessTime " + elapsedTime1);
+            string postProcessTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                postProcessTS.Hours, postProcessTS.Minutes, postProcessTS.Seconds,
+                postProcessTS.Milliseconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "PostProcessTime {0}", postProcessTime);
 
             Working = false;
             return output;

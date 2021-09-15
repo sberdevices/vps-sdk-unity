@@ -186,7 +186,7 @@ namespace ARVRLab.VPSService
                     var result = client.PostAsync(uri, form);
 
                     resultContent = result.Result.Content.ReadAsStringAsync().Result;
-                    Debug.Log(resultContent);
+                    VPSLogger.Log(LogLevel.DEBUG, resultContent);
                 }
                 catch
                 {
@@ -208,7 +208,7 @@ namespace ARVRLab.VPSService
 
                 if (deserialized != null)
                 {
-                    Debug.Log("Server status " + deserialized.Status);
+                    VPSLogger.LogFormat(LogLevel.DEBUG, "Server status {0}", deserialized.Status);
                     locationState = deserialized;
                 }
                 else

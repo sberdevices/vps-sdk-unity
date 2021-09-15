@@ -70,7 +70,7 @@ namespace ARVRLab.VPSService
                 var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
                 if (hdConfig == default)
                 {
-                    Debug.LogError("Can't take HD resolution!");
+                    VPSLogger.Log(LogLevel.DEBUG, "Can't take HD resolution!");
                     // Get the best resolution
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
@@ -98,7 +98,7 @@ namespace ARVRLab.VPSService
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
-                Debug.Log("Не удалось получить изображение с камеры!");
+                VPSLogger.Log(LogLevel.DEBUG, "Не удалось получить изображение с камеры!");
                 return;
             }
 
