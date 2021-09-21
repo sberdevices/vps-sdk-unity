@@ -12,8 +12,10 @@ namespace ARVRLab.VPSService
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
 
         public Texture2D[] FakeTextures;
-        private NativeArray<byte> imageFeatureExtractorBuffer;
-        private NativeArray<byte> imageEncoderBuffer;
+
+        // Не проверено
+        private Texture2D imageFeatureExtractorTexture;
+        private Texture2D imageEncoderTexture;
 
         private int Counter = 0;
 
@@ -35,9 +37,32 @@ namespace ARVRLab.VPSService
         public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
         {
             feautureExtractorRequirement = FeautureExtractorRequirement;
-            imageFeatureExtractorBuffer = new NativeArray<byte>(feautureExtractorRequirement.Width * feautureExtractorRequirement.Height, Allocator.Persistent);
             encoderRequirement = EncoderRequirement;
-            imageEncoderBuffer = new NativeArray<byte>(encoderRequirement.Width * encoderRequirement.Height, Allocator.Persistent);
+
+            imageFeatureExtractorTexture = new Texture2D(1, 1);
+            imageEncoderTexture = new Texture2D(1, 1);
+            InitBuffers();
+        }
+
+        private void InitBuffers()
+        {
+            if (feautureExtractorRequirement == null || encoderRequirement == null)
+                return;
+
+            RectInt inputRect = feautureExtractorRequirement.GetCropRect(FakeTextures[Counter].width, FakeTextures[Counter].height, feautureExtractorRequirement.Width / feautureExtractorRequirement.Height);
+            imageFeatureExtractorTexture = CropScale.CropTexture(FakeTextures[Counter], new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
+            imageFeatureExtractorTexture = CropScale.ScaleTexture(imageFeatureExtractorTexture, feautureExtractorRequirement.Width, feautureExtractorRequirement.Height);
+
+            if (feautureExtractorRequirement.Equals(encoderRequirement))
+            {
+                imageEncoderTexture = imageFeatureExtractorTexture;
+            }
+            else
+            {
+                inputRect = encoderRequirement.GetCropRect(FakeTextures[Counter].width, FakeTextures[Counter].height, encoderRequirement.Width / encoderRequirement.Height);
+                imageEncoderTexture = CropScale.CropTexture(FakeTextures[Counter], new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
+                imageEncoderTexture = CropScale.ScaleTexture(imageEncoderTexture, encoderRequirement.Width, encoderRequirement.Height);
+            }
         }
 
         public Vector2 GetFocalPixelLength()
@@ -55,19 +80,16 @@ namespace ARVRLab.VPSService
 
         public NativeArray<byte> GetImageFeatureExtractorBuffer()
         {
-            FreeBufferMemory();
             Counter++;
             if (Counter >= FakeTextures.Length)
                 Counter = 1;
-            imageFeatureExtractorBuffer = new NativeArray<byte>(FakeTextures[Counter - 1].GetRawTextureData(), Allocator.Persistent);
-            return imageFeatureExtractorBuffer;
+            InitBuffers();
+            return imageFeatureExtractorTexture.GetRawTextureData<byte>();
         }
 
         public NativeArray<byte> GetImageEncoderBuffer()
         {
-            FreeBufferMemory();
-            imageEncoderBuffer = new NativeArray<byte>(FakeTextures[Counter - 1].GetRawTextureData(), Allocator.Persistent);
-            return imageEncoderBuffer;
+            return imageEncoderTexture.GetRawTextureData<byte>();
         }
 
         public Vector2 GetPrincipalPoint()
@@ -87,14 +109,8 @@ namespace ARVRLab.VPSService
 
         private void FreeBufferMemory()
         {
-            if (imageFeatureExtractorBuffer != null && imageFeatureExtractorBuffer.IsCreated)
-            {
-                imageFeatureExtractorBuffer.Dispose();
-            }
-            if (imageEncoderBuffer != null && imageEncoderBuffer.IsCreated)
-            {
-                imageEncoderBuffer.Dispose();
-            }
+            imageFeatureExtractorTexture = null;
+            imageEncoderTexture = null;
         }
 
         public float GetResizeCoefficient()
