@@ -46,6 +46,9 @@ namespace ARVRLab.VPSService
 
         private void OnValidate()
         {
+            if (FakeTexture == null)
+                return;
+
             Preprocess();
             resizeCoefficient = (float)ppFakeTexture.width / (float)desiredResolution.x;
 

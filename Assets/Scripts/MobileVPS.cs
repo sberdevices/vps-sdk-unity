@@ -119,7 +119,7 @@ namespace ARVRLab.VPSService
                 return false;
             if (imageFeatureExtractorRequirements.Equals(imageEncoderRequirements))
             {
-                imageFeatureExtractorInput.CopyTo(imageEncoderInput, 0);
+                imageEncoderInput = imageFeatureExtractorInput;
             }
             else
             {
