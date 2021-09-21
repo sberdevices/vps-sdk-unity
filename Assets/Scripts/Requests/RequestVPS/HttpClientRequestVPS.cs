@@ -40,7 +40,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -49,7 +49,7 @@ namespace ARVRLab.VPSService
             var binaryImage = GetByteArrayFromImage(image);
             if (binaryImage == null)
             {
-                Debug.LogError("Can't read camera image! Please, check image format!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't read camera image! Please, check image format!");
                 yield break;
             }
             HttpContent img = new ByteArrayContent(binaryImage);
@@ -70,7 +70,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -96,7 +96,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -186,7 +186,7 @@ namespace ARVRLab.VPSService
                     var result = client.PostAsync(uri, form);
 
                     resultContent = result.Result.Content.ReadAsStringAsync().Result;
-                    Debug.Log(resultContent);
+                    VPSLogger.Log(LogLevel.DEBUG, resultContent);
                 }
                 catch
                 {
@@ -201,20 +201,20 @@ namespace ARVRLab.VPSService
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    VPSLogger.Log(LogLevel.ERROR, e);
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                     return;
                 }
 
                 if (deserialized != null)
                 {
-                    Debug.Log("Server status " + deserialized.Status);
+                    VPSLogger.LogFormat(LogLevel.DEBUG, "Server status {0}", deserialized.Status);
                     locationState = deserialized;
                 }
                 else
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                    Debug.LogError("There is no data come from server");
+                    VPSLogger.Log(LogLevel.ERROR, "There is no data come from server");
                     return;
                 }
             }

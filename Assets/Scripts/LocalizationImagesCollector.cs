@@ -54,7 +54,7 @@ namespace ARVRLab.VPSService
         {
             var tracking = provider.GetTracking();
 
-            Debug.Log("Start collect photo");
+            VPSLogger.Log(LogLevel.DEBUG, "Start collect photo");
             for (int i = 0; i < photosInSeria; i++)
             {
                 if (i != 0)
@@ -110,7 +110,7 @@ namespace ARVRLab.VPSService
                 NativeArray<byte> input = camera.GetImageArray();
                 if (input == null || input.Length == 0)
                 {
-                    Debug.LogError("Cannot take camera image as ByteArray");
+                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray");
                     yield break;
                 }
 
@@ -122,8 +122,8 @@ namespace ARVRLab.VPSService
                 while (!task.IsCompleted)
                     yield return null;
                 stopWatch.Stop();
-                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
-                Debug.Log("Neuron time = " + neuronTime);
+                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000f;
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "Neuron time = {0:f3}", neuronTime);
 
                 ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(1, 0, task.Result.keyPoints, task.Result.scores, task.Result.descriptors, task.Result.globalDescriptor);
@@ -136,7 +136,7 @@ namespace ARVRLab.VPSService
                 Texture2D Image = camera.GetFrame();
                 if (Image == null)
                 {
-                    Debug.LogError("Image from camera is not available");
+                    VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                     yield break;
                 }
 

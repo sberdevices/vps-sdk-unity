@@ -33,31 +33,31 @@ namespace ARVRLab.VPSService
             {
                 if (Application.internetReachability == NetworkReachability.NotReachable)
                 {
-                    Debug.Log("No internet to download MobileVPS");
+                    VPSLogger.Log(LogLevel.ERROR, "No internet to download MobileVPS");
                 }
                 yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
                 using (UnityWebRequest www = UnityWebRequest.Get(url))
                 {
                     www.SendWebRequest();
-                    Debug.Log("Start downloading MobileVPS");
+                    VPSLogger.Log(LogLevel.DEBUG, "Start downloading MobileVPS");
                     while (!www.isDone)
                     {
                         progress = www.downloadProgress;
-                        Debug.Log("Current progress: " + progress);
+                        VPSLogger.LogFormat(LogLevel.DEBUG, "Current progress: {0}", progress);
                         yield return null;
                     }
 
                     // check error
                     if (www.isNetworkError || www.isHttpError)
                     {
-                        Debug.LogError("Can't download mobile vps network: " + www.error);
+                        VPSLogger.LogFormat(LogLevel.ERROR, "Can't download mobile vps network: {0}", www.error);
                         yield return null;
                         continue;
                     }
 
                     progress = www.downloadProgress;
                     File.WriteAllBytes(dataPath, www.downloadHandler.data);
-                    Debug.Log("Mobile vps network downloaded successfully!");
+                    VPSLogger.Log(LogLevel.DEBUG, "Mobile vps network downloaded successfully!");
                     OnVPSReady?.Invoke();
                     break;
                 }
