@@ -183,7 +183,7 @@ namespace ARVRLab.VPSService
                     yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
                     ARFoundationCamera.semaphore.TakeOne();
 
-                    NativeArray<byte> featureExtractorInput = camera.GetImageEncoderBuffer();
+                    NativeArray<byte> featureExtractorInput = camera.GetImageFeatureExtractorBuffer();
                     if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                     {
                         Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");

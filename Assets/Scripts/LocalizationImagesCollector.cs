@@ -108,7 +108,7 @@ namespace ARVRLab.VPSService
                 Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
-                NativeArray<byte> featureExtractorInput = camera.GetImageEncoderBuffer();
+                NativeArray<byte> featureExtractorInput = camera.GetImageFeatureExtractorBuffer();
                 if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                 {
                     Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");

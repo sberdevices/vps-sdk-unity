@@ -34,6 +34,8 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
         {
+            FreeBufferMemory();
+
             feautureExtractorRequirement = FeautureExtractorRequirement;
             encoderRequirement = EncoderRequirement;
 
@@ -164,7 +166,6 @@ namespace ARVRLab.VPSService
                         rotatedTexture.SetPixel(h - i - 1, w - j - 1, pixel);
                     }
                 }
-
             }
             else
             {

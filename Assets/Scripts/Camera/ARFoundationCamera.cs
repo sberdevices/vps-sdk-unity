@@ -50,6 +50,7 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
         {
+            FreeBufferMemory();
             feautureExtractorRequirement = FeautureExtractorRequirement;
             imageFeatureExtractorBuffer = new NativeArray<byte>(feautureExtractorRequirement.Width * feautureExtractorRequirement.Height, Allocator.Persistent);
             encoderRequirement = EncoderRequirement;
@@ -119,7 +120,7 @@ namespace ARVRLab.VPSService
             }
 
             // Create texture
-            if (texture == null)
+            if (texture == null || texture.width != textureRequirement.Width || texture.height != textureRequirement.Height)
             {
                 texture = new Texture2D(textureRequirement.Width, textureRequirement.Height, textureRequirement.Format, false);
             }

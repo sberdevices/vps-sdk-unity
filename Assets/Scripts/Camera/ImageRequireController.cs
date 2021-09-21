@@ -60,9 +60,6 @@ namespace ARVRLab.VPSService
             else
             {
                 VPSTextureRequirement requir = (VPSTextureRequirement)obj;
-                Debug.Log(Width + " = " + requir.Width);
-                Debug.Log(Height + " = " + requir.Height);
-                Debug.Log(Format + " = " + requir.Format);
                 return (Width == requir.Width) && (Height == requir.Height) && (Format == requir.Format);
             }
         }
