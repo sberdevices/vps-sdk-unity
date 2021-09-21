@@ -100,6 +100,12 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
+            if (sendOnlyFeatures)
+            {
+                MobileVPS mobileVPS = provider.GetMobileVPS();
+                camera.Init(mobileVPS.imageFeatureExtractorRequirements, mobileVPS.imageEncoderRequirements);
+            }
+
             var tracking = provider.GetTracking();
             if (tracking == null)
             {
@@ -174,20 +180,28 @@ namespace ARVRLab.VPSService
                 // if send features - send them
                 if (sendOnlyFeatures)
                 {
-                    MobileVPS mobileVPS = provider.GetMobileVPS();
                     yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
                     ARFoundationCamera.semaphore.TakeOne();
-                    NativeArray<byte> input = camera.GetImageArray();
-                    if (input == null || input.Length == 0)
+
+                    NativeArray<byte> featureExtractorInput = camera.GetImageEncoderBuffer();
+                    if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                     {
-                        Debug.LogError("Cannot take camera image as ByteArray");
+                        Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");
                         yield return null;
                         continue;
                     }
 
+                    NativeArray<byte> encoderInput = camera.GetImageEncoderBuffer();
+                    if (encoderInput == null || encoderInput.Length == 0)
+                    {
+                        Debug.LogError("Cannot take camera image as ByteArray for Encoder");
+                        yield return null;
+                        continue;
+                    }
+                    MobileVPS mobileVPS = provider.GetMobileVPS();
                     yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
 
-                    var preprocessTask = mobileVPS.StartPreprocess(input);
+                    var preprocessTask = mobileVPS.StartPreprocess(featureExtractorInput, encoderInput);
                     while (!preprocessTask.IsCompleted)
                         yield return null;
 

@@ -12,12 +12,15 @@ namespace ARVRLab.VPSService
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
 
         public Texture2D[] FakeTextures;
+        private NativeArray<byte> imageFeatureExtractorBuffer;
+        private NativeArray<byte> imageEncoderBuffer;
 
         private int Counter = 0;
 
-        private NativeArray<byte> buffer;
-
         private float resizeCoefficient = 1.0f;
+
+        private VPSTextureRequirement feautureExtractorRequirement;
+        private VPSTextureRequirement encoderRequirement;
 
         private void Start()
         {
@@ -27,6 +30,14 @@ namespace ARVRLab.VPSService
             {
                 FakeTextures[i] = Preprocess(FakeTextures[i]);
             }
+        }
+
+        public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
+        {
+            feautureExtractorRequirement = FeautureExtractorRequirement;
+            imageFeatureExtractorBuffer = new NativeArray<byte>(feautureExtractorRequirement.Width * feautureExtractorRequirement.Height, Allocator.Persistent);
+            encoderRequirement = EncoderRequirement;
+            imageEncoderBuffer = new NativeArray<byte>(encoderRequirement.Width * encoderRequirement.Height, Allocator.Persistent);
         }
 
         public Vector2 GetFocalPixelLength()
@@ -42,14 +53,21 @@ namespace ARVRLab.VPSService
             return FakeTextures[Counter - 1];
         }
 
-        public NativeArray<byte> GetImageArray()
+        public NativeArray<byte> GetImageFeatureExtractorBuffer()
         {
             FreeBufferMemory();
             Counter++;
             if (Counter >= FakeTextures.Length)
                 Counter = 1;
-            buffer = new NativeArray<byte>(FakeTextures[Counter - 1].GetRawTextureData(), Allocator.Persistent);
-            return buffer;
+            imageFeatureExtractorBuffer = new NativeArray<byte>(FakeTextures[Counter - 1].GetRawTextureData(), Allocator.Persistent);
+            return imageFeatureExtractorBuffer;
+        }
+
+        public NativeArray<byte> GetImageEncoderBuffer()
+        {
+            FreeBufferMemory();
+            imageEncoderBuffer = new NativeArray<byte>(FakeTextures[Counter - 1].GetRawTextureData(), Allocator.Persistent);
+            return imageEncoderBuffer;
         }
 
         public Vector2 GetPrincipalPoint()
@@ -69,9 +87,13 @@ namespace ARVRLab.VPSService
 
         private void FreeBufferMemory()
         {
-            if (buffer.IsCreated)
+            if (imageFeatureExtractorBuffer != null && imageFeatureExtractorBuffer.IsCreated)
             {
-                buffer.Dispose();
+                imageFeatureExtractorBuffer.Dispose();
+            }
+            if (imageEncoderBuffer != null && imageEncoderBuffer.IsCreated)
+            {
+                imageEncoderBuffer.Dispose();
             }
         }
 

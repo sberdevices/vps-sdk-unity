@@ -13,23 +13,31 @@ namespace ARVRLab.VPSService
 {
     public class MobileVPS
     {
-        private const string ImageFeatureExtractorFileName = "msp_960x540x1_256_400.tflite";
+        private const string imageFeatureExtractorFileName = "msp_960x540x1_256_400.tflite";
         private const string imageEncoderFileName = "mnv_960x540x1_4096.tflite";
 
         Interpreter imageFeatureExtractorInterpreter;
         Interpreter imageEncoderInterpreter;
 
-        private float[,,] input;
+        private float[,,] imageFeatureExtractorInput;
+        private float[,,] imageEncoderInput;
+
+        private float[,] keyPointsOutput;
+        private float[,] descriptorsOutput;
+        private float[] scoresOutput;
+        private float[,] globalDescriptorOutput;
+
         private ImageFeatureExtractorResult imageFeatureExtractorResult;
         private ImageEncoderResult imageEncoderResult;
-
-        private int width, height;
 
         private CancellationTokenSource tokenSource;
         private CancellationToken cancelToken;
 
         public bool ImageFeatureExtractorIsWorking = false;
         public bool ImageEncoderIsWorking = false;
+
+        public VPSTextureRequirement imageFeatureExtractorRequirements;
+        public VPSTextureRequirement imageEncoderRequirements;
 
         public MobileVPS()
         {
@@ -44,20 +52,39 @@ namespace ARVRLab.VPSService
                 threads = 2
             };
 
-            imageFeatureExtractorInterpreter = new Interpreter(FileUtil.LoadFile(ImageFeatureExtractorFileName), imageFeatureExtractorOptions);
+            imageFeatureExtractorInterpreter = new Interpreter(FileUtil.LoadFile(imageFeatureExtractorFileName), imageFeatureExtractorOptions);
             imageFeatureExtractorInterpreter.AllocateTensors();
 
             imageEncoderInterpreter = new Interpreter(FileUtil.LoadFile(imageEncoderFileName), imageEncoderOptions);
             imageEncoderInterpreter.AllocateTensors();
 
-            int[] idim0 = imageEncoderInterpreter.GetInputTensorInfo(0).shape;
-            height = idim0[1]; // 960
-            width = idim0[2]; // 540
-            int channels = idim0[3]; //1
+            // ImageFeatureExtractor inputs
+            int[] inputShape = imageFeatureExtractorInterpreter.GetInputTensorInfo(0).shape;
+            imageFeatureExtractorInput = new float[inputShape[1], inputShape[2], inputShape[3]];
+            TextureFormat format = inputShape[3] == 1 ? TextureFormat.R8 : TextureFormat.RGBA32;
+            imageFeatureExtractorRequirements = new VPSTextureRequirement(VPSTextureType.FEATURE_EXTRACTOR, inputShape[1], inputShape[2], format);
 
-            input = new float[height, width, channels];
-            imageFeatureExtractorResult = new ImageFeatureExtractorResult();
-            imageEncoderResult = new ImageEncoderResult();
+            // ImageEncoder inputs
+            inputShape = imageEncoderInterpreter.GetInputTensorInfo(0).shape;
+            imageEncoderInput = new float[inputShape[1], inputShape[2], inputShape[3]];
+            format = inputShape[3] == 1 ? TextureFormat.R8 : TextureFormat.RGBA32;
+            imageEncoderRequirements = new VPSTextureRequirement(VPSTextureType.IMAGE_ENCODER, inputShape[1], inputShape[2], format);
+
+            //keypoints
+            int[] kpOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(0).shape;
+            keyPointsOutput = new float[kpOutputShape[0], kpOutputShape[1]];
+            //descriptors
+            int[] dOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(1).shape;
+            descriptorsOutput = new float[dOutputShape[0], dOutputShape[1]];
+            //scores
+            int[] sOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(2).shape;
+            scoresOutput = new float[sOutputShape[0]];
+            //globalDescriptor
+            int[] gdOutputShape = imageEncoderInterpreter.GetOutputTensorInfo(0).shape;
+            globalDescriptorOutput = new float[gdOutputShape[0], gdOutputShape[1]];
+
+            imageFeatureExtractorResult = new ImageFeatureExtractorResult(kpOutputShape, dOutputShape, sOutputShape);
+            imageEncoderResult = new ImageEncoderResult(gdOutputShape);
         }
 
         ~MobileVPS()
@@ -74,7 +101,7 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public async Task<bool> StartPreprocess(NativeArray<byte> buffer)
+        public async Task<bool> StartPreprocess(NativeArray<byte> featureExtractorBuffer, NativeArray<byte> encoderBuffer)
         {
             if (tokenSource != null)
             {
@@ -83,7 +110,24 @@ namespace ARVRLab.VPSService
             tokenSource = new CancellationTokenSource();
             cancelToken = tokenSource.Token;
 
-            return await Task.Run(() => Preprocess(buffer), cancelToken);
+            return await Task.Run(() => Preprocess(featureExtractorBuffer, encoderBuffer), cancelToken);
+        }
+
+        private bool Preprocess(NativeArray<byte> featureExtractorBuffer, NativeArray<byte> encoderBuffer)
+        {
+            if (!ConvertToFloat(featureExtractorBuffer, ref imageFeatureExtractorInput, imageFeatureExtractorRequirements))
+                return false;
+            if (imageFeatureExtractorRequirements == imageEncoderRequirements)
+            {
+                imageFeatureExtractorInput.CopyTo(imageEncoderInput, 0);
+            }
+            else
+            {
+                if (!ConvertToFloat(encoderBuffer, ref imageEncoderInput, imageEncoderRequirements))
+                    return false;
+            }
+
+            return true;
         }
 
         public async Task<ImageFeatureExtractorResult> GetFeaturesAsync()
@@ -96,14 +140,16 @@ namespace ARVRLab.VPSService
             return await Task.Run(() => GetGlobalDescriptor());
         }
 
-        private bool Preprocess(NativeArray<byte> buffer)
+        private bool ConvertToFloat(NativeArray<byte> input, ref float[,,] result, VPSTextureRequirement requirement)
         {
+            int width = requirement.Height;
+            int height = requirement.Width;
             // for input - convert bytes to float, rotate and mirror image
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    input[height - j - 1, width - i - 1, 0] = (float)(buffer[((i + 1) * height - j - 1)]);
+                    result[height - j - 1, width - i - 1, 0] = (float)(input[((i + 1) * height - j - 1)]);
                 }
 
                 if (cancelToken.IsCancellationRequested)
@@ -118,7 +164,7 @@ namespace ARVRLab.VPSService
 
         private ImageFeatureExtractorResult GetFeatures()
         {
-            imageFeatureExtractorInterpreter.SetInputTensorData(0, input);
+            imageFeatureExtractorInterpreter.SetInputTensorData(0, imageFeatureExtractorInput);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
@@ -130,18 +176,13 @@ namespace ARVRLab.VPSService
             }
             imageFeatureExtractorInterpreter.Invoke();
 
-            float[,] keyPoints = new float[400, 2];
-            imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPoints);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPointsOutput);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptorsOutput);
+            imageFeatureExtractorInterpreter.GetOutputTensorData(2, scoresOutput);
 
-            float[,] descriptors = new float[400, 256];
-            imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptors);
-
-            float[] scores = new float[400];
-            imageFeatureExtractorInterpreter.GetOutputTensorData(2, scores);
-
-            imageFeatureExtractorResult.setKeyPoints(keyPoints);
-            imageFeatureExtractorResult.setDescriptors(descriptors);
-            imageFeatureExtractorResult.setScores(scores);
+            imageFeatureExtractorResult.setKeyPoints(keyPointsOutput);
+            imageFeatureExtractorResult.setDescriptors(descriptorsOutput);
+            imageFeatureExtractorResult.setScores(scoresOutput);
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -149,7 +190,7 @@ namespace ARVRLab.VPSService
 
         private ImageEncoderResult GetGlobalDescriptor()
         {
-            imageEncoderInterpreter.SetInputTensorData(0, input);
+            imageEncoderInterpreter.SetInputTensorData(0, imageFeatureExtractorInput);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
@@ -161,10 +202,9 @@ namespace ARVRLab.VPSService
             }
             imageEncoderInterpreter.Invoke();
 
-            float[] globalDescriptor = new float[4096];
-            imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptor);
+            imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptorOutput);
 
-            imageEncoderResult.setGlobalDescriptor(globalDescriptor);
+            imageEncoderResult.setGlobalDescriptor(globalDescriptorOutput);
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;
@@ -177,35 +217,44 @@ namespace ARVRLab.VPSService
         public byte[] descriptors;
         public byte[] scores;
 
-        public ImageFeatureExtractorResult()
+        private int kpRows, kpCols;
+        private int dRows, dCols;
+        private int sCols;
+
+        public ImageFeatureExtractorResult(int[] kpOutputShape, int[] dOutputShape, int[] sOutputShape)
         {
-            keyPoints = new byte[400 * 2 * 2];
-            descriptors = new byte[400 * 256 * 2];
-            scores = new byte[400 * 2];
+            kpRows = kpOutputShape[0];
+            kpCols = kpOutputShape[1];
+            keyPoints = new byte[kpRows * kpCols * 2];
+            dRows = dOutputShape[0];
+            dCols = dOutputShape[1];
+            descriptors = new byte[dRows * dCols * 2];
+            sCols = sOutputShape[0];
+            scores = new byte[sCols * 2];
         }
 
         public void setKeyPoints(float[,] points)
         {
-            for (int i = 0; i < 400; i++)
+            for (int i = 0; i < kpRows; i++)
             {
-                for (int j = 0; j < 2; j++)
+                for (int j = 0; j < kpCols; j++)
                 {
                     byte[] kp = BitConverter.GetBytes(Mathf.FloatToHalf(points[i, j]));
-                    keyPoints[i * 2 * 2 + j * 2] = kp[0];
-                    keyPoints[i * 2 * 2 + j * 2 + 1] = kp[1];
+                    keyPoints[i * kpCols * 2 + j * 2] = kp[0];
+                    keyPoints[i * kpCols * 2 + j * 2 + 1] = kp[1];
                 }
             }
         }
 
         public void setDescriptors(float[,] descs)
         {
-            for (int i = 0; i < 400; i++)
+            for (int i = 0; i < dRows; i++)
             {
-                for (int j = 0; j < 256; j++)
+                for (int j = 0; j < dCols; j++)
                 {
                     byte[] d = BitConverter.GetBytes(Mathf.FloatToHalf(descs[i, j]));
-                    descriptors[i * 256 * 2 + j * 2] = d[0];
-                    descriptors[i * 256 * 2 + j * 2 + 1] = d[1];
+                    descriptors[i * dCols * 2 + j * 2] = d[0];
+                    descriptors[i * dCols * 2 + j * 2 + 1] = d[1];
                 }
             }
         }
@@ -213,7 +262,7 @@ namespace ARVRLab.VPSService
 
         public void setScores(float[] scrs)
         {
-            for (int i = 0; i < 400; i++)
+            for (int i = 0; i < sCols; i++)
             {
                 byte[] s = BitConverter.GetBytes(Mathf.FloatToHalf(scrs[i]));
                 scores[i * 2] = s[0];
@@ -225,19 +274,25 @@ namespace ARVRLab.VPSService
     public class ImageEncoderResult
     {
         public byte[] globalDescriptor;
+        private int gbRows, gbCols;
 
-        public ImageEncoderResult()
+        public ImageEncoderResult(int[] gdOutputShape)
         {
-            globalDescriptor = new byte[4096 * 2];
+            gbRows = gdOutputShape[0];
+            gbCols = gdOutputShape[1];
+            globalDescriptor = new byte[gbRows * gbCols * 2];
         }
 
-        public void setGlobalDescriptor(float[] globDesc)
+        public void setGlobalDescriptor(float[,] globDesc)
         {
-            for (int i = 0; i < 4096; i++)
+            for (int i = 0; i < gbRows; i++)
             {
-                byte[] gd = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i]));
-                globalDescriptor[i * 2] = gd[0];
-                globalDescriptor[i * 2 + 1] = gd[1];
+                for (int j = 0; j < gbCols; j++)
+                {
+                    byte[] d = BitConverter.GetBytes(Mathf.FloatToHalf(globDesc[i, j]));
+                    globalDescriptor[i * gbCols * 2 + j * 2] = d[0];
+                    globalDescriptor[i * gbCols * 2 + j * 2 + 1] = d[1];
+                }
             }
         }
     }
