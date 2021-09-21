@@ -40,7 +40,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -49,7 +49,7 @@ namespace ARVRLab.VPSService
             var binaryImage = GetByteArrayFromImage(image);
             if (binaryImage == null)
             {
-                Debug.LogError("Can't read camera image! Please, check image format!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't read camera image! Please, check image format!");
                 yield break;
             }
             form.AddBinaryData("image", binaryImage, CreateFileName());
@@ -68,7 +68,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -92,7 +92,7 @@ namespace ARVRLab.VPSService
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
-                Debug.LogError("URL is incorrect: " + uri);
+                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
                 yield break;
             }
 
@@ -185,7 +185,7 @@ namespace ARVRLab.VPSService
                 if (www.isNetworkError || www.isHttpError)
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.NO_INTERNET, null);
-                    Debug.LogError("Network error: " + www.error);
+                    VPSLogger.LogFormat(LogLevel.ERROR, "Network error: {0}", www.error);
                     yield break;
                 }
 
@@ -206,7 +206,7 @@ namespace ARVRLab.VPSService
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    VPSLogger.Log(LogLevel.ERROR, e);
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
                     yield break;
                 }
@@ -219,7 +219,7 @@ namespace ARVRLab.VPSService
                 else
                 {
                     UpdateLocalisationState(LocalisationStatus.GPS_ONLY, ErrorCode.SERVER_INTERNAL_ERROR, null);
-                    Debug.LogError("There is no data come from server");
+                    VPSLogger.Log(LogLevel.ERROR, "There is no data come from server");
                     yield break;
                 }
             }

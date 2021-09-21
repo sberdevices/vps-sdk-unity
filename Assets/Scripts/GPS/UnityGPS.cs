@@ -34,7 +34,7 @@ namespace ARVRLab.VPSService
             if (!Input.location.isEnabledByUser)
             {
                 gpsData.status = GPSStatus.Failed;
-                Debug.LogError("GPS is not available");
+                VPSLogger.Log(LogLevel.ERROR, "GPS is not available");
                 yield break;
             }
 
@@ -53,14 +53,14 @@ namespace ARVRLab.VPSService
             if (maxWait < 1)
             {
                 gpsData.status = GPSStatus.Failed;
-                Debug.LogError("GPS is timed out");
+                VPSLogger.Log(LogLevel.ERROR, "GPS is timed out");
                 yield break;
             }
 
             // check connection
             if (Input.location.status == LocationServiceStatus.Failed)
             {
-                Debug.LogError("GPS: Unable to determine device location");
+                VPSLogger.Log(LogLevel.ERROR, "GPS: Unable to determine device location");
                 yield break;
             }
             else

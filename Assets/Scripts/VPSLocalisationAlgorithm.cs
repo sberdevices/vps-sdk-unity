@@ -96,7 +96,7 @@ namespace ARVRLab.VPSService
             if (camera == null)
             {
                 OnErrorHappend?.Invoke(ErrorCode.NO_CAMERA);
-                Debug.LogError("Camera is not available");
+                VPSLogger.Log(LogLevel.ERROR, "Camera is not available");
                 yield break;
             }
 
@@ -104,7 +104,7 @@ namespace ARVRLab.VPSService
             if (tracking == null)
             {
                 OnErrorHappend?.Invoke(ErrorCode.TRACKING_NOT_AVALIABLE);
-                Debug.LogError("Tracking is not available");
+                VPSLogger.Log(LogLevel.ERROR, "Tracking is not available");
                 yield break;
             }
 
@@ -180,7 +180,7 @@ namespace ARVRLab.VPSService
                     NativeArray<byte> input = camera.GetImageArray();
                     if (input == null || input.Length == 0)
                     {
-                        Debug.LogError("Cannot take camera image as ByteArray");
+                        VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray");
                         yield return null;
                         continue;
                     }
@@ -209,7 +209,7 @@ namespace ARVRLab.VPSService
 
                     if (Image == null)
                     {
-                        Debug.LogError("Image from camera is not available");
+                        VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                         yield return null;
                         continue;
                     }

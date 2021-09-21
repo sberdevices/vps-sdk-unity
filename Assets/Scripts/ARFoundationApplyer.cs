@@ -25,7 +25,7 @@ namespace ARVRLab.VPSService
             arSessionOrigin = FindObjectOfType<ARSessionOrigin>();
             if (arSessionOrigin == null)
             {
-                Debug.LogError("ARSessionOrigin is not found");
+                VPSLogger.Log(LogLevel.ERROR, "ARSessionOrigin is not found");
             }
         }
 

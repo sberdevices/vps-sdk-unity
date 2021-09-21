@@ -110,7 +110,7 @@ namespace ARVRLab.VPSService
                 NativeArray<byte> input = camera.GetImageArray();
                 if (input == null || input.Length == 0)
                 {
-                    Debug.LogError("Cannot take camera image as ByteArray");
+                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray");
                     yield break;
                 }
 
@@ -136,7 +136,7 @@ namespace ARVRLab.VPSService
                 Texture2D Image = camera.GetFrame();
                 if (Image == null)
                 {
-                    Debug.LogError("Image from camera is not available");
+                    VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                     yield break;
                 }
 

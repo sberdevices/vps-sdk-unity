@@ -58,7 +58,7 @@ namespace ARVRLab.VPSService
         {
             if (!provider)
             {
-                Debug.LogError("Please, select provider for VPS service!");
+                VPSLogger.Log(LogLevel.ERROR, "Please, select provider for VPS service!");
                 yield break;
             }
 
@@ -108,7 +108,7 @@ namespace ARVRLab.VPSService
                 StartCoroutine(DownloadMobileVps());
                 if (!IsReady())
                 {
-                    Debug.LogError("MobileVPS is not ready. Start downloading...");
+                    VPSLogger.Log(LogLevel.DEBUG, "MobileVPS is not ready. Start downloading...");
                     return;
                 }
             }
@@ -134,7 +134,7 @@ namespace ARVRLab.VPSService
         {
             if (algorithm == null)
             {
-                Debug.LogError("VPS service is not running. Use StartVPS before");
+                VPSLogger.Log(LogLevel.ERROR, "VPS service is not running. Use StartVPS before");
                 return null;
             }
             return algorithm.GetLocationRequest();

@@ -38,7 +38,7 @@ namespace ARVRLab.VPSService
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
-                Debug.LogError("Can't find ARCameraManager on scene!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't find ARCameraManager on scene!");
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace ARVRLab.VPSService
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
-                VPSLogger.Log(LogLevel.DEBUG, "Не удалось получить изображение с камеры!");
+                VPSLogger.Log(LogLevel.ERROR, "Не удалось получить изображение с камеры!");
                 return;
             }
 

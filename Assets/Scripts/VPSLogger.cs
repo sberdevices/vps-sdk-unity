@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
-    public enum LogLevel { NONE, DEBUG, VERBOSE };
+    public enum LogLevel { ERROR, NONE, DEBUG, VERBOSE };
 
     public static class VPSLogger
     {
@@ -18,7 +18,11 @@ namespace ARVRLab.VPSService
 
         public static void Log(LogLevel level, object message)
         {
-            if (level <= currentLogLevel)
+            if (level == LogLevel.ERROR)
+            {
+                Debug.LogError(message);
+            }
+            else if (level <= currentLogLevel)
             {
                 Debug.Log(message);
             }
@@ -26,7 +30,11 @@ namespace ARVRLab.VPSService
 
         public static void LogFormat(LogLevel level, string format, params object[] args)
         {
-            if (level <= currentLogLevel)
+            if (level == LogLevel.ERROR)
+            {
+                Debug.LogErrorFormat(format, args);
+            }
+            else if (level <= currentLogLevel)
             {
                 Debug.LogFormat(format, args);
             }
