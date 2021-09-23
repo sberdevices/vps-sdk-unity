@@ -16,25 +16,27 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
-        private float cropCoefficient = 9f / 16f;
+        private TextureFormat format = TextureFormat.R8;
         private float resizeCoefficient = 1.0f;
 
         private ARCameraManager cameraManager;
         private Texture2D texture;
         private Texture2D returnedTexture;
+        private NativeArray<byte> imageFeatureExtractorBuffer;
+        private NativeArray<byte> imageEncoderBuffer;
 
         private NativeArray<XRCameraConfiguration> configurations;
-
-        private NativeArray<byte> buffer;
 
         private SimpleJob job;
 
         public static Semaphore semaphore = new Semaphore(1);
 
+        private VPSTextureRequirement textureRequirement;
+        private VPSTextureRequirement feautureExtractorRequirement;
+        private VPSTextureRequirement encoderRequirement;
+
         private void Awake()
         {
-            buffer = new NativeArray<byte>(desiredResolution.x * desiredResolution.y, Allocator.Persistent);
-
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
@@ -42,7 +44,17 @@ namespace ARVRLab.VPSService
                 return;
             }
 
+            textureRequirement = new VPSTextureRequirement(VPSTextureType.LOCALISATION_TEXTURE, desiredResolution.x, desiredResolution.y, TextureFormat.R8);
             cameraManager.frameReceived += UpdateFrame;
+        }
+
+        public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
+        {
+            FreeBufferMemory();
+            feautureExtractorRequirement = FeautureExtractorRequirement;
+            imageFeatureExtractorBuffer = new NativeArray<byte>(feautureExtractorRequirement.Width * feautureExtractorRequirement.Height, Allocator.Persistent);
+            encoderRequirement = EncoderRequirement;
+            imageEncoderBuffer = new NativeArray<byte>(encoderRequirement.Width * encoderRequirement.Height, Allocator.Persistent);
         }
 
         private IEnumerator Start()
@@ -89,9 +101,14 @@ namespace ARVRLab.VPSService
         /// </summary>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
+            if (imageFeatureExtractorBuffer == null || imageEncoderBuffer == null)
+            {
+                Debug.LogError("You need call Init before update frame!");
+                return;
+            }
+
             if (!semaphore.CheckState())
                 return;
-
             semaphore.TakeOne();
 
             // Get latest camera image
@@ -102,29 +119,40 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            var format = TextureFormat.R8;
-
-            RectInt croppedRect = GetCropRect(cameraManager.currentConfiguration.Value.width, cameraManager.currentConfiguration.Value.height);
             // Create texture
-            if (texture == null || texture.width != desiredResolution.x || texture.height != desiredResolution.y)
+            if (texture == null || texture.width != textureRequirement.Width || texture.height != textureRequirement.Height)
             {
-                texture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
+                texture = new Texture2D(textureRequirement.Width, textureRequirement.Height, textureRequirement.Format, false);
             }
-
-            // Set parametrs: format, horizontal mirror (left | right)
-            var conversionParams = new XRCpuImage.ConversionParams(image, format, XRCpuImage.Transformation.None);
-            conversionParams.inputRect = croppedRect;
-            // Set downscale resolution
-            conversionParams.outputDimensions = new Vector2Int(desiredResolution.x, desiredResolution.y);
-
-            var raw = texture.GetRawTextureData<byte>();
 
             try
             {
                 // Convert XRCpuImage to texture
-                image.Convert(conversionParams, new IntPtr(raw.GetUnsafePtr()), raw.Length);
+                image.Convert(textureRequirement.GetConversionParams(image), new IntPtr(texture.GetRawTextureData<byte>().GetUnsafePtr()), texture.GetRawTextureData<byte>().Length);
+                texture.Apply();
+                if (feautureExtractorRequirement.Equals(textureRequirement))
+                {
+                    imageFeatureExtractorBuffer.CopyFrom(texture.GetRawTextureData<byte>());
+                }
+                else
+                {
+                    image.Convert(feautureExtractorRequirement.GetConversionParams(image), new IntPtr(imageFeatureExtractorBuffer.GetUnsafePtr()), imageFeatureExtractorBuffer.Length);
+                }
+
+                if (encoderRequirement.Equals(textureRequirement))
+                {
+                    imageEncoderBuffer.CopyFrom(texture.GetRawTextureData<byte>());
+                }
+                else if (encoderRequirement.Equals(feautureExtractorRequirement))
+                {
+                    imageEncoderBuffer.CopyFrom(imageFeatureExtractorBuffer);
+                }
+                else
+                {
+                    image.Convert(encoderRequirement.GetConversionParams(image), new IntPtr(imageEncoderBuffer.GetUnsafePtr()), imageEncoderBuffer.Length);
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogException(ex);
             }
@@ -133,9 +161,6 @@ namespace ARVRLab.VPSService
                 // Free memory
                 image.Dispose();
             }
-
-            buffer.CopyFrom(raw);
-            texture.Apply();
             semaphore.Free();
         }
 
@@ -161,28 +186,6 @@ namespace ARVRLab.VPSService
 
             array.Dispose();
             return returnedTexture;
-        }
-
-        // Calculate 16x9 part of image
-        private RectInt GetCropRect(int width, int height)
-        {
-            int requiredWidth = width;
-            int requiredHeight = (int)(width * cropCoefficient);
-            int xpos = 0;
-            int ypos = 0;
-
-            if (requiredHeight > height)
-            {
-                requiredHeight = height;
-                requiredWidth = (int)(width * (1 / cropCoefficient));
-                xpos = (width - requiredWidth) / 2;
-            }
-            else
-            {
-                ypos = (height - requiredHeight) / 2;
-            }
-
-            return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
         }
 
         public Vector2 GetFocalPixelLength()
@@ -212,16 +215,25 @@ namespace ARVRLab.VPSService
             return texture != null;
         }
 
-        public NativeArray<byte> GetImageArray()
+        public NativeArray<byte> GetImageEncoderBuffer()
         {
-            return buffer;
+            return imageEncoderBuffer;
+        }
+
+        public NativeArray<byte> GetImageFeatureExtractorBuffer()
+        {
+            return imageFeatureExtractorBuffer;
         }
 
         private void FreeBufferMemory()
         {
-            if (buffer != null && buffer.IsCreated)
+            if (imageFeatureExtractorBuffer != null && imageFeatureExtractorBuffer.IsCreated)
             {
-                buffer.Dispose();
+                imageFeatureExtractorBuffer.Dispose();
+            }
+            if (imageEncoderBuffer != null && imageEncoderBuffer.IsCreated)
+            {
+                imageEncoderBuffer.Dispose();
             }
         }
 

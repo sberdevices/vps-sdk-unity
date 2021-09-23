@@ -108,10 +108,17 @@ namespace ARVRLab.VPSService
                 Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
-                NativeArray<byte> input = camera.GetImageArray();
-                if (input == null || input.Length == 0)
+                NativeArray<byte> featureExtractorInput = camera.GetImageFeatureExtractorBuffer();
+                if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                 {
-                    Debug.LogError("Cannot take camera image as ByteArray");
+                    Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");
+                    yield break;
+                }
+
+                NativeArray<byte> encoderInput = camera.GetImageEncoderBuffer();
+                if (encoderInput == null || encoderInput.Length == 0)
+                {
+                    Debug.LogError("Cannot take camera image as ByteArray for Encoder");
                     yield break;
                 }
 
@@ -120,7 +127,7 @@ namespace ARVRLab.VPSService
                 stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();
 
-                var preprocessTask = mobileVPS.StartPreprocess(input);
+                var preprocessTask = mobileVPS.StartPreprocess(featureExtractorInput, encoderInput);
                 while (!preprocessTask.IsCompleted)
                     yield return null;
 
