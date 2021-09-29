@@ -17,6 +17,7 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
+        private TextureFormat format = TextureFormat.R8;
 
         [Tooltip("Texture for sending")]
         public Texture2D FakeTexture;
@@ -29,8 +30,14 @@ namespace ARVRLab.VPSService
 
         private float resizeCoefficient = 1.0f;
 
+        private VPSTextureRequirement textureRequirement;
         private VPSTextureRequirement feautureExtractorRequirement;
         private VPSTextureRequirement encoderRequirement;
+
+        private void Awake()
+        {
+            textureRequirement = new VPSTextureRequirement(VPSTextureType.LOCALISATION_TEXTURE, desiredResolution.x, desiredResolution.y, format);
+        }
 
         public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
         {
@@ -49,7 +56,10 @@ namespace ARVRLab.VPSService
             if (FakeTexture == null)
                 return;
 
-            Preprocess();
+            if (textureRequirement == null)
+                Awake();
+
+            ppFakeTexture = Preprocess(textureRequirement.Format);
             resizeCoefficient = (float)ppFakeTexture.width / (float)desiredResolution.x;
 
             InitBuffers();
@@ -66,7 +76,12 @@ namespace ARVRLab.VPSService
             if (feautureExtractorRequirement == null || encoderRequirement == null)
                 return;
 
-            RectInt inputRect = feautureExtractorRequirement.GetCropRect(ppFakeTexture.width, ppFakeTexture.height, feautureExtractorRequirement.Width / feautureExtractorRequirement.Height);
+            if (feautureExtractorRequirement.Format == textureRequirement.Format)
+                imageFeatureExtractorTexture = ppFakeTexture;
+            else
+                imageFeatureExtractorTexture = Preprocess(feautureExtractorRequirement.Format);
+
+            RectInt inputRect = feautureExtractorRequirement.GetCropRect(imageFeatureExtractorTexture.width, imageFeatureExtractorTexture.height, feautureExtractorRequirement.Width / feautureExtractorRequirement.Height);
             imageFeatureExtractorTexture = CropScale.CropTexture(ppFakeTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
             imageFeatureExtractorTexture = CropScale.ScaleTexture(imageFeatureExtractorTexture, feautureExtractorRequirement.Width, feautureExtractorRequirement.Height);
 
@@ -76,7 +91,12 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                inputRect = encoderRequirement.GetCropRect(ppFakeTexture.width, ppFakeTexture.height, encoderRequirement.Width / encoderRequirement.Height);
+                if (encoderRequirement.Format == textureRequirement.Format)
+                    imageEncoderTexture = ppFakeTexture;
+                else
+                    imageEncoderTexture = Preprocess(encoderRequirement.Format);
+
+                inputRect = encoderRequirement.GetCropRect(imageEncoderTexture.width, imageEncoderTexture.height, encoderRequirement.Width / encoderRequirement.Height);
                 imageEncoderTexture = CropScale.CropTexture(ppFakeTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
                 imageEncoderTexture = CropScale.ScaleTexture(imageEncoderTexture, encoderRequirement.Width, encoderRequirement.Height);
             }
@@ -135,7 +155,7 @@ namespace ARVRLab.VPSService
             return resizeCoefficient;
         }
 
-        private void Preprocess()
+        private Texture2D Preprocess(TextureFormat format)
         {
             Color32[] original = FakeTexture.GetPixels32();
             Color32[] rotated = new Color32[original.Length];
@@ -158,7 +178,7 @@ namespace ARVRLab.VPSService
             Texture2D rotatedTexture;
             if (onlyFeatures)
             {
-                rotatedTexture = new Texture2D(h, w, TextureFormat.R8, false);
+                rotatedTexture = new Texture2D(h, w, format, false);
                 for (int i = 0; i < h; i++)
                 {
                     for (int j = 0; j < w; j++)
@@ -177,7 +197,7 @@ namespace ARVRLab.VPSService
             }
 
             rotatedTexture.Apply();
-            ppFakeTexture = rotatedTexture;
+            return rotatedTexture;
         }
 
         private void ShowMockFrame(Texture mockTexture)

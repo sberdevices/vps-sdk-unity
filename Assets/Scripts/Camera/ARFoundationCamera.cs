@@ -44,7 +44,7 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            textureRequirement = new VPSTextureRequirement(VPSTextureType.LOCALISATION_TEXTURE, desiredResolution.x, desiredResolution.y, TextureFormat.R8);
+            textureRequirement = new VPSTextureRequirement(VPSTextureType.LOCALISATION_TEXTURE, desiredResolution.x, desiredResolution.y, format);
             cameraManager.frameReceived += UpdateFrame;
         }
 
