@@ -5,18 +5,15 @@ using UnityEngine.XR.ARSubsystems;
 
 namespace ARVRLab.VPSService
 {
-    public enum VPSTextureType { LOCALISATION_TEXTURE, FEATURE_EXTRACTOR, IMAGE_ENCODER };
-
+    // поменять имя файл
     public class VPSTextureRequirement
     {
-        public VPSTextureType Type;
         public int Width;
         public int Height;
         public TextureFormat Format;
 
-        public VPSTextureRequirement(VPSTextureType type, int width, int height, TextureFormat format)
+        public VPSTextureRequirement(int width, int height, TextureFormat format)
         {
-            Type = type;
             Width = width;
             Height = height;
             Format = format;

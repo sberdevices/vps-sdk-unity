@@ -7,13 +7,12 @@ namespace ARVRLab.VPSService
 {
     public interface ICamera
     {
-        void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement);
+        void Init(VPSTextureRequirement[] requirements);
         bool IsCameraReady();
         Texture2D GetFrame();
         Vector2 GetFocalPixelLength();
         Vector2 GetPrincipalPoint();
-        NativeArray<byte> GetImageFeatureExtractorBuffer();
-        NativeArray<byte> GetImageEncoderBuffer();
+        NativeArray<byte> GetBuffer(VPSTextureRequirement requir);
         float GetResizeCoefficient();
     }
 }

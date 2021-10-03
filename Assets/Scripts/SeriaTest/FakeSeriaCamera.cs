@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 
@@ -10,58 +11,66 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
+        private TextureFormat format = TextureFormat.RGB24;
 
         public Texture2D[] FakeTextures;
+        private Texture2D[] ppFakeTextures;
+        private Texture2D convertTexture;
 
         // Не проверено
-        private Texture2D imageFeatureExtractorTexture;
-        private Texture2D imageEncoderTexture;
+        private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private int Counter = 0;
 
         private float resizeCoefficient = 1.0f;
+        private VPSTextureRequirement textureRequir;
 
-        private VPSTextureRequirement feautureExtractorRequirement;
-        private VPSTextureRequirement encoderRequirement;
+        private void Awake()
+        {
+            textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
+        }
 
         private void Start()
         {
-            resizeCoefficient = desiredResolution.x / FakeTextures[0].width;
+            resizeCoefficient = (float)FakeTextures[0].width / (float)desiredResolution.x;
+            ppFakeTextures = new Texture2D[FakeTextures.Length];
 
             for (int i = 0; i < FakeTextures.Length; i++)
             {
-                FakeTextures[i] = Preprocess(FakeTextures[i]);
+                ppFakeTextures[i] = Preprocess(FakeTextures[i], textureRequir.Format);
             }
         }
 
-        public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
+        public void Init(VPSTextureRequirement[] requirements)
         {
-            feautureExtractorRequirement = FeautureExtractorRequirement;
-            encoderRequirement = EncoderRequirement;
+            FreeBufferMemory();
 
-            imageFeatureExtractorTexture = new Texture2D(1, 1);
-            imageEncoderTexture = new Texture2D(1, 1);
+            var distinctRequir = requirements.Distinct().ToList();
+            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height, Allocator.Persistent));
+
             InitBuffers();
         }
 
         private void InitBuffers()
         {
-            if (feautureExtractorRequirement == null || encoderRequirement == null)
+            if (buffers == null || buffers.Count == 0)
                 return;
 
-            RectInt inputRect = feautureExtractorRequirement.GetCropRect(FakeTextures[Counter].width, FakeTextures[Counter].height, feautureExtractorRequirement.Width / feautureExtractorRequirement.Height);
-            imageFeatureExtractorTexture = CropScale.CropTexture(FakeTextures[Counter], new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
-            imageFeatureExtractorTexture = CropScale.ScaleTexture(imageFeatureExtractorTexture, feautureExtractorRequirement.Width, feautureExtractorRequirement.Height);
+            var toCopy = buffers.Keys.Where(key => key.Equals(textureRequir));
+            var toCreate = buffers.Keys.Except(toCopy);
 
-            if (feautureExtractorRequirement.Equals(encoderRequirement))
+            foreach (var req in toCopy)
             {
-                imageEncoderTexture = imageFeatureExtractorTexture;
+                buffers[req].CopyFrom(ppFakeTextures[Counter].GetRawTextureData());
             }
-            else
+
+            foreach (var req in toCreate)
             {
-                inputRect = encoderRequirement.GetCropRect(FakeTextures[Counter].width, FakeTextures[Counter].height, encoderRequirement.Width / encoderRequirement.Height);
-                imageEncoderTexture = CropScale.CropTexture(FakeTextures[Counter], new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
-                imageEncoderTexture = CropScale.ScaleTexture(imageEncoderTexture, encoderRequirement.Width, encoderRequirement.Height);
+                convertTexture = Preprocess(FakeTextures[Counter], req.Format);
+                RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, req.Width / req.Height);
+                convertTexture = CropScale.CropTexture(convertTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
+                convertTexture = CropScale.ScaleTexture(convertTexture, req.Width, req.Height);
+                buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
         }
 
@@ -73,33 +82,31 @@ namespace ARVRLab.VPSService
         public Texture2D GetFrame()
         {
             Counter++;
-            if (Counter >= 3)
+            if (Counter > ppFakeTextures.Length)
+            {
                 Counter = 1;
-            return FakeTextures[Counter - 1];
+            }
+            return ppFakeTextures[Counter - 1];
         }
 
-        public NativeArray<byte> GetImageFeatureExtractorBuffer()
+        public NativeArray<byte> GetBuffer(VPSTextureRequirement requir)
         {
-            Counter++;
-            if (Counter >= FakeTextures.Length)
-                Counter = 1;
-            InitBuffers();
-            return imageFeatureExtractorTexture.GetRawTextureData<byte>();
-        }
-
-        public NativeArray<byte> GetImageEncoderBuffer()
-        {
-            return imageEncoderTexture.GetRawTextureData<byte>();
+            //Counter++;
+            //if (Counter >= FakeTextures.Length)
+            //    Counter = 1;
+            //InitBuffers();
+            //FreeBufferMemory();
+            return buffers[requir];
         }
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(FakeTextures[0].width * 0.5f, FakeTextures[0].height * 0.5f);
+            return new Vector2(ppFakeTextures[0].width * 0.5f, ppFakeTextures[0].height * 0.5f);
         }
 
         public bool IsCameraReady()
         {
-            return FakeTextures[0] != null;
+            return ppFakeTextures[0] != null;
         }
 
         private void OnDestroy()
@@ -109,8 +116,15 @@ namespace ARVRLab.VPSService
 
         private void FreeBufferMemory()
         {
-            imageFeatureExtractorTexture = null;
-            imageEncoderTexture = null;
+            if (buffers == null)
+                return;
+
+            foreach (var buffer in buffers.Values)
+            {
+                if (buffer != null && buffer.IsCreated)
+                    buffer.Dispose();
+            }
+            buffers.Clear();
         }
 
         public float GetResizeCoefficient()
@@ -118,7 +132,7 @@ namespace ARVRLab.VPSService
             return resizeCoefficient;
         }
 
-        private Texture2D Preprocess(Texture2D FakeTexture)
+        private Texture2D Preprocess(Texture2D FakeTexture, TextureFormat format)
         {
             Color32[] original = FakeTexture.GetPixels32();
             Color32[] rotated = new Color32[original.Length];
@@ -141,7 +155,7 @@ namespace ARVRLab.VPSService
             Texture2D rotatedTexture;
             if (onlyFeatures)
             {
-                rotatedTexture = new Texture2D(h, w, TextureFormat.R8, false);
+                rotatedTexture = new Texture2D(h, w, format, false);
                 for (int i = 0; i < h; i++)
                 {
                     for (int j = 0; j < w; j++)

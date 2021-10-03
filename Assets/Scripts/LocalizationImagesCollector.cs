@@ -108,14 +108,14 @@ namespace ARVRLab.VPSService
                 Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
-                NativeArray<byte> featureExtractorInput = camera.GetImageFeatureExtractorBuffer();
+                NativeArray<byte> featureExtractorInput = camera.GetBuffer(mobileVPS.imageFeatureExtractorRequirements);
                 if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                 {
                     Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");
                     yield break;
                 }
 
-                NativeArray<byte> encoderInput = camera.GetImageEncoderBuffer();
+                NativeArray<byte> encoderInput = camera.GetBuffer(mobileVPS.imageEncoderRequirements);
                 if (encoderInput == null || encoderInput.Length == 0)
                 {
                     Debug.LogError("Cannot take camera image as ByteArray for Encoder");

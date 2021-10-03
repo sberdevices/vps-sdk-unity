@@ -16,14 +16,14 @@ namespace ARVRLab.VPSService
     {
         [Tooltip("Target photo resolution")]
         private Vector2Int desiredResolution = new Vector2Int(960, 540);
-        private TextureFormat format = TextureFormat.R8;
+        private TextureFormat format = TextureFormat.RGB24;
         private float resizeCoefficient = 1.0f;
 
         private ARCameraManager cameraManager;
         private Texture2D texture;
         private Texture2D returnedTexture;
-        private NativeArray<byte> imageFeatureExtractorBuffer;
-        private NativeArray<byte> imageEncoderBuffer;
+
+        private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private NativeArray<XRCameraConfiguration> configurations;
 
@@ -31,9 +31,8 @@ namespace ARVRLab.VPSService
 
         public static Semaphore semaphore = new Semaphore(1);
 
-        private VPSTextureRequirement textureRequirement;
-        private VPSTextureRequirement feautureExtractorRequirement;
-        private VPSTextureRequirement encoderRequirement;
+        // названия покороче
+        private VPSTextureRequirement textureRequir;
 
         private void Awake()
         {
@@ -44,17 +43,17 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            textureRequirement = new VPSTextureRequirement(VPSTextureType.LOCALISATION_TEXTURE, desiredResolution.x, desiredResolution.y, format);
+            textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
             cameraManager.frameReceived += UpdateFrame;
         }
 
-        public void Init(VPSTextureRequirement FeautureExtractorRequirement, VPSTextureRequirement EncoderRequirement)
+        // принимает массив
+        public void Init(VPSTextureRequirement[] requirements)
         {
             FreeBufferMemory();
-            feautureExtractorRequirement = FeautureExtractorRequirement;
-            imageFeatureExtractorBuffer = new NativeArray<byte>(feautureExtractorRequirement.Width * feautureExtractorRequirement.Height, Allocator.Persistent);
-            encoderRequirement = EncoderRequirement;
-            imageEncoderBuffer = new NativeArray<byte>(encoderRequirement.Width * encoderRequirement.Height, Allocator.Persistent);
+
+            var distinctRequir = requirements.Distinct().ToList();
+            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height, Allocator.Persistent));
         }
 
         private IEnumerator Start()
@@ -101,12 +100,6 @@ namespace ARVRLab.VPSService
         /// </summary>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
-            if (imageFeatureExtractorBuffer == null || imageEncoderBuffer == null)
-            {
-                Debug.LogError("You need call Init before update frame!");
-                return;
-            }
-
             if (!semaphore.CheckState())
                 return;
             semaphore.TakeOne();
@@ -120,36 +113,31 @@ namespace ARVRLab.VPSService
             }
 
             // Create texture
-            if (texture == null || texture.width != textureRequirement.Width || texture.height != textureRequirement.Height)
+            if (texture == null || texture.width != textureRequir.Width || texture.height != textureRequir.Height)
             {
-                texture = new Texture2D(textureRequirement.Width, textureRequirement.Height, textureRequirement.Format, false);
+                texture = new Texture2D(textureRequir.Width, textureRequir.Height, textureRequir.Format, false);
             }
 
             try
             {
+                // подумать над оптимизацией через выделения одинаковых
                 // Convert XRCpuImage to texture
-                image.Convert(textureRequirement.GetConversionParams(image), new IntPtr(texture.GetRawTextureData<byte>().GetUnsafePtr()), texture.GetRawTextureData<byte>().Length);
+                image.Convert(textureRequir.GetConversionParams(image),
+                    new IntPtr(texture.GetRawTextureData<byte>().GetUnsafePtr()),
+                    texture.GetRawTextureData<byte>().Length);
                 texture.Apply();
-                if (feautureExtractorRequirement.Equals(textureRequirement))
+
+                var toCopy = buffers.Keys.Where(key => key.Equals(textureRequir));
+                var toCreate = buffers.Keys.Except(toCopy);
+
+                foreach(var req in toCopy)
                 {
-                    imageFeatureExtractorBuffer.CopyFrom(texture.GetRawTextureData<byte>());
-                }
-                else
-                {
-                    image.Convert(feautureExtractorRequirement.GetConversionParams(image), new IntPtr(imageFeatureExtractorBuffer.GetUnsafePtr()), imageFeatureExtractorBuffer.Length);
+                    buffers[req].CopyFrom(texture.GetRawTextureData());
                 }
 
-                if (encoderRequirement.Equals(textureRequirement))
+                foreach (var req in toCreate)
                 {
-                    imageEncoderBuffer.CopyFrom(texture.GetRawTextureData<byte>());
-                }
-                else if (encoderRequirement.Equals(feautureExtractorRequirement))
-                {
-                    imageEncoderBuffer.CopyFrom(imageFeatureExtractorBuffer);
-                }
-                else
-                {
-                    image.Convert(encoderRequirement.GetConversionParams(image), new IntPtr(imageEncoderBuffer.GetUnsafePtr()), imageEncoderBuffer.Length);
+                    image.Convert(req.GetConversionParams(image), new IntPtr(buffers[req].GetUnsafePtr()), buffers[req].Length);
                 }
             }
             catch (Exception ex)
@@ -169,7 +157,7 @@ namespace ARVRLab.VPSService
             // Need to create new texture in RGB format
             if (returnedTexture == null)
             {
-                returnedTexture = new Texture2D(desiredResolution.x, desiredResolution.y, TextureFormat.RGBA32, false);
+                returnedTexture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
             }
 
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
@@ -215,26 +203,22 @@ namespace ARVRLab.VPSService
             return texture != null;
         }
 
-        public NativeArray<byte> GetImageEncoderBuffer()
+        public NativeArray<byte> GetBuffer(VPSTextureRequirement requir)
         {
-            return imageEncoderBuffer;
-        }
-
-        public NativeArray<byte> GetImageFeatureExtractorBuffer()
-        {
-            return imageFeatureExtractorBuffer;
+            return buffers[requir];
         }
 
         private void FreeBufferMemory()
         {
-            if (imageFeatureExtractorBuffer != null && imageFeatureExtractorBuffer.IsCreated)
+            if (buffers == null)
+                return;
+
+            foreach (var buffer in buffers.Values)
             {
-                imageFeatureExtractorBuffer.Dispose();
+                if (buffer != null && buffer.IsCreated)
+                    buffer.Dispose();
             }
-            if (imageEncoderBuffer != null && imageEncoderBuffer.IsCreated)
-            {
-                imageEncoderBuffer.Dispose();
-            }
+            buffers.Clear();
         }
 
         private void OnDestroy()
