@@ -82,7 +82,7 @@ namespace ARVRLab.VPSService
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
         {
-            if (ppFakeTexture == null)
+            if (ppFakeTexture == null || ppFakeTexture.width != requir.Width || ppFakeTexture.height != requir.Height || ppFakeTexture.format != requir.Format)
             {
                 ppFakeTexture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
             }

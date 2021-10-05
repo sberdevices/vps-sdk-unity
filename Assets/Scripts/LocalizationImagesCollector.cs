@@ -152,7 +152,7 @@ namespace ARVRLab.VPSService
             {
                 Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
-                Texture2D Image = camera.GetFrame();
+                Texture2D Image = camera.GetFrame(provider.GetTextureRequirement());
                 if (Image == null)
                 {
                     Debug.LogError("Image from camera is not available");
