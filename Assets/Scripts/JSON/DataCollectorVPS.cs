@@ -40,7 +40,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
-            float resizeCoef = Provider.GetCamera().GetResizeCoefficient();
+            float resizeCoef = Provider.GetCamera().GetResizeCoefficient(Provider.GetTextureRequirement());
 
             const string userId = "user_id";
             if (!PlayerPrefs.HasKey(userId))

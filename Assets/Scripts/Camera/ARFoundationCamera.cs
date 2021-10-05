@@ -14,14 +14,8 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Target photo resolution")]
-        private Vector2Int desiredResolution = new Vector2Int(960, 540);
-        private TextureFormat format = TextureFormat.RGB24;
-        private float resizeCoefficient = 1.0f;
-
         private ARCameraManager cameraManager;
         private Texture2D texture;
-        private Texture2D returnedTexture;
 
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
@@ -31,8 +25,7 @@ namespace ARVRLab.VPSService
 
         public static Semaphore semaphore = new Semaphore(1);
 
-        // названия покороче
-        private VPSTextureRequirement textureRequir;
+        private bool isReady = false;
 
         private void Awake()
         {
@@ -42,8 +35,6 @@ namespace ARVRLab.VPSService
                 Debug.LogError("Can't find ARCameraManager on scene!");
                 return;
             }
-
-            textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
             cameraManager.frameReceived += UpdateFrame;
         }
 
@@ -53,7 +44,7 @@ namespace ARVRLab.VPSService
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
-            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height, Allocator.Persistent));
+            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
         }
 
         private IEnumerator Start()
@@ -85,14 +76,14 @@ namespace ARVRLab.VPSService
                     // Get the best resolution
                     var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                     cameraManager.currentConfiguration = bestConfiguration;
-                    resizeCoefficient = (float)desiredResolution.x / (float)bestConfiguration.width;
                 }
                 else
                 {
                     cameraManager.currentConfiguration = hdConfig;
-                    resizeCoefficient = (float)desiredResolution.x / (float)hdConfig.width;
                 }
-            }
+
+                isReady = true;
+            } 
         }
 
         /// <summary>
@@ -112,30 +103,10 @@ namespace ARVRLab.VPSService
                 return;
             }
 
-            // Create texture
-            if (texture == null || texture.width != textureRequir.Width || texture.height != textureRequir.Height)
-            {
-                texture = new Texture2D(textureRequir.Width, textureRequir.Height, textureRequir.Format, false);
-            }
-
             try
             {
-                // подумать над оптимизацией через выделения одинаковых
                 // Convert XRCpuImage to texture
-                image.Convert(textureRequir.GetConversionParams(image),
-                    new IntPtr(texture.GetRawTextureData<byte>().GetUnsafePtr()),
-                    texture.GetRawTextureData<byte>().Length);
-                texture.Apply();
-
-                var toCopy = buffers.Keys.Where(key => key.Equals(textureRequir));
-                var toCreate = buffers.Keys.Except(toCopy);
-
-                foreach(var req in toCopy)
-                {
-                    buffers[req].CopyFrom(texture.GetRawTextureData());
-                }
-
-                foreach (var req in toCreate)
+                foreach (var req in buffers.Keys)
                 {
                     image.Convert(req.GetConversionParams(image), new IntPtr(buffers[req].GetUnsafePtr()), buffers[req].Length);
                 }
@@ -152,13 +123,15 @@ namespace ARVRLab.VPSService
             semaphore.Free();
         }
 
-        public Texture2D GetFrame()
+        public Texture2D GetFrame(VPSTextureRequirement requir)
         {
-            // Need to create new texture in RGB format
-            if (returnedTexture == null)
+            if (texture == null || texture.width != requir.Width || texture.height != requir.Height || texture.format != requir.Format)
             {
-                returnedTexture = new Texture2D(desiredResolution.x, desiredResolution.y, format, false);
+                texture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
             }
+            
+            texture.LoadRawTextureData(GetBuffer(requir));
+            texture.Apply();
 
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
             job.array = array;
@@ -168,12 +141,12 @@ namespace ARVRLab.VPSService
 
             if (handle.IsCompleted)
             {
-                returnedTexture.SetPixels(job.array.ToArray());
+                texture.SetPixels(job.array.ToArray());
             }
-            returnedTexture.Apply();
+            texture.Apply();
 
             array.Dispose();
-            return returnedTexture;
+            return texture;
         }
 
         public Vector2 GetFocalPixelLength()
@@ -200,7 +173,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return texture != null;
+            return isReady;
         }
 
         public NativeArray<byte> GetBuffer(VPSTextureRequirement requir)
@@ -240,9 +213,9 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public float GetResizeCoefficient()
+        public float GetResizeCoefficient(VPSTextureRequirement requir)
         {
-            return resizeCoefficient;
+            return (float)requir.Width / (float)cameraManager.currentConfiguration.Value.width;
         }
     }
 }

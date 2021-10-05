@@ -276,6 +276,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &264554709 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8690752168016233484, guid: f5ddf2d28f817ce42a7d59e707029842,
+    type: 3}
+  m_PrefabInstance: {fileID: 8690752169532022778}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &266874263
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,18 +598,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1695828365 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
-    type: 3}
-  m_PrefabInstance: {fileID: 8690752169532022778}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1902949979
 GameObject:
   m_ObjectHideFlags: 0
@@ -663,12 +663,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7823e6ecdaaf846a380791ece4320198, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FakeTextures:
-  - {fileID: 2800000, guid: 64e157b4d67584066a35a7f32c2bc3ca, type: 3}
-  - {fileID: 2800000, guid: f3ed2cd8cf440464a9e43197e9aec5d7, type: 3}
-  - {fileID: 2800000, guid: e11a17e34f9704bdeab7f58cf81e0803, type: 3}
-  - {fileID: 2800000, guid: 1505074142acb4fa48788dd73f76fbe5, type: 3}
-  - {fileID: 2800000, guid: a4904af6532cc495da398b5be9ab83d8, type: 3}
 --- !u!114 &1902949983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -696,6 +690,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752169532022779}
+  desiredResolution: {x: 960, y: 540}
+  format: 3
   PhotosInSeria: 5
 --- !u!1 &1992666612
 GameObject:
@@ -1168,7 +1164,7 @@ PrefabInstance:
         type: 3}
       propertyPath: provider
       value: 
-      objectReference: {fileID: 1695828365}
+      objectReference: {fileID: 264554709}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: CustomUrl
@@ -1177,7 +1173,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: AlwaysForce
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1212,7 +1208,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultBuildingGuid
-      value: eeb38592-4a3c-4d4b-b4c6-38fd68331521
+      value: Polytech
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1227,7 +1223,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultUrl
-      value: https://vps.arvr.sberlabs.com/bootcamp/
+      value: https://vps.arvr.sberlabs.com/polytech-stage/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752168016233475, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1243,11 +1239,16 @@ PrefabInstance:
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 64e157b4d67584066a35a7f32c2bc3ca, type: 3}
+      objectReference: {fileID: 2800000, guid: 49493cf1da9a848d18bf7dd1a559fb86, type: 3}
     - target: {fileID: 8690752169563304427, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752169563304428, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: format
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8690752169563304430, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
