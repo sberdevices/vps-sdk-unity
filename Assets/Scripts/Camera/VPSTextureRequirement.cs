@@ -48,6 +48,16 @@ namespace ARVRLab.VPSService
             return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
         }
 
+        public int ChannelsCount()
+        {
+            if (Format == TextureFormat.R8)
+                return 1;
+            if (Format == TextureFormat.RGB24)
+                return 3;
+
+            return -1;
+        }
+
         public override bool Equals(object obj)
         {
             if ((obj == null) || !this.GetType().Equals(obj.GetType()))

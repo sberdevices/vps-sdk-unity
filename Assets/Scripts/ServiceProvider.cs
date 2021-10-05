@@ -10,6 +10,10 @@ namespace ARVRLab.VPSService
         [Tooltip("To apply resulting localization")]
         public ARFoundationApplyer arFoundationApplyer;
 
+        [Tooltip("Target photo resolution")]
+        public Vector2Int desiredResolution = new Vector2Int(960, 540);
+        public TextureFormat format = TextureFormat.RGB24;
+
         [Tooltip("Number photos in seria")]
         [SerializeField]
         public int PhotosInSeria = 5;
@@ -21,14 +25,23 @@ namespace ARVRLab.VPSService
         private LocalizationImagesCollector imagesCollector;
         private MobileVPS mobileVPS;
 
+        private VPSTextureRequirement textureRequir;
+
         public ICamera GetCamera()
         {
             return camera;
         }
 
+        public VPSTextureRequirement GetTextureRequirement()
+        {
+            return textureRequir;
+        }
+
         private void Awake()
         {
             camera = GetComponent<ICamera>();
+            textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
+
             gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
         }

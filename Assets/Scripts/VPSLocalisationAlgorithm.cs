@@ -105,6 +105,10 @@ namespace ARVRLab.VPSService
                 MobileVPS mobileVPS = provider.GetMobileVPS();
                 camera.Init(new VPSTextureRequirement[] { mobileVPS.imageFeatureExtractorRequirements, mobileVPS.imageEncoderRequirements });
             }
+            else
+            {
+                camera.Init(new VPSTextureRequirement[] { provider.GetTextureRequirement() });
+            }
 
             var tracking = provider.GetTracking();
             if (tracking == null)
@@ -224,7 +228,7 @@ namespace ARVRLab.VPSService
                 // if not - send only photo and meta
                 else
                 {
-                    Image = camera.GetFrame();
+                    Image = camera.GetFrame(provider.GetTextureRequirement());
 
                     if (Image == null)
                     {

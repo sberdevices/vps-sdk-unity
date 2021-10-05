@@ -16,10 +16,6 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class FakeCamera : MonoBehaviour, ICamera
     {
-        [Tooltip("Target photo resolution")]
-        private Vector2Int desiredResolution = new Vector2Int(960, 540);
-        private TextureFormat format = TextureFormat.RGB24;
-
         [Tooltip("Texture for sending")]
         public Texture2D FakeTexture;
 
@@ -29,21 +25,12 @@ namespace ARVRLab.VPSService
 
         private Image mockImage;
 
-        private float resizeCoefficient = 1.0f;
-
-        private VPSTextureRequirement textureRequir;
-
-        private void Awake()
-        {
-            textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
-        }
-
         public void Init(VPSTextureRequirement[] requirements)
         {
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
-            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height, Allocator.Persistent));
+            buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
         }
@@ -52,12 +39,6 @@ namespace ARVRLab.VPSService
         {
             if (FakeTexture == null)
                 return;
-
-            if (textureRequir == null)
-                Awake();
-
-            ppFakeTexture = Preprocess(textureRequir.Format);
-            resizeCoefficient = (float)ppFakeTexture.width / (float)desiredResolution.x;
 
             FreeBufferMemory();
             InitBuffers();
@@ -74,20 +55,15 @@ namespace ARVRLab.VPSService
             if (buffers == null || buffers.Count == 0)
                 return;
 
-            var toCopy = buffers.Keys.Where(key => key.Equals(textureRequir));
-            var toCreate = buffers.Keys.Except(toCopy);
-
-            foreach (var req in toCopy)
-            {
-                buffers[req].CopyFrom(ppFakeTexture.GetRawTextureData());
-            }
-
-            foreach (var req in toCreate)
+            foreach (var req in buffers.Keys)
             {
                 convertTexture = Preprocess(req.Format);
-                RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, req.Width / req.Height);
-                convertTexture = CropScale.CropTexture(convertTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
-                convertTexture = CropScale.ScaleTexture(convertTexture, req.Width, req.Height);
+                if (convertTexture.width != req.Width || convertTexture.height != req.Height)
+                {
+                    RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, req.Width / req.Height);
+                    convertTexture = CropScale.CropTexture(convertTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
+                    convertTexture = CropScale.ScaleTexture(convertTexture, req.Width, req.Height);
+                }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
         }
@@ -104,8 +80,15 @@ namespace ARVRLab.VPSService
             return new Vector2(722.1238403320312f, 722.1238403320312f);
         }
 
-        public Texture2D GetFrame()
+        public Texture2D GetFrame(VPSTextureRequirement requir)
         {
+            if (ppFakeTexture == null)
+            {
+                ppFakeTexture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
+            }
+
+            ppFakeTexture.LoadRawTextureData(buffers[requir]);
+            ppFakeTexture.Apply();
             return ppFakeTexture;
         }
 
@@ -121,7 +104,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return ppFakeTexture != null;
+            return FakeTexture != null;
         }
 
         private void OnDestroy()
@@ -142,9 +125,9 @@ namespace ARVRLab.VPSService
             buffers.Clear();
         }
 
-        public float GetResizeCoefficient()
+        public float GetResizeCoefficient(VPSTextureRequirement requir)
         {
-            return resizeCoefficient;
+            return (float)requir.Width / (float)FakeTexture.height;
         }
 
         private Texture2D Preprocess(TextureFormat format)
@@ -184,7 +167,7 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                rotatedTexture = new Texture2D(h, w);
+                rotatedTexture = new Texture2D(h, w, format, false);
                 rotatedTexture.SetPixels32(rotated);
             }
 
