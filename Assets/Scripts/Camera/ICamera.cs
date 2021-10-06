@@ -13,6 +13,6 @@ namespace ARVRLab.VPSService
         Vector2 GetFocalPixelLength();
         Vector2 GetPrincipalPoint();
         NativeArray<byte> GetBuffer(VPSTextureRequirement requir);
-        float GetResizeCoefficient(VPSTextureRequirement requir);
+        float GetResizeCoefficient();
     }
 }

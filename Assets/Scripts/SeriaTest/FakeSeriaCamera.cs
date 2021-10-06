@@ -9,6 +9,8 @@ namespace ARVRLab.VPSService
 {
     public class FakeSeriaCamera : MonoBehaviour, ICamera
     {
+        private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
+
         public Texture2D[] FakeTextures;
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
@@ -19,6 +21,7 @@ namespace ARVRLab.VPSService
         private int Counter = 0;
 
         private VPSTextureRequirement textureRequir;
+        private float resizeCoef = 1.0f;
 
         private void Awake()
         {
@@ -41,6 +44,8 @@ namespace ARVRLab.VPSService
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
+
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.x;
         }
 
         private void InitBuffers()
@@ -85,7 +90,8 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(480f, 270f);
+            //return new Vector2(480f, 270f);
+            return new Vector2(FakeTextures[0].height, FakeTextures[0].width);
         }
 
         public bool IsCameraReady()
@@ -111,9 +117,9 @@ namespace ARVRLab.VPSService
             buffers.Clear();
         }
 
-        public float GetResizeCoefficient(VPSTextureRequirement requir)
+        public float GetResizeCoefficient()
         {
-            return (float)FakeTextures[0].width / (float)requir.Width;
+            return resizeCoef;
         }
 
         private Texture2D Preprocess(Texture2D FakeTexture, TextureFormat format)

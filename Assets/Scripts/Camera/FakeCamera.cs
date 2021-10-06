@@ -16,6 +16,8 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class FakeCamera : MonoBehaviour, ICamera
     {
+        private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
+
         [Tooltip("Texture for sending")]
         public Texture2D FakeTexture;
 
@@ -24,6 +26,7 @@ namespace ARVRLab.VPSService
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private Image mockImage;
+        private float resizeCoef = 1.0f;
 
         public void Init(VPSTextureRequirement[] requirements)
         {
@@ -33,6 +36,7 @@ namespace ARVRLab.VPSService
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.x; 
         }
 
         private void OnValidate()
@@ -77,7 +81,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(722.1238403320312f, 722.1238403320312f);
+            return new Vector2(1444.24768066f, 1444.24768066f);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -99,7 +103,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(480f, 270f);
+            return new Vector2(FakeTexture.height, FakeTexture.width);
         }
 
         public bool IsCameraReady()
@@ -125,9 +129,9 @@ namespace ARVRLab.VPSService
             buffers.Clear();
         }
 
-        public float GetResizeCoefficient(VPSTextureRequirement requir)
+        public float GetResizeCoefficient()
         {
-            return (float)requir.Width / (float)FakeTexture.height;
+            return resizeCoef;
         }
 
         private Texture2D Preprocess(TextureFormat format)

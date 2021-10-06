@@ -26,6 +26,7 @@ namespace ARVRLab.VPSService
         public static Semaphore semaphore = new Semaphore(1);
 
         private bool isReady = false;
+        private float resizeCoef = 1.0f;
 
         private void Awake()
         {
@@ -74,15 +75,13 @@ namespace ARVRLab.VPSService
                 {
                     Debug.LogError("Can't take HD resolution!");
                     // Get the best resolution
-                    var bestConfiguration = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
-                    cameraManager.currentConfiguration = bestConfiguration;
+                    hdConfig = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
-                else
-                {
-                    cameraManager.currentConfiguration = hdConfig;
-                }
-
                 isReady = true;
+
+                cameraManager.currentConfiguration = hdConfig;
+                yield return new WaitWhile(() => buffers.Count == 0);
+                resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)hdConfig.width;
             } 
         }
 
@@ -213,9 +212,9 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public float GetResizeCoefficient(VPSTextureRequirement requir)
+        public float GetResizeCoefficient()
         {
-            return (float)requir.Width / (float)cameraManager.currentConfiguration.Value.width;
+            return resizeCoef;
         }
     }
 }
