@@ -190,7 +190,7 @@ namespace ARVRLab.VPSService
 
         private ImageEncoderResult GetGlobalDescriptor()
         {
-            imageEncoderInterpreter.SetInputTensorData(0, imageFeatureExtractorInput);
+            imageEncoderInterpreter.SetInputTensorData(0, imageEncoderInput);
             if (cancelToken.IsCancellationRequested)
             {
                 Debug.LogError("Mobile VPS task canceled");
