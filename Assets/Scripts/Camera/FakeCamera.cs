@@ -103,7 +103,8 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            return new Vector2(FakeTexture.height, FakeTexture.width);
+            VPSTextureRequirement req = buffers.FirstOrDefault().Key;
+            return new Vector2(req.Width, req.Height);
         }
 
         public bool IsCameraReady()

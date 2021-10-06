@@ -68,7 +68,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1396.5250f, 1396.5250f);
+            return new Vector2(1444.24768066f, 1444.24768066f);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -90,8 +90,8 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            //return new Vector2(480f, 270f);
-            return new Vector2(FakeTextures[0].height, FakeTextures[0].width);
+            VPSTextureRequirement req = buffers.FirstOrDefault().Key;
+            return new Vector2(req.Width, req.Height);
         }
 
         public bool IsCameraReady()
