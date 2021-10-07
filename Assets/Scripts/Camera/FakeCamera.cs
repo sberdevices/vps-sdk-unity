@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,6 +29,7 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement[] requirements)
         {
+            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
@@ -210,6 +210,19 @@ namespace ARVRLab.VPSService
             }
 
             mockImage.sprite = Sprite.Create((Texture2D)mockTexture, new Rect(0, 0, mockTexture.width, mockTexture.height), Vector2.zero);
+        }
+
+        private void SetCameraFov()
+        {
+            Camera camera = FindObjectOfType<Camera>();
+
+            float h = Screen.height;
+            float fy = GetFocalPixelLength().y;
+
+            float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
+
+            // устанавливает vertical
+            camera.fieldOfView = fovY;
         }
     }
 }

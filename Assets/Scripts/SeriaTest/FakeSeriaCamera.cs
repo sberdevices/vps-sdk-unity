@@ -38,6 +38,7 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement[] requirements)
         {
+            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
@@ -166,6 +167,19 @@ namespace ARVRLab.VPSService
             rotatedTexture.Apply();
 
             return rotatedTexture;
+        }
+
+        private void SetCameraFov()
+        {
+            Camera camera = FindObjectOfType<Camera>();
+
+            float h = Screen.height;
+            float fy = GetFocalPixelLength().y;
+
+            float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
+
+            // устанавливает vertical
+            camera.fieldOfView = fovY;
         }
     }
 }

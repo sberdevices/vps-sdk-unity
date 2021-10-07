@@ -80,8 +80,17 @@ namespace ARVRLab.VPSService
                 isReady = true;
 
                 cameraManager.currentConfiguration = hdConfig;
+
                 yield return new WaitWhile(() => buffers.Count == 0);
                 resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)hdConfig.width;
+
+                float focalY;
+                do
+                {
+                    yield return null;
+                    focalY = GetFocalPixelLength().y;
+                } while (focalY == 0);
+                SetCameraFov(hdConfig.height, focalY);
             } 
         }
 
@@ -215,6 +224,16 @@ namespace ARVRLab.VPSService
         public float GetResizeCoefficient()
         {
             return resizeCoef;
+        }
+
+        private void SetCameraFov(float height, float focalY)
+        {
+            Camera camera = FindObjectOfType<Camera>();
+            float fovY = (float)(2 * Mathf.Atan(height / 2 / focalY) * 180 / Mathf.PI);
+
+            // устанавливает vertical
+            camera.fieldOfView = fovY;
+            Debug.Log("SETTED " + fovY);
         }
     }
 }
