@@ -154,7 +154,7 @@ namespace ARVRLab.VPSService
 
                 if (cancelToken.IsCancellationRequested)
                 {
-                    Debug.LogError("Mobile VPS task canceled");
+                    VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
                     return false;
                 }
             }
@@ -167,22 +167,47 @@ namespace ARVRLab.VPSService
             imageFeatureExtractorInterpreter.SetInputTensorData(0, imageFeatureExtractorInput);
             if (cancelToken.IsCancellationRequested)
             {
-                Debug.LogError("Mobile VPS task canceled");
+                VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
                 return null;
             }
             else
             {
                 ImageFeatureExtractorIsWorking = true;
             }
+
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             imageFeatureExtractorInterpreter.Invoke();
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan neuronRunTS = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string neuronRunTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                neuronRunTS.Hours, neuronRunTS.Minutes, neuronRunTS.Seconds,
+                neuronRunTS.Milliseconds / 10);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "FeatureExtractor RunTime {0}", neuronRunTime);
 
             imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPointsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptorsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(2, scoresOutput);
 
+            stopWatch.Restart();
+
             imageFeatureExtractorResult.setKeyPoints(keyPointsOutput);
             imageFeatureExtractorResult.setDescriptors(descriptorsOutput);
             imageFeatureExtractorResult.setScores(scoresOutput);
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan postProcessTS = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string postProcessTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                postProcessTS.Hours, postProcessTS.Minutes, postProcessTS.Seconds,
+                postProcessTS.Milliseconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "FeatureExtractor PostProcessTime {0}", postProcessTime);
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -193,18 +218,43 @@ namespace ARVRLab.VPSService
             imageEncoderInterpreter.SetInputTensorData(0, imageEncoderInput);
             if (cancelToken.IsCancellationRequested)
             {
-                Debug.LogError("Mobile VPS task canceled");
+                VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
                 return null;
             }
             else
             {
                 ImageEncoderIsWorking = true;
             }
+
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
             imageEncoderInterpreter.Invoke();
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan neuronRunTS = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string neuronRunTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                neuronRunTS.Hours, neuronRunTS.Minutes, neuronRunTS.Seconds,
+                neuronRunTS.Milliseconds / 10);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Encoder RunTime {0}", neuronRunTime);
 
             imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptorOutput);
 
+            stopWatch.Restart();
+
             imageEncoderResult.setGlobalDescriptor(globalDescriptorOutput);
+
+            stopWatch.Stop();
+            // Get the elapsed time as a TimeSpan value.
+            TimeSpan postProcessTS = stopWatch.Elapsed;
+
+            // Format and display the TimeSpan value.
+            string postProcessTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                postProcessTS.Hours, postProcessTS.Minutes, postProcessTS.Seconds,
+                postProcessTS.Milliseconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Encoder PostProcessTime {0}", postProcessTime);
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;

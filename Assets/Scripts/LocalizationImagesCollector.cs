@@ -54,7 +54,7 @@ namespace ARVRLab.VPSService
         {
             var tracking = provider.GetTracking();
 
-            Debug.Log("Start collect photo");
+            VPSLogger.Log(LogLevel.DEBUG, "Start collect photo");
             for (int i = 0; i < photosInSeria; i++)
             {
                 if (i != 0)
@@ -111,14 +111,14 @@ namespace ARVRLab.VPSService
                 NativeArray<byte> featureExtractorInput = camera.GetBuffer(mobileVPS.imageFeatureExtractorRequirements);
                 if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                 {
-                    Debug.LogError("Cannot take camera image as ByteArray for FeatureExtractor");
+                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray");
                     yield break;
                 }
 
                 NativeArray<byte> encoderInput = camera.GetBuffer(mobileVPS.imageEncoderRequirements);
                 if (encoderInput == null || encoderInput.Length == 0)
                 {
-                    Debug.LogError("Cannot take camera image as ByteArray for Encoder");
+                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray for Encoder");
                     yield break;
                 }
 
@@ -142,7 +142,8 @@ namespace ARVRLab.VPSService
                     yield return null;
 
                 stopWatch.Stop();
-                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000;
+                neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000f;
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "Neuron time = {0:f3}", neuronTime);
 
                 ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
@@ -155,7 +156,7 @@ namespace ARVRLab.VPSService
                 Texture2D Image = camera.GetFrame(provider.GetTextureRequirement());
                 if (Image == null)
                 {
-                    Debug.LogError("Image from camera is not available");
+                    VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                     yield break;
                 }
 

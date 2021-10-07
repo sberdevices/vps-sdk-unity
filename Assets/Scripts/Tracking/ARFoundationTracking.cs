@@ -17,7 +17,7 @@ namespace ARVRLab.VPSService
             ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
             if (ARCamera == null)
             {
-                Debug.LogError("Camera is not available for tracking");
+                VPSLogger.Log(LogLevel.ERROR, "Camera is not available for tracking");
             }
             if (trackingData == null)
             {

@@ -33,7 +33,7 @@ namespace ARVRLab.VPSService
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
-                Debug.LogError("Can't find ARCameraManager on scene!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't find ARCameraManager on scene!");
                 return;
             }
             cameraManager.frameReceived += UpdateFrame;
@@ -73,7 +73,7 @@ namespace ARVRLab.VPSService
                 var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
                 if (hdConfig == default)
                 {
-                    Debug.LogError("Can't take HD resolution!");
+                    VPSLogger.Log(LogLevel.DEBUG, "Can't take HD resolution!");
                     // Get the best resolution
                     hdConfig = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
@@ -99,7 +99,7 @@ namespace ARVRLab.VPSService
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
-                Debug.Log("Не удалось получить изображение с камеры!");
+                VPSLogger.Log(LogLevel.ERROR, "Не удалось получить изображение с камеры!");
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace ARVRLab.VPSService
             }
             catch (Exception ex)
             {
-                Debug.LogException(ex);
+                VPSLogger.Log(LogLevel.ERROR, ex);
             }
             finally
             {

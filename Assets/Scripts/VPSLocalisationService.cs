@@ -47,13 +47,18 @@ namespace ARVRLab.VPSService
         /// </summary>
         public event System.Action<LocationState> OnPositionUpdated;
 
+        /// <summary>
+        /// Event mobile vps is downloaded
+        /// </summary>
+        public event System.Action OnVPSReady;
+
         private VPSLocalisationAlgorithm algorithm;
 
         private IEnumerator Start()
         {
             if (!provider)
             {
-                Debug.LogError("Please, select provider for VPS service!");
+                VPSLogger.Log(LogLevel.ERROR, "Please, select provider for VPS service!");
                 yield break;
             }
 
@@ -66,14 +71,9 @@ namespace ARVRLab.VPSService
                 defaultSettings = new SettingsVPS(defaultUrl, defaultBuildingGuid);
             }
 
-            vpsPreparing = new VPSPrepareStatus();
             if (SendOnlyFeatures)
             {
                 yield return DownloadMobileVps();
-            }
-            else
-            {
-                provider.Init(false);
             }
 
             if (StartOnAwake)
@@ -108,7 +108,7 @@ namespace ARVRLab.VPSService
                 StartCoroutine(DownloadMobileVps());
                 if (!IsReady())
                 {
-                    Debug.LogError("MobileVPS is not ready. Start downloading...");
+                    VPSLogger.Log(LogLevel.DEBUG, "MobileVPS is not ready. Start downloading...");
                     return;
                 }
             }
@@ -134,7 +134,7 @@ namespace ARVRLab.VPSService
         {
             if (algorithm == null)
             {
-                Debug.LogError("VPS service is not running. Use StartVPS before");
+                VPSLogger.Log(LogLevel.ERROR, "VPS service is not running. Use StartVPS before");
                 return null;
             }
             return algorithm.GetLocationRequest();
@@ -171,7 +171,7 @@ namespace ARVRLab.VPSService
         {;
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().ResetTracking();
-            Debug.Log("Tracking reseted");
+            VPSLogger.Log(LogLevel.NONE, "Tracking reseted");
         }
 
         private void Awake()
@@ -189,19 +189,17 @@ namespace ARVRLab.VPSService
                 transform.GetChild(i).gameObject.SetActive(false);
             }
             provider.gameObject.SetActive(true);
+            vpsPreparing = new VPSPrepareStatus();
         }
 
         private IEnumerator DownloadMobileVps()
         {
-            if (vpsPreparing == null)
-            {
-                vpsPreparing = new VPSPrepareStatus();
-            }
+            vpsPreparing.OnVPSReady += () => OnVPSReady?.Invoke();
             if (!IsReady())
             {
                 yield return vpsPreparing.DownloadNeurals();
             }
-            provider.Init(true);
+            provider.InitMobileVPS();
         }
     }
 }

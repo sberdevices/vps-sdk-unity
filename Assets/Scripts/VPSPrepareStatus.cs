@@ -53,19 +53,22 @@ namespace ARVRLab.VPSService
             {
                 if (Application.internetReachability == NetworkReachability.NotReachable)
                 {
-                    Debug.Log("No internet to download MobileVPS");
+                    VPSLogger.Log(LogLevel.ERROR, "No internet to download MobileVPS");
                 }
                 yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
-                Debug.Log("Start downloading MobileVPS");
+                VPSLogger.Log(LogLevel.DEBUG, "Start downloading MobileVPS");
 
                 yield return DownloadNeural(imageFeatureExtractor);
                 yield return DownloadNeural(imageEncoder);
             }
 
-            Debug.Log("Mobile vps network downloaded successfully!");
+            VPSLogger.Log(LogLevel.DEBUG, "Mobile vps network downloaded successfully!");
             OnVPSReady?.Invoke();
         }
 
+        /// <summary>
+        /// Download mobileVPS
+        /// </summary>
         public IEnumerator DownloadNeural(DownloadNeuronStatus neuron)
         {
             if (File.Exists(neuron.DataPath))
@@ -74,25 +77,37 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-            using (UnityWebRequest www = UnityWebRequest.Get(neuron.Url))
+            while (true)
             {
-                www.SendWebRequest();
-                while (!www.isDone)
+                if (Application.internetReachability == NetworkReachability.NotReachable)
                 {
+                    VPSLogger.Log(LogLevel.ERROR, "No internet to download MobileVPS");
+                }
+                yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
+                using (UnityWebRequest www = UnityWebRequest.Get(neuron.Url))
+                {
+                    www.SendWebRequest();
+                    while (!www.isDone)
+                    {
+                        neuron.Progress = www.downloadProgress;
+                        VPSLogger.LogFormat(LogLevel.DEBUG, "Current progress: {0}", neuron.Progress);
+                        yield return null;
+                    }
+
+                    // check error
+                    if (www.isNetworkError || www.isHttpError)
+                    {
+                        VPSLogger.LogFormat(LogLevel.ERROR, "Can't download mobile vps network: {0}", www.error);
+                        yield return null;
+                        continue;
+                    }
+
                     neuron.Progress = www.downloadProgress;
-                    Debug.Log(GetProgress());
-                    yield return null;
+                    File.WriteAllBytes(neuron.DataPath, www.downloadHandler.data);
+                    VPSLogger.Log(LogLevel.DEBUG, "Mobile vps network downloaded successfully!");
+                    OnVPSReady?.Invoke();
+                    break;
                 }
-
-                // check error
-                if (www.isNetworkError || www.isHttpError)
-                {
-                    Debug.LogError("Can't download mobile vps network: " + www.error);
-                    yield break;
-                }
-
-                neuron.Progress = www.downloadProgress;
-                File.WriteAllBytes(neuron.DataPath, www.downloadHandler.data);
             }
         }
 

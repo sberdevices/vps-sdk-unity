@@ -191,7 +191,7 @@ namespace ARVRLab.VPSService
                 var camera = FindObjectOfType<Camera>();
                 if (!camera)
                 {
-                    Debug.LogError("No virtual camera on scene!");
+                    VPSLogger.Log(LogLevel.ERROR, "No virtual camera on scene!");
                     return;
                 }
 
