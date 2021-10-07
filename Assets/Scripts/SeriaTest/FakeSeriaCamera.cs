@@ -171,7 +171,7 @@ namespace ARVRLab.VPSService
 
         private void SetCameraFov()
         {
-            Camera camera = FindObjectOfType<Camera>();
+            Camera camera = Camera.main;
 
             float h = Screen.height;
             float fy = GetFocalPixelLength().y;
