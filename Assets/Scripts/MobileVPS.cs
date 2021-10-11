@@ -45,7 +45,6 @@ namespace ARVRLab.VPSService
             {
                 threads = 2
             };
-            imageFeatureExtractorOptions.AddGpuDelegate();
 
             var imageEncoderOptions = new InterpreterOptions
             {

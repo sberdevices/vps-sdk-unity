@@ -81,7 +81,7 @@ namespace ARVRLab.VPSService
 
                 cameraManager.currentConfiguration = hdConfig;
 
-                yield return new WaitWhile(() => buffers.Count == 0);
+                yield return new WaitWhile(() => buffers == null || buffers.Count == 0);
                 resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)hdConfig.width;
             } 
         }
@@ -91,6 +91,9 @@ namespace ARVRLab.VPSService
         /// </summary>
         private unsafe void UpdateFrame(ARCameraFrameEventArgs args)
         {
+            if (buffers == null || buffers.Count == 0)
+                return;
+
             if (!semaphore.CheckState())
                 return;
             semaphore.TakeOne();
