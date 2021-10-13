@@ -17,7 +17,7 @@ namespace ARVRLab.VPSService
     public class UnityWebRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api for seria photo localization
+        // api for serial photo localization
         private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api for one photo localisation
         private string api_path = "vps/api/v1/job";
@@ -31,9 +31,6 @@ namespace ARVRLab.VPSService
             serverUrl = url;
         }
 
-        /// <summary>
-        /// Send requst: image and meta
-        /// </summary>
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
             string uri = Path.Combine(serverUrl, api_path);
@@ -59,9 +56,6 @@ namespace ARVRLab.VPSService
             yield return SendRequest(uri, form);
         }
 
-        /// <summary>
-        /// Send requst: image and meta and mobileVPS result
-        /// </summary>
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
         {
             string uri = Path.Combine(serverUrl, api_path);
@@ -81,11 +75,6 @@ namespace ARVRLab.VPSService
             yield return SendRequest(uri, form);
         }
 
-        /// <summary>
-        /// Send requst: photo seria and meta 
-        /// </summary>
-        /// <returns>The vps localization request.</returns>
-        /// <param name="data">Data.</param>
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
         {
             string uri = Path.Combine(serverUrl, api_path_firstloc);
@@ -114,32 +103,24 @@ namespace ARVRLab.VPSService
             yield return SendRequest(uri, form);
         }
 
-        /// <summary>
-        /// Get latest request status
-        /// </summary>
-        /// <returns>The status.</returns>
         public LocalisationStatus GetStatus()
         {
             return locationState.Status;
         }
 
-        /// <summary>
-        /// Get latest request error
-        /// </summary>
-        /// <returns>The error code.</returns>
         public ErrorCode GetErrorCode()
         {
             return locationState.Error;
         }
-        /// <summary>
-        /// Get latest request responce
-        /// </summary>
-        /// <returns>The responce.</returns>
+
         public LocalisationResult GetResponce()
         {
             return locationState.Localisation;
         }
 
+        /// <summary>
+        /// Create name for image from current date and time
+        /// </summary>
         private string CreateFileName()
         {
             string file = "";
@@ -149,6 +130,9 @@ namespace ARVRLab.VPSService
             return file;
         }
 
+        /// <summary>
+        /// Convert Texture2D to byte array
+        /// </summary>
         private byte[] GetByteArrayFromImage(Texture2D image)
         {
             byte[] bytesOfImage = image.EncodeToJPG(100);

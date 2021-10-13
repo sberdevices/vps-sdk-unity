@@ -82,8 +82,8 @@ namespace ARVRLab.VPSService
                 correctedResult.LocalRotation = qrot.eulerAngles;
             }
 
-            VPSLogger.Log(LogLevel.NONE, "LocalisationDone happend");
-            VPSLogger.Log(LogLevel.DEBUG, correctedResult.LocalPosition);
+            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
+            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
 
             StopAllCoroutines();
 
@@ -111,8 +111,8 @@ namespace ARVRLab.VPSService
                 correctedResult.LocalRotation = qrot.eulerAngles;
             }
 
-            VPSLogger.Log(LogLevel.NONE, "LocalisationDone happend");
-            VPSLogger.Log(LogLevel.DEBUG, correctedResult.LocalPosition);
+            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
+            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
 
             StopAllCoroutines();
 

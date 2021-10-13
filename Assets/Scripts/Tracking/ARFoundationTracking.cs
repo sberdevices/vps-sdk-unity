@@ -25,6 +25,9 @@ namespace ARVRLab.VPSService
             }
         }
 
+        /// <summary>
+        /// Write current position and rotation from camera in the structure
+        /// </summary>
         private void UpdateTrackingData()
         {
             if (ARCamera != null)
@@ -34,10 +37,6 @@ namespace ARVRLab.VPSService
             }
         }
 
-        /// <summary>
-        /// Tracking updates only on request
-        /// </summary>
-        /// <returns>The local tracking.</returns>
         public TrackingData GetLocalTracking()
         {
             UpdateTrackingData();

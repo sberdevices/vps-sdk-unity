@@ -20,7 +20,7 @@ public class ExampleVPS : MonoBehaviour
 		VPS.OnErrorHappend += OnErrorHappendHandler;
 
 		// Create custom settings to VPS: generate url in constructor and set delay between requests
-		SettingsVPS settings = new SettingsVPS("https://api.bootcamp.vps.arvr.sberlabs.com/eeb38592-4a3c-4d4b-b4c6-38fd68331521", "eeb38592-4a3c-4d4b-b4c6-38fd68331521");
+		SettingsVPS settings = new SettingsVPS("https://vps.arvr.sberlabs.com/polytech-pub/", "Polytech");
 		settings.Timeout = 3;
 
 		// Start service

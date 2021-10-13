@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
-    public class FakeSeriaTracking : MonoBehaviour, ITracking
+    public class FakeSerialTracking : MonoBehaviour, ITracking
     {
         private string DefaultGuidPointcloud = "";
 
@@ -54,6 +54,9 @@ namespace ARVRLab.VPSService
             };
         }
 
+        /// <summary>
+        /// Write current position and rotation from current file in the structure
+        /// </summary>
         private void UpdateTrackingData()
         {
             Pose currentPose = MetaParser.Parse(CustomPoses[Counter].text);
@@ -64,10 +67,6 @@ namespace ARVRLab.VPSService
                 Counter = 0;
         }
 
-        /// <summary>
-        /// Tracking updates only on request
-        /// </summary>
-        /// <returns>The local tracking.</returns>
         public TrackingData GetLocalTracking()
         {
             UpdateTrackingData();

@@ -144,7 +144,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             var communicationStruct = CollectDataAttributes(Provider, forceVPS, sendOnlyFeatures);
             var json = JsonUtility.ToJson(communicationStruct);
 
-            VPSLogger.Log(LogLevel.DEBUG, json);
+            VPSLogger.LogFormat(LogLevel.DEBUG, "Json to send: {0}", json);
             return json;
         }
 

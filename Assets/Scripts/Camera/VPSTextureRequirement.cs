@@ -70,5 +70,15 @@ namespace ARVRLab.VPSService
                 return (Width == requir.Width) && (Height == requir.Height) && (Format == requir.Format);
             }
         }
+
+        public override int GetHashCode()
+        {
+            string hashstring = "";
+            hashstring += Width.GetHashCode().ToString();
+            hashstring += Height.GetHashCode().ToString();
+            hashstring += Format.GetHashCode().ToString();
+
+            return hashstring.GetHashCode();
+        }
     }
 }

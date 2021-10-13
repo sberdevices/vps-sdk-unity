@@ -33,13 +33,12 @@ namespace ARVRLab.VPSService
             cameraManager = FindObjectOfType<ARCameraManager>();
             if (!cameraManager)
             {
-                VPSLogger.Log(LogLevel.ERROR, "Can't find ARCameraManager on scene!");
+                VPSLogger.Log(LogLevel.ERROR, "ARCameraManager is not found");
                 return;
             }
             cameraManager.frameReceived += UpdateFrame;
         }
 
-        // принимает массив
         public void Init(VPSTextureRequirement[] requirements)
         {
             FreeBufferMemory();
@@ -73,7 +72,7 @@ namespace ARVRLab.VPSService
                 var hdConfig = configurations.FirstOrDefault(a => a.width == 1920 && a.height == 1080);
                 if (hdConfig == default)
                 {
-                    VPSLogger.Log(LogLevel.DEBUG, "Can't take HD resolution!");
+                    VPSLogger.Log(LogLevel.DEBUG, "Can't take HD resolution. The best available one will be chosen");
                     // Get the best resolution
                     hdConfig = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
@@ -102,7 +101,7 @@ namespace ARVRLab.VPSService
             XRCpuImage image;
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
-                VPSLogger.Log(LogLevel.ERROR, "Не удалось получить изображение с камеры!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't take camera image");
                 return;
             }
 
@@ -136,6 +135,7 @@ namespace ARVRLab.VPSService
             texture.LoadRawTextureData(GetBuffer(requir));
             texture.Apply();
 
+            // need to copy the red channel to green and blue
             NativeArray<Color> array = new NativeArray<Color>(texture.GetPixels(), Allocator.TempJob);
             job.array = array;
 
@@ -184,6 +184,9 @@ namespace ARVRLab.VPSService
             return buffers[requir];
         }
 
+        /// <summary>
+        /// Free all buffers
+        /// </summary>
         private void FreeBufferMemory()
         {
             if (buffers == null)

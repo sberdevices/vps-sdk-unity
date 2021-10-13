@@ -11,7 +11,7 @@ namespace ARVRLab.VPSService
         public VPSLocalisationService VPS;
         public ARCameraManager cameraManager;
 
-        public Toggle UsePhotoSerias;
+        public Toggle UsePhotoSerial;
         public Toggle Autofocus;
         public Toggle SendOnlyFeatures;
         public Toggle AlwaysForce;
@@ -28,7 +28,7 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            UsePhotoSerias?.onValueChanged.AddListener((value) => VPS.UsePhotoSeries = value);
+            UsePhotoSerial?.onValueChanged.AddListener((value) => VPS.UsePhotoSeries = value);
             Autofocus?.onValueChanged.AddListener((value) => cameraManager.autoFocusRequested = value);
             SendOnlyFeatures?.onValueChanged.AddListener((value) => VPS.SendOnlyFeatures = value);
             AlwaysForce?.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
@@ -56,8 +56,8 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            if (UsePhotoSerias != null)
-                UsePhotoSerias.isOn = VPS.UsePhotoSeries;
+            if (UsePhotoSerial != null)
+                UsePhotoSerial.isOn = VPS.UsePhotoSeries;
             if (Autofocus != null)
                 Autofocus.isOn = cameraManager.autoFocusRequested;
             if (SendOnlyFeatures != null)
@@ -107,7 +107,7 @@ namespace ARVRLab.VPSService
 
         private void ShowToggles()
         {
-            UsePhotoSerias?.gameObject.SetActive(true);
+            UsePhotoSerial?.gameObject.SetActive(true);
             Autofocus?.gameObject.SetActive(true);
             SendOnlyFeatures?.gameObject.SetActive(true);
             AlwaysForce?.gameObject.SetActive(true);
@@ -118,7 +118,7 @@ namespace ARVRLab.VPSService
 
         private void HideToggles()
         {
-            UsePhotoSerias?.gameObject.SetActive(false);
+            UsePhotoSerial?.gameObject.SetActive(false);
             Autofocus?.gameObject.SetActive(false);
             SendOnlyFeatures?.gameObject.SetActive(false);
             AlwaysForce?.gameObject.SetActive(false);

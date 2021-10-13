@@ -14,9 +14,9 @@ namespace ARVRLab.VPSService
         public Vector2Int desiredResolution = new Vector2Int(960, 540);
         public TextureFormat format = TextureFormat.RGB24;
 
-        [Tooltip("Number photos in seria")]
+        [Tooltip("Number photos in serial")]
         [SerializeField]
-        public int PhotosInSeria = 5;
+        public int PhotosInSerial = 5;
 
         private new ICamera camera;
         private IServiceGPS gps;
@@ -44,7 +44,7 @@ namespace ARVRLab.VPSService
 
             gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
-            imagesCollector = new LocalizationImagesCollector(PhotosInSeria, false);
+            imagesCollector = new LocalizationImagesCollector(PhotosInSerial, false);
         }
 
         public void InitMobileVPS()

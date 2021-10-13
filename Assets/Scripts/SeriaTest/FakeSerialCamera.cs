@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
-    public class FakeSeriaCamera : MonoBehaviour, ICamera
+    public class FakeSerialCamera : MonoBehaviour, ICamera
     {
         private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
 
@@ -15,7 +15,6 @@ namespace ARVRLab.VPSService
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
 
-        // Не проверено
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private int Counter = 0;
@@ -28,6 +27,9 @@ namespace ARVRLab.VPSService
             LocalizationImagesCollector.OnPhotoAdded += IncPhotoCounter;
         }
 
+        /// <summary>
+        /// Switch to next texture
+        /// </summary>
         private void IncPhotoCounter()
         {
             Counter++;
@@ -49,6 +51,9 @@ namespace ARVRLab.VPSService
             resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.x;
         }
 
+        /// <summary>
+        /// Init all buffers from image by requrements
+        /// </summary>
         private void InitBuffers()
         {
             if (buffers == null || buffers.Count == 0)
@@ -105,6 +110,9 @@ namespace ARVRLab.VPSService
             FreeBufferMemory();
         }
 
+        /// <summary>
+        /// Free all buffers
+        /// </summary>
         private void FreeBufferMemory()
         {
             if (buffers == null)
@@ -123,6 +131,9 @@ namespace ARVRLab.VPSService
             return resizeCoef;
         }
 
+        /// <summary>
+        /// Rotate FakeTexture and copy the red channel to green and blue
+        /// </summary>
         private Texture2D Preprocess(Texture2D FakeTexture, TextureFormat format)
         {
             Color32[] original = FakeTexture.GetPixels32();
@@ -169,6 +180,9 @@ namespace ARVRLab.VPSService
             return rotatedTexture;
         }
 
+        /// <summary>
+        /// Set camera fov for correct rendering 
+        /// </summary>
         private void SetCameraFov()
         {
             Camera camera = Camera.main;
@@ -178,7 +192,6 @@ namespace ARVRLab.VPSService
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
-            // устанавливает vertical
             camera.fieldOfView = fovY;
         }
     }

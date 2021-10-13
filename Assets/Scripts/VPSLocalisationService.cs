@@ -9,28 +9,27 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class VPSLocalisationService : MonoBehaviour
     {
-        [Tooltip("Start VPS in OnAwake?")]
+        [Tooltip("Start VPS in OnAwake")]
         public bool StartOnAwake;
 
         [Tooltip("Which camera, GPS and tracking use")]
         public ServiceProvider provider;
 
-        [Tooltip("Use photo seria pipeline?")]
+        [Tooltip("Use photo serial pipeline")]
         public bool UsePhotoSeries;
-        [Tooltip("Send features or photo?")]
+        [Tooltip("Send features or photo")]
         public bool SendOnlyFeatures;
-        [Tooltip("Always send force vps?")]
+        [Tooltip("Always send force vps")]
         public bool AlwaysForce;
-        [Tooltip("Send GPS?")]
+        [Tooltip("Send GPS")]
         public bool SendGPS;
 
         [Header("Default VPS Settings")]
         public string defaultUrl = "https://api.bootcamp.vps.arvr.sberlabs.com/eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-        [Tooltip("eeb38592-4a3c-4d4b-b4c6-38fd68331521, Polytech")]
         public string defaultBuildingGuid;
 
         [Header("Custom URL")]
-        [Tooltip("Use custom url?")]
+        [Tooltip("Use custom url")]
         public bool UseCustomUrl;
         public string CustomUrl = "";
 
@@ -141,7 +140,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Цas there at least one successful localisation?
+        /// Was there at least one successful localisation?
         /// </summary>
         public bool IsLocalized()
         {
