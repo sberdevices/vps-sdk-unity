@@ -8,5 +8,10 @@
     "AR",
     "Barcode"
   ],
+  "dependencies": {
+    "com.unity.xr.arfoundation": "4.0.2",
+    "com.unity.xr.arcore": "4.0.3",
+    "com.unity.xr.arkit": "4.0.2"
+  },
   "category": "Unity"
 }
