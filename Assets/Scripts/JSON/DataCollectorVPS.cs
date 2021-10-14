@@ -50,8 +50,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             var attrib = new RequestAttributes
             {
-                //id = System.Guid.NewGuid().ToString(),
-
                 location = new RequestLocation()
                 {
                     type = relative_type,
@@ -71,7 +69,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         accuracy = headingAccuracy,
                         timestamp = compassTimeStamp
                     },
-
 
                     clientCoordinateSystem = "unity",
 
@@ -93,7 +90,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 #if UNITY_EDITOR
                     mirrorY = false
 #else
-                    mirrorY = true // на устройстве обязательно отражать
+                    mirrorY = true
 #endif
 
                 },
@@ -168,12 +165,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                                             communicationStruct.data.attributes.location.relative.pitch,
                                             communicationStruct.data.attributes.location.relative.yaw),
                 Img_id = checkImgId ? id : -1,
-                //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
-                //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 GuidPointcloud = communicationStruct.data.attributes.location.location_id,
-                //Heading = communicationStruct.data.attributes.location.compass.heading,
-                //Accuracy = communicationStruct.data.attributes.location.gps.accuracy,
-                //Timestamp = communicationStruct.data.attributes.location.gps.timestamp
             };
 
             LocationState request = new LocationState

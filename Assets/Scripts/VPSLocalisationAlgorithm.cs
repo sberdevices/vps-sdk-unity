@@ -82,7 +82,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Main cycle. Check readiness every service, send request (force / не force), apply the resulting localization if success
+        /// Main cycle. Check readiness every service, send request (force / not force), apply the resulting localization if success
         /// </summary>
         /// <returns>The routine.</returns>
         public IEnumerator LocalisationRoutine()
@@ -117,11 +117,6 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
-
-            // TODO: убрать ссылку в этом скрипте на ARFoundationApplyer и из Provider
-            // Все операции по вычислению скоректированной новой позиции можно
-            // сделать внутри этого класса. ARFoundationApplyer должен подписаться
-            // на событие начала локализации (новое) и конца локализации
             var arRFoundationApplyer = provider.GetARFoundationApplyer();
 
             while (true)

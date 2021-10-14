@@ -25,11 +25,10 @@ namespace ARVRLab.VPSService
         public bool SendGPS;
 
         [Header("Default VPS Settings")]
-        public string defaultUrl = "https://api.bootcamp.vps.arvr.sberlabs.com/eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-        public string defaultBuildingGuid;
+        public string defaultUrl = "https://vps.arvr.sberlabs.com/polytech-pub/";
+        public string defaultBuildingGuid = "Polytech";
 
         [Header("Custom URL")]
-        [Tooltip("Use custom url")]
         public bool UseCustomUrl;
         public string CustomUrl = "";
 
@@ -175,14 +174,24 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            if (provider == null)
+            ServiceProvider mockProvider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
+            ServiceProvider arFoundationProvider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
+
+            if (Application.isEditor)
             {
-#if UNITY_EDITOR
-                provider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
-#else
-                provider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
-#endif
+                if (provider == null)
+                    provider = mockProvider;
+                else if (provider == arFoundationProvider)
+                    VPSLogger.Log(LogLevel.NONE, "For work with VPS in Editor it is recommended to choose MockData provider");
             }
+            else
+            {
+                if (provider == null)
+                    provider = arFoundationProvider;
+                else if (provider == mockProvider)
+                    VPSLogger.Log(LogLevel.NONE, "For work with VPS on device it is recommended to choose ARFoundation provider");
+            }
+
             for (var i = 0; i < transform.childCount; i++)
             {
                 transform.GetChild(i).gameObject.SetActive(false);

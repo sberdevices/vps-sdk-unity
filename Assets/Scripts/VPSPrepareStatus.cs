@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace ARVRLab.VPSService
         public DownloadNeuronStatus(string name)
         {
             Name = name;
-            Url = Path.Combine(bucketPath, name);
+            Url = Path.Combine(bucketPath, name).Replace("\\", "/");
             DataPath = Path.Combine(Application.persistentDataPath, name);
             Progress = 0f;
         }
@@ -45,7 +46,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Download mobileVPS
+        /// Download all mobileVPS neurals
         /// </summary>
         public IEnumerator DownloadNeurals()
         {
@@ -67,7 +68,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Download mobileVPS
+        /// Download mobileVPS neural
         /// </summary>
         public IEnumerator DownloadNeural(DownloadNeuronStatus neuron)
         {

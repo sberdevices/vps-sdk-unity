@@ -17,35 +17,6 @@ namespace ARVRLab.VPSService
 
         public TextAsset[] CustomPoses;
 
-        //private void Awake()
-        //{
-            //string [] files = Directory.GetFiles(ImagesPath);
-            //CustomPoses = new TextAsset[files.Length / 4];
-            //int j1 = 0, j2 = 0;
-
-            //FakeSeriaCamera cam = GetComponent<FakeSeriaCamera>();
-            //cam.FakeTextures = new Texture2D[files.Length / 4];
-
-            //GetComponent<ServiceProvider>().PhotosInSeria = files.Length / 4;
-            //for (int i = 0; i < files.Length; i++)
-            //{
-            //    if (files[i].Contains("meta"))
-            //        continue;
-
-            //    if (files[i].Contains("dat") || files[i].Contains("txt"))
-            //    {
-            //        CustomPoses[j1] = new TextAsset(File.ReadAllText(files[i]));
-            //        j1++;
-            //    }
-            //    else
-            //    {
-            //        cam.FakeTextures[j2] = new Texture2D(540, 960);
-            //        cam.FakeTextures[j2].LoadImage(File.ReadAllBytes(files[i]));
-            //        j2++;
-            //    }
-            //}
-        //}
-
         private void Start()
         {
             trackingData = new TrackingData

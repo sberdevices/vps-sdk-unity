@@ -68,8 +68,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Apply taked transform and return adjusted ARFoundation localisation
         /// </summary>
-        /// <returns>The VPST ransform.</returns>
-        /// <param name="localisation">Localisation.</param>
+        /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
             LocalisationResult correctedResult = localisation;
@@ -96,9 +95,7 @@ namespace ARVRLab.VPSService
         /// Apply taked transform and return adjusted ARFoundation localisation
         /// relative to a custom start position
         /// </summary>
-        /// <returns>The VPST ransform.</returns>
-        /// <param name="localisation">Localisation.</param>
-        /// <param name="CustomStartPose">Позиция, с которой была отправлена фотография.</param>
+        /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
         {
             LocalisationResult correctedResult = localisation;
@@ -124,7 +121,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Apply NewPosition and NewRotationY with interpolation
         /// </summary>
-        /// <returns>The position and rot.</returns>
+        /// <returns>The position and rotation.</returns>
         /// <param name="NewPosition">New position.</param>
         /// <param name="NewRotation">New rotation y.</param>
         IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation)

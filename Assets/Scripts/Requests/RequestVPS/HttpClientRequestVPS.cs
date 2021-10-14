@@ -33,7 +33,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -60,7 +60,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -81,7 +81,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
         {
-            string uri = Path.Combine(serverUrl, api_path_firstloc);
+            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {

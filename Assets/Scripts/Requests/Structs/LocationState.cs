@@ -13,7 +13,7 @@ namespace ARVRLab.VPSService
     }
 
     /// <summary>
-    /// Данные о последнем запросе локализации
+    /// Last localization request data
     /// </summary>
     public class LocationState
     {

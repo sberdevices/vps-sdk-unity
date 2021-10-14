@@ -55,18 +55,17 @@ namespace ARVRLab.VPSService
                 }
                 else
                 {
-                    string fullPath = Path.Combine(Application.dataPath, ImageLocalPath);
+                    string fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, ImageLocalPath);
                     FakeTexture.LoadImage(File.ReadAllBytes(fullPath));
                 }
 
                 FreeBufferMemory();
                 InitBuffers();
 
-                if (Application.isEditor)
-                {
+#if UNITY_EDITOR
                     EditorApplication.delayCall = () => ShowMockFrame(FakeTexture);
                     PrepareApplyer();
-                }
+#endif
             }
         }
 

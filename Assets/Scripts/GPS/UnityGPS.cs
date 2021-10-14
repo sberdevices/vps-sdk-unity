@@ -30,6 +30,9 @@ namespace ARVRLab.VPSService
 
         private IEnumerator StartGPS()
         {
+            if (Application.isEditor)
+                yield break;
+
             // check gps available
             if (!Input.location.isEnabledByUser)
             {
@@ -108,10 +111,10 @@ namespace ARVRLab.VPSService
             enabled = enable;
             if (enabled)
             {
-                // for android ask permission here
-//#if UNITY_ANDROID
-//                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
-//#endif
+#if UNITY_ANDROID
+                if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.FineLocation))
+                    UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
+#endif
                 StartCoroutine(StartGPS());
             }
             else
