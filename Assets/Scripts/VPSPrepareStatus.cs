@@ -70,7 +70,7 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Download mobileVPS neural
         /// </summary>
-        public IEnumerator DownloadNeural(DownloadNeuronStatus neuron)
+        private IEnumerator DownloadNeural(DownloadNeuronStatus neuron)
         {
             if (File.Exists(neuron.DataPath))
             {
