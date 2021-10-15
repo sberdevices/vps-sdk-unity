@@ -59,7 +59,6 @@ namespace ARVRLab.VPSService
                     FakeTexture.LoadImage(File.ReadAllBytes(fullPath));
                 }
 
-                FreeBufferMemory();
                 InitBuffers();
 
 #if UNITY_EDITOR
