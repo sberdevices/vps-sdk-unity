@@ -12,8 +12,13 @@ namespace ARVRLab.VPSService
         [Tooltip("Start VPS in OnAwake")]
         public bool StartOnAwake;
 
-        [Tooltip("Which camera, GPS and tracking use")]
-        public ServiceProvider provider;
+        [Tooltip("Use runtime provider if true or mock provider if false")]
+        public bool UseRuntimeProvider;
+        [Tooltip("Which camera, GPS and tracking use for runtime")]
+        public ServiceProvider RuntimeProvider;
+        [Tooltip("Which camera, GPS and tracking use for mock data")]
+        public ServiceProvider MockProvider;
+        private ServiceProvider provider;
 
         [Tooltip("Use photo serial pipeline")]
         public bool UsePhotoSeries;
@@ -55,10 +60,7 @@ namespace ARVRLab.VPSService
         private IEnumerator Start()
         {
             if (!provider)
-            {
-                VPSLogger.Log(LogLevel.ERROR, "Please, select provider for VPS service!");
                 yield break;
-            }
 
             if (UseCustomUrl)
             {
@@ -167,6 +169,9 @@ namespace ARVRLab.VPSService
         /// </summary>
         public void ResetTracking()
         {
+            if (!provider)
+                return;
+
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().ResetTracking();
             VPSLogger.Log(LogLevel.NONE, "Tracking reseted");
@@ -174,22 +179,23 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            ServiceProvider mockProvider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
-            ServiceProvider arFoundationProvider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
-
-            if (Application.isEditor)
+            if (UseRuntimeProvider)
             {
-                if (provider == null)
-                    provider = mockProvider;
-                else if (provider == arFoundationProvider)
+                provider = RuntimeProvider;
+                if (Application.isEditor)
                     VPSLogger.Log(LogLevel.NONE, "For work with VPS in Editor it is recommended to choose MockData provider");
             }
             else
             {
-                if (provider == null)
-                    provider = arFoundationProvider;
-                else if (provider == mockProvider)
+                provider = MockProvider;
+                if (!Application.isEditor)
                     VPSLogger.Log(LogLevel.NONE, "For work with VPS on device it is recommended to choose ARFoundation provider");
+            }
+
+            if (!provider)
+            {
+                VPSLogger.LogFormat(LogLevel.ERROR, "Please, select {0} provider for VPS service!", UseRuntimeProvider ? "ARFoundation" : "MockData");
+                return;
             }
 
             for (var i = 0; i < transform.childCount; i++)
