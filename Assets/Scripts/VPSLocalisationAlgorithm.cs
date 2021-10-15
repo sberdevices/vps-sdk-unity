@@ -55,7 +55,8 @@ namespace ARVRLab.VPSService
             sendOnlyFeatures = onlyFeatures;
             alwaysForceVPS = alwaysForce;
 
-            provider.GetGPS().SetEnable(sendGps);
+            if (provider.GetGPS() != null)
+                provider.GetGPS().SetEnable(sendGps);
 
             settings = vps_settings;
             provider.GetTracking().SetDefaultBuilding(vps_settings.defaultLocationId);

@@ -24,7 +24,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             IServiceGPS gps = Provider.GetGPS();
 
-            GPSData gpsData = gps.GetGPSData();
+            GPSData gpsData = gps != null ? gps.GetGPSData() : new GPSData();
 
             double lat = gpsData.Latitude;
             double lon = gpsData.Longitude;
@@ -32,7 +32,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             float accuracy = gpsData.Accuracy;
             double locationTimeStamp = gpsData.Timestamp;
 
-            CompassData gpsCompass = gps.GetCompassData();
+            CompassData gpsCompass = gps != null ? gps.GetCompassData() : new CompassData();
 
             float heading = gpsCompass.Heading;
             float headingAccuracy = gpsCompass.Accuracy;

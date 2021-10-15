@@ -1262,7 +1262,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: SendGPS
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1364,7 +1364,8 @@ PrefabInstance:
       propertyPath: Longitude
       value: 37.628006
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8690752169563304431, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
 --- !u!114 &8690752169532022779 stripped
 MonoBehaviour:
