@@ -5,7 +5,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ARVRLab.ARVRLab.VPSService.JSONs;
-using Asyncoroutine;
 using UnityEngine;
 
 namespace ARVRLab.VPSService

@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-// It refers to this link : https://github.com/Microsoft/xbox-live-unity-plugin/blob/master/Assets/Xbox%20Live/Scripts/UnityTaskExtensions.cs
-
-namespace Asyncoroutine
+namespace ARVRLab.VPSService
 {
     public static class TaskYieldInstructionExtension
     {

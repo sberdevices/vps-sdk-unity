@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_ANDROID
+using UnityEngine.Android;
+#endif
 
 namespace ARVRLab.VPSService
 {
@@ -112,8 +115,8 @@ namespace ARVRLab.VPSService
             if (enabled)
             {
 #if UNITY_ANDROID
-                if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.FineLocation))
-                    UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.FineLocation);
+                if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+                    Permission.RequestUserPermission(Permission.FineLocation);
 #endif
                 StartCoroutine(StartGPS());
             }

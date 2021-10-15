@@ -81,12 +81,7 @@ namespace ARVRLab.VPSService
 
         public override int GetHashCode()
         {
-            string hashstring = "";
-            hashstring += Width.GetHashCode().ToString();
-            hashstring += Height.GetHashCode().ToString();
-            hashstring += Format.GetHashCode().ToString();
-
-            return hashstring.GetHashCode();
+            return Width.GetHashCode() ^ Height.GetHashCode() ^ Format.GetHashCode();
         }
     }
 }
