@@ -187,7 +187,7 @@ namespace ARVRLab.VPSService
         {
             Camera camera = Camera.main;
 
-            float h = Screen.height;
+            float h = cameraResolution.x;
             float fy = GetFocalPixelLength().y;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
