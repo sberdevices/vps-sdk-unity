@@ -12,14 +12,19 @@ namespace ARVRLab.VPSService
         [Tooltip("Start VPS in OnAwake")]
         public bool StartOnAwake;
 
-        [Tooltip("Use runtime provider if true or mock provider if false")]
-        public bool UseRuntimeProvider;
+        [Header("Providers")]
         [Tooltip("Which camera, GPS and tracking use for runtime")]
         public ServiceProvider RuntimeProvider;
         [Tooltip("Which camera, GPS and tracking use for mock data")]
         public ServiceProvider MockProvider;
         private ServiceProvider provider;
 
+        [Tooltip("Use mock provider when VPS service has started")]
+        public bool UseMock = false;
+        [Tooltip("Always use mock provider in Editor, even if UseMock is false")]
+        public bool ForceMockInEditor = true;
+
+        [Header("Default VPS Settings")]
         [Tooltip("Use photo serial pipeline")]
         public bool UsePhotoSeries;
         [Tooltip("Send features or photo")]
@@ -29,7 +34,7 @@ namespace ARVRLab.VPSService
         [Tooltip("Send GPS")]
         public bool SendGPS;
 
-        [Header("Default VPS Settings")]
+        [Header("Location Settings")]
         public string defaultUrl = "https://vps.arvr.sberlabs.com/polytech-pub/";
         public string defaultBuildingGuid = "Polytech";
 
@@ -179,22 +184,13 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            if (UseRuntimeProvider)
-            {
-                provider = RuntimeProvider;
-                if (Application.isEditor)
-                    VPSLogger.Log(LogLevel.NONE, "For work with VPS in Editor it is recommended to choose MockData provider");
-            }
-            else
-            {
-                provider = MockProvider;
-                if (!Application.isEditor)
-                    VPSLogger.Log(LogLevel.NONE, "For work with VPS on device it is recommended to choose ARFoundation provider");
-            }
+            // check what provider should VPS use
+            var isMockMode = UseMock || Application.isEditor && ForceMockInEditor;
+            provider = isMockMode ? MockProvider : RuntimeProvider;
 
             if (!provider)
             {
-                VPSLogger.LogFormat(LogLevel.ERROR, "Please, select {0} provider for VPS service!", UseRuntimeProvider ? "ARFoundation" : "MockData");
+                VPSLogger.Log(LogLevel.ERROR, "Can't load proveder! Select {0} provider for VPS service!");
                 return;
             }
 
