@@ -15,8 +15,9 @@ For more information visit [our page on SmartMarket](https://developers.sber.ru/
 
 ## Installation
 
-- Clone this repository. Requires installed [Git-LFS](https://git-lfs.github.com).
-- Add git URL from the Package Maneger UI to your project:
+Just clone this repository. Requires installed [Git-LFS](https://git-lfs.github.com).
+
+Or add git URL to the Package Maneger UI in your project dependencies:
 `https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/`
 
 ## Examples
@@ -25,13 +26,20 @@ SDK includes an example scene with basic setup and graphics. Load project in Uni
 
 ## Usage
 
+### Testing your app
+
+When you start VPS in Editor, it loads an image from `Mock Provider`. You can change this image by selecting `VPS/MockData/FakeCamera` component in Example scene hierarchy.
+
+You can also enable `Mock Mode` for device builds. Just toggle `Use Mock` property in `VPS/VPSLocalisationService` and rebuild your app.
+
 ### VPS Settings
-You can adjust VPS behaviour by changing public fields in `VPSLocalisationService` component:
+
+You can adjust VPS behaviour by changing public properties in `VPSLocalisationService` component:
 
 | Property Name | Description | Default |
 | ------ | ------ | ------ |
 | **Start On Awake** | Should VPS start on Awake or be activated manually. | true |
-| **Use Mock** | Use mock provider when VPS service has started. Allows to test in Editor. | false |
+| **Use Mock** | Use mock provider when VPS service has started. Allows to test VPS in Editor. | false |
 | **Force Mock in Editor** | Always use mock provider in Editor, even if UseMock is false .| true |
 | **Use Photo Series** | Use several images for first localization. Recomended for indoor locations. | false |
 | **Send Only Features** | Process images with neural network. Mandatory for production-ready apps. | true |
