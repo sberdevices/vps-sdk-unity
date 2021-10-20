@@ -6,11 +6,15 @@ using UnityEngine.UI;
 
 public class TestVPSStatus : MonoBehaviour
 {
-	public VPSLocalisationService VPS;
+	private VPSLocalisationService VPS;
 	public Image imageStatus;
 
-	IEnumerator Start()
+	private IEnumerator Start()
 	{
+		VPS = FindObjectOfType<VPSLocalisationService>();
+		if (!VPS)
+			yield break;
+
 		// Waiting for Mobile Vps to load 
 		yield return new WaitUntil(() => VPS.IsReady());
 
@@ -31,7 +35,7 @@ public class TestVPSStatus : MonoBehaviour
 		StartCoroutine(resetImageStatus());
 	}
 
-	IEnumerator resetImageStatus()
+	public IEnumerator resetImageStatus()
 	{
 		yield return new WaitForSeconds(1);
 		imageStatus.color = Color.white;

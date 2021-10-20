@@ -5,7 +5,6 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ARVRLab.ARVRLab.VPSService.JSONs;
-using Asyncoroutine;
 using UnityEngine;
 
 namespace ARVRLab.VPSService
@@ -16,13 +15,13 @@ namespace ARVRLab.VPSService
     public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api for seria photo localization
+        // api for serial photo localization
         private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api for one photo localisation
         private string api_path = "vps/api/v1/job";
 
         private int aloneTimeout = 4;
-        private int seriaTimeout = 12;
+        private int serialTimeout = 12;
 
         private LocationState locationState = new LocationState();
 
@@ -31,12 +30,9 @@ namespace ARVRLab.VPSService
             serverUrl = url;
         }
 
-        /// <summary>
-        /// Send requst: image and meta
-        /// </summary>
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -61,12 +57,9 @@ namespace ARVRLab.VPSService
             yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
         }
 
-        /// <summary>
-        /// Send requst: meta and mobileVPS result
-        /// </summary>
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path);
+            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -85,14 +78,9 @@ namespace ARVRLab.VPSService
             yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
         }
 
-        /// <summary>
-        /// Send requst: photo seria and meta 
-        /// </summary>
-        /// <returns>The vps localization request.</returns>
-        /// <param name="data">Data.</param>
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
         {
-            string uri = Path.Combine(serverUrl, api_path_firstloc);
+            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -117,36 +105,27 @@ namespace ARVRLab.VPSService
                 HttpContent meta = new StringContent(data[i].meta);
                 form.Add(meta, "mes" + i);
             }
-            yield return Task.Run(() => SendRequest(uri, form, seriaTimeout)).AsCoroutine();
+            yield return Task.Run(() => SendRequest(uri, form, serialTimeout)).AsCoroutine();
         }
 
-        /// <summary>
-        /// Get latest request status
-        /// </summary>
-        /// <returns>The status.</returns>
         public LocalisationStatus GetStatus()
         {
             return locationState.Status;
         }
 
-        /// <summary>
-        /// Get latest request error
-        /// </summary>
-        /// <returns>The error code.</returns>
         public ErrorCode GetErrorCode()
         {
             return locationState.Error;
         }
 
-        /// <summary>
-        /// Get latest request responce
-        /// </summary>
-        /// <returns>The responce.</returns>
         public LocalisationResult GetResponce()
         {
             return locationState.Localisation;
         }
 
+        /// <summary>
+        /// Create name for image from current date and time
+        /// </summary>
         private string CreateFileName()
         {
             string file = "";
@@ -156,6 +135,9 @@ namespace ARVRLab.VPSService
             return file;
         }
 
+        /// <summary>
+        /// Convert Texture2D to byte array
+        /// </summary>
         private byte[] GetByteArrayFromImage(Texture2D image)
         {
             byte[] bytesOfImage = image.EncodeToJPG(100);
@@ -186,7 +168,7 @@ namespace ARVRLab.VPSService
                     var result = client.PostAsync(uri, form);
 
                     resultContent = result.Result.Content.ReadAsStringAsync().Result;
-                    VPSLogger.Log(LogLevel.DEBUG, resultContent);
+                    VPSLogger.LogFormat(LogLevel.DEBUG, "Server answer: {0}", resultContent);
                 }
                 catch
                 {

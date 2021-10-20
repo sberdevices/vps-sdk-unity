@@ -24,7 +24,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             IServiceGPS gps = Provider.GetGPS();
 
-            GPSData gpsData = gps.GetGPSData();
+            GPSData gpsData = gps != null ? gps.GetGPSData() : new GPSData();
 
             double lat = gpsData.Latitude;
             double lon = gpsData.Longitude;
@@ -32,7 +32,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             float accuracy = gpsData.Accuracy;
             double locationTimeStamp = gpsData.Timestamp;
 
-            CompassData gpsCompass = gps.GetCompassData();
+            CompassData gpsCompass = gps != null ? gps.GetCompassData() : new CompassData();
 
             float heading = gpsCompass.Heading;
             float headingAccuracy = gpsCompass.Accuracy;
@@ -50,8 +50,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             var attrib = new RequestAttributes
             {
-                //id = System.Guid.NewGuid().ToString(),
-
                 location = new RequestLocation()
                 {
                     type = relative_type,
@@ -71,7 +69,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         accuracy = headingAccuracy,
                         timestamp = compassTimeStamp
                     },
-
 
                     clientCoordinateSystem = "unity",
 
@@ -93,7 +90,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 #if UNITY_EDITOR
                     mirrorY = false
 #else
-                    mirrorY = true // на устройстве обязательно отражать
+                    mirrorY = true
 #endif
 
                 },
@@ -144,7 +141,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             var communicationStruct = CollectDataAttributes(Provider, forceVPS, sendOnlyFeatures);
             var json = JsonUtility.ToJson(communicationStruct);
 
-            VPSLogger.Log(LogLevel.DEBUG, json);
+            VPSLogger.LogFormat(LogLevel.DEBUG, "Json to send: {0}", json);
             return json;
         }
 
@@ -168,12 +165,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                                             communicationStruct.data.attributes.location.relative.pitch,
                                             communicationStruct.data.attributes.location.relative.yaw),
                 Img_id = checkImgId ? id : -1,
-                //GpsLatitude = communicationStruct.data.attributes.location.gps.latitude,
-                //GpsLongitude = communicationStruct.data.attributes.location.gps.longitude,
                 GuidPointcloud = communicationStruct.data.attributes.location.location_id,
-                //Heading = communicationStruct.data.attributes.location.compass.heading,
-                //Accuracy = communicationStruct.data.attributes.location.gps.accuracy,
-                //Timestamp = communicationStruct.data.attributes.location.gps.timestamp
             };
 
             LocationState request = new LocationState

@@ -12,8 +12,8 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class LocalizationImagesCollector
     {
-        // Number of photos in seria
-        private int photosInSeria;
+        // Number of photos in serial
+        private int photosInSerial;
         // List of photo, meta and poses
         private List<RequestLocalizationData> localizationData;
         // Using angle or timeout between photos?
@@ -29,16 +29,16 @@ namespace ARVRLab.VPSService
         private const float MaxAngleZ = 30;
 
         public static event System.Action OnPhotoAdded;
-        public static event System.Action OnSeriaIsReady;
+        public static event System.Action OnSerialIsReady;
 
         System.Diagnostics.Stopwatch stopWatch;
         float neuronTime = 0;
 
-        public LocalizationImagesCollector(int PhotosInSeria, bool usingAngle = false)
+        public LocalizationImagesCollector(int PhotosInSerial, bool usingAngle = false)
         {
-            photosInSeria = PhotosInSeria;
+            photosInSerial = PhotosInSerial;
             localizationData = new List<RequestLocalizationData>();
-            for (int i = 0; i < photosInSeria; i++)
+            for (int i = 0; i < photosInSerial; i++)
             {
                 localizationData.Add(new RequestLocalizationData());
             }
@@ -54,8 +54,8 @@ namespace ARVRLab.VPSService
         {
             var tracking = provider.GetTracking();
 
-            VPSLogger.Log(LogLevel.DEBUG, "Start collect photo");
-            for (int i = 0; i < photosInSeria; i++)
+            VPSLogger.Log(LogLevel.DEBUG, "Start collect photo serial");
+            for (int i = 0; i < photosInSerial; i++)
             {
                 if (i != 0)
                 {
@@ -82,7 +82,7 @@ namespace ARVRLab.VPSService
                 OnPhotoAdded?.Invoke();
                 predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;
             }
-            OnSeriaIsReady?.Invoke();
+            OnSerialIsReady?.Invoke();
         }
 
         public List<RequestLocalizationData> GetLocalizationData()
@@ -111,7 +111,7 @@ namespace ARVRLab.VPSService
                 NativeArray<byte> featureExtractorInput = camera.GetBuffer(mobileVPS.imageFeatureExtractorRequirements);
                 if (featureExtractorInput == null || featureExtractorInput.Length == 0)
                 {
-                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray");
+                    VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray for FeatureExtractor");
                     yield break;
                 }
 

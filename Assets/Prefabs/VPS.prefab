@@ -1,5 +1,91 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1902949979
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1902949980}
+  - component: {fileID: 1902949984}
+  - component: {fileID: 1902949982}
+  - component: {fileID: 1902949981}
+  m_Layer: 0
+  m_Name: MockSeriaData
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1902949980
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 8690752167743118258}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1902949984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18c2dc93a39a643459821e2598be66b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arFoundationApplyer: {fileID: 8690752167743118256}
+  desiredResolution: {x: 960, y: 540}
+  format: 3
+  PhotosInSerial: 5
+--- !u!114 &1902949982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7823e6ecdaaf846a380791ece4320198, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FakeTextures:
+  - {fileID: 2800000, guid: 64e157b4d67584066a35a7f32c2bc3ca, type: 3}
+  - {fileID: 2800000, guid: f3ed2cd8cf440464a9e43197e9aec5d7, type: 3}
+  - {fileID: 2800000, guid: e11a17e34f9704bdeab7f58cf81e0803, type: 3}
+  - {fileID: 2800000, guid: 1505074142acb4fa48788dd73f76fbe5, type: 3}
+  - {fileID: 2800000, guid: a4904af6532cc495da398b5be9ab83d8, type: 3}
+--- !u!114 &1902949981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1902949979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd02725ba891a49449e75fd0f61396f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImagesPath: /Users/admin/arnavigation/Modules/VPSServise/Assets/Images/Serias
+  CustomPoses:
+  - {fileID: 4900000, guid: 324eca03f84b749038c60f59568b3d23, type: 3}
+  - {fileID: 4900000, guid: 1611df46d19da4fac872fbbf9c977ed5, type: 3}
+  - {fileID: 4900000, guid: e110b8661bb764d0ea29ec3123988ed1, type: 3}
+  - {fileID: 4900000, guid: bc5ae4925084547cdaf0368dbffdaf36, type: 3}
+  - {fileID: 4900000, guid: b15ab672e822b403d9c49b2ccc09ef25, type: 3}
 --- !u!1 &8690752167743118268
 GameObject:
   m_ObjectHideFlags: 0
@@ -11,6 +97,7 @@ GameObject:
   - component: {fileID: 8690752167743118258}
   - component: {fileID: 8690752167743118269}
   - component: {fileID: 8690752167743118256}
+  - component: {fileID: 135908775}
   m_Layer: 0
   m_Name: VPS
   m_TagString: Untagged
@@ -31,6 +118,7 @@ Transform:
   m_Children:
   - {fileID: 8690752168016233487}
   - {fileID: 8690752169563304424}
+  - {fileID: 1902949980}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -47,7 +135,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   StartOnAwake: 1
-  provider: {fileID: 8690752168016233484}
+  UseRuntimeProvider: 0
+  RuntimeProvider: {fileID: 8690752168016233484}
+  MockProvider: {fileID: 8690752169563304428}
+  UsePhotoSeries: 0
+  SendOnlyFeatures: 1
+  AlwaysForce: 1
+  SendGPS: 1
+  defaultUrl: https://vps.arvr.sberlabs.com/polytech-pub
+  defaultBuildingGuid: Polytech
+  UseCustomUrl: 0
+  CustomUrl: 
 --- !u!114 &8690752167743118256
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,6 +160,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxInterpolationDistance: 5
   LerpSpeed: 5
+  RotateOnlyY: 1
+--- !u!114 &135908775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8690752167743118268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82991a3474d064efd8159c69fda25141, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  VPS: {fileID: 8690752167743118269}
+  ResetKeyCode: 0
 --- !u!1 &8690752168016233486
 GameObject:
   m_ObjectHideFlags: 0
@@ -109,6 +222,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752167743118256}
+  desiredResolution: {x: 960, y: 540}
+  format: 3
+  PhotosInSerial: 5
 --- !u!114 &8690752168016233475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,7 +271,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8690752169563304424}
   - component: {fileID: 8690752169563304428}
-  - component: {fileID: 8690752169563304431}
   - component: {fileID: 8690752169563304430}
   - component: {fileID: 8690752169563304425}
   m_Layer: 0
@@ -192,20 +307,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752167743118256}
---- !u!114 &8690752169563304431
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8690752169563304427}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed06d6416b04d408c86713f3aae87128, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Latitude: 54.875
-  Longitude: 48.6543
+  desiredResolution: {x: 960, y: 540}
+  format: 3
+  PhotosInSerial: 5
 --- !u!114 &8690752169563304430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,4 +334,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4da887eb656d49b1bcf46ee3ca5260c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FakeTexture: {fileID: 2800000, guid: d68701fb8abd04deda002617eb9f1bf7, type: 3}
+  LoadingType: 0
+  FakeTexture: {fileID: 2800000, guid: 9ccc251cd489446c69484cae3a92b023, type: 3}
+  ImageLocalPath: InternalTestPhotos/bootcamp.jpg

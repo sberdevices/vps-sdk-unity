@@ -5,7 +5,6 @@ using UnityEngine.XR.ARSubsystems;
 
 namespace ARVRLab.VPSService
 {
-    // поменять имя файл
     public class VPSTextureRequirement
     {
         public int Width;
@@ -19,6 +18,9 @@ namespace ARVRLab.VPSService
             Format = format;
         }
 
+        /// <summary>
+        /// Create ConversionParams to convert XRCpuImage to Texture2D
+        /// </summary>
         public XRCpuImage.ConversionParams GetConversionParams(XRCpuImage image)
         {
             XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, Format);
@@ -27,6 +29,9 @@ namespace ARVRLab.VPSService
             return conversionParams;
         }
 
+        /// <summary>
+        /// Calculate rect in the center of the image to crop
+        /// </summary>
         public RectInt GetCropRect(int width, int height, float cropCoefficient)
         {
             int requiredWidth = width;
@@ -48,6 +53,9 @@ namespace ARVRLab.VPSService
             return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
         }
 
+        /// <summary>
+        /// Convert TextureFormat to channels count
+        /// </summary>
         public int ChannelsCount()
         {
             if (Format == TextureFormat.R8)
@@ -69,6 +77,11 @@ namespace ARVRLab.VPSService
                 VPSTextureRequirement requir = (VPSTextureRequirement)obj;
                 return (Width == requir.Width) && (Height == requir.Height) && (Format == requir.Format);
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return Width.GetHashCode() ^ Height.GetHashCode() ^ Format.GetHashCode();
         }
     }
 }

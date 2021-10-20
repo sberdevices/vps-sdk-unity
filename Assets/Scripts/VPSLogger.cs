@@ -6,6 +6,9 @@ namespace ARVRLab.VPSService
 {
     public enum LogLevel { ERROR, NONE, DEBUG, VERBOSE };
 
+    /// <summary>
+    /// Custom logger with verbose levels
+    /// </summary>
     public static class VPSLogger
     {
 #if VPS_DEBUG

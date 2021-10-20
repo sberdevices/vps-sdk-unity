@@ -9,28 +9,36 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class VPSLocalisationService : MonoBehaviour
     {
-        [Tooltip("Start VPS in OnAwake?")]
+        [Tooltip("Start VPS in OnAwake")]
         public bool StartOnAwake;
 
-        [Tooltip("Which camera, GPS and tracking use")]
-        public ServiceProvider provider;
+        [Header("Providers")]
+        [Tooltip("Which camera, GPS and tracking use for runtime")]
+        public ServiceProvider RuntimeProvider;
+        [Tooltip("Which camera, GPS and tracking use for mock data")]
+        public ServiceProvider MockProvider;
+        private ServiceProvider provider;
 
-        [Tooltip("Use photo seria pipeline?")]
-        public bool UsePhotoSeries;
-        [Tooltip("Send features or photo?")]
-        public bool SendOnlyFeatures;
-        [Tooltip("Always send force vps?")]
-        public bool AlwaysForce;
-        [Tooltip("Send GPS?")]
-        public bool SendGPS;
+        [Tooltip("Use mock provider when VPS service has started")]
+        public bool UseMock = false;
+        [Tooltip("Always use mock provider in Editor, even if UseMock is false")]
+        public bool ForceMockInEditor = true;
 
         [Header("Default VPS Settings")]
-        public string defaultUrl = "https://api.bootcamp.vps.arvr.sberlabs.com/eeb38592-4a3c-4d4b-b4c6-38fd68331521";
-        [Tooltip("eeb38592-4a3c-4d4b-b4c6-38fd68331521, Polytech")]
-        public string defaultBuildingGuid;
+        [Tooltip("Use photo serial pipeline")]
+        public bool UsePhotoSeries;
+        [Tooltip("Send features or photo")]
+        public bool SendOnlyFeatures;
+        [Tooltip("Always send force vps")]
+        public bool AlwaysForce;
+        [Tooltip("Send GPS")]
+        public bool SendGPS;
+
+        [Header("Location Settings")]
+        public string defaultUrl = "https://vps.arvr.sberlabs.com/polytech-pub/";
+        public string defaultBuildingGuid = "Polytech";
 
         [Header("Custom URL")]
-        [Tooltip("Use custom url?")]
         public bool UseCustomUrl;
         public string CustomUrl = "";
 
@@ -57,10 +65,7 @@ namespace ARVRLab.VPSService
         private IEnumerator Start()
         {
             if (!provider)
-            {
-                VPSLogger.Log(LogLevel.ERROR, "Please, select provider for VPS service!");
                 yield break;
-            }
 
             if (UseCustomUrl)
             {
@@ -141,7 +146,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Цas there at least one successful localisation?
+        /// Was there at least one successful localisation?
         /// </summary>
         public bool IsLocalized()
         {
@@ -168,7 +173,10 @@ namespace ARVRLab.VPSService
         /// Reset current tracking
         /// </summary>
         public void ResetTracking()
-        {;
+        {
+            if (!provider)
+                return;
+
             provider.GetARFoundationApplyer()?.ResetTracking();
             provider.GetTracking().ResetTracking();
             VPSLogger.Log(LogLevel.NONE, "Tracking reseted");
@@ -176,14 +184,16 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-            if (provider == null)
+            // check what provider should VPS use
+            var isMockMode = UseMock || Application.isEditor && ForceMockInEditor;
+            provider = isMockMode ? MockProvider : RuntimeProvider;
+
+            if (!provider)
             {
-#if UNITY_EDITOR
-                provider = GetComponentInChildren<FakeCamera>().GetComponent<ServiceProvider>();
-#else
-                provider = GetComponentInChildren<ARFoundationCamera>().GetComponent<ServiceProvider>();
-#endif
+                VPSLogger.Log(LogLevel.ERROR, "Can't load proveder! Select {0} provider for VPS service!");
+                return;
             }
+
             for (var i = 0; i < transform.childCount; i++)
             {
                 transform.GetChild(i).gameObject.SetActive(false);

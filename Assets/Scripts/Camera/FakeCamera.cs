@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
@@ -10,15 +11,19 @@ using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService
 {
+    public enum FakeTextureLoadingType { TEXTURE, IMAGE_PATH };
     /// <summary>
     /// Return FakeTexture image
     /// </summary>
     public class FakeCamera : MonoBehaviour, ICamera
     {
         private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
+        public FakeTextureLoadingType LoadingType;
 
         [Tooltip("Texture for sending")]
         public Texture2D FakeTexture;
+        [Tooltip("Texture for sending")]
+        public string ImageLocalPath;
 
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
@@ -41,19 +46,31 @@ namespace ARVRLab.VPSService
 
         private void OnValidate()
         {
-            if (FakeTexture == null)
-                return;
-
-            FreeBufferMemory();
-            InitBuffers();
-
-            if (Application.isEditor && Application.isPlaying)
+            if (Application.isPlaying)
             {
-                ShowMockFrame(FakeTexture);
-                PrepareApplyer();
+                if (LoadingType == FakeTextureLoadingType.TEXTURE)
+                {
+                    if (FakeTexture == null)
+                        return;
+                }
+                else
+                {
+                    string fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, ImageLocalPath);
+                    FakeTexture.LoadImage(File.ReadAllBytes(fullPath));
+                }
+
+                InitBuffers();
+
+#if UNITY_EDITOR
+                    EditorApplication.delayCall = () => ShowMockFrame(FakeTexture);
+                    PrepareApplyer();
+#endif
             }
         }
 
+        /// <summary>
+        /// Init all buffers from image by requrements
+        /// </summary>
         private void InitBuffers()
         {
             if (buffers == null || buffers.Count == 0)
@@ -117,6 +134,9 @@ namespace ARVRLab.VPSService
             FreeBufferMemory();
         }
 
+        /// <summary>
+        /// Free all buffers
+        /// </summary>
         private void FreeBufferMemory()
         {
             if (buffers == null)
@@ -135,6 +155,9 @@ namespace ARVRLab.VPSService
             return resizeCoef;
         }
 
+        /// <summary>
+        /// Rotate FakeTexture and copy the red channel to green and blue
+        /// </summary>
         private Texture2D Preprocess(TextureFormat format)
         {
             Color32[] original = FakeTexture.GetPixels32();
@@ -180,6 +203,9 @@ namespace ARVRLab.VPSService
             return rotatedTexture;
         }
 
+        /// <summary>
+        /// Create mock frame on the background
+        /// </summary>
         private void ShowMockFrame(Texture mockTexture)
         {
             if (!mockImage)
@@ -191,7 +217,7 @@ namespace ARVRLab.VPSService
                 var camera = FindObjectOfType<Camera>();
                 if (!camera)
                 {
-                    VPSLogger.Log(LogLevel.ERROR, "No virtual camera on scene!");
+                    VPSLogger.Log(LogLevel.ERROR, "Virtual camera is not found");
                     return;
                 }
 
@@ -212,16 +238,18 @@ namespace ARVRLab.VPSService
             mockImage.sprite = Sprite.Create((Texture2D)mockTexture, new Rect(0, 0, mockTexture.width, mockTexture.height), Vector2.zero);
         }
 
+        /// <summary>
+        /// Set camera fov for correct rendering 
+        /// </summary>
         private void SetCameraFov()
         {
             Camera camera = Camera.main;
 
-            float h = Screen.height;
+            float h = cameraResolution.x;
             float fy = GetFocalPixelLength().y;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
-            // устанавливает vertical
             camera.fieldOfView = fovY;
         }
     }

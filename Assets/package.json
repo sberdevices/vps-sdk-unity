@@ -1,12 +1,17 @@
 {
-  "name": "com.arvrlab.vpsservice",
-  "displayName": "VPS Service",
-  "version": "1.0.0",
-  "unity": "2019.3",
-  "description": "None",
-  "keywords": [
-    "AR",
-    "Barcode"
-  ],
-  "category": "Unity"
+    "name": "com.arvrlab.vpsservice",
+    "displayName": "VPS Service",
+    "version": "1.0.0",
+    "unity": "2021.1",
+    "description": "Visual Positioning System SDK for Unity apps.",
+    "keywords": [
+        "AR",
+        "VPS"
+    ],
+    "dependencies": {
+        "com.unity.xr.arfoundation": "4.0.2",
+        "com.unity.xr.arcore": "4.0.3",
+        "com.unity.xr.arkit": "4.0.2"
+    },
+    "category": "Unity"
 }

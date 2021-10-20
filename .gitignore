@@ -3,6 +3,7 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
+InternalTestPhotos/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory
@@ -43,3 +44,4 @@ Modules/Unity ARKit Plugin.meta
 Modules/unity-serialize.meta
 Modules/UnityBarcodeScanner.meta
 Modules/Zenject.meta
+/Logs/

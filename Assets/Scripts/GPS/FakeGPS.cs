@@ -15,6 +15,9 @@ namespace ARVRLab.VPSService
 
         private new bool enabled = true;
 
+        /// <summary>
+        /// Create fake gps data
+        /// </summary>
         private GPSData GenerateGPSData()
         {
             var gpsData = new GPSData();
@@ -33,6 +36,9 @@ namespace ARVRLab.VPSService
             return gpsData;
         }
 
+        /// <summary>
+        /// Create fake compass data
+        /// </summary>
         private CompassData GenerateCompassData()
         {
             var compassData = new CompassData();
