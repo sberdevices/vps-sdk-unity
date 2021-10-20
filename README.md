@@ -1,6 +1,6 @@
 # VPS SDK (Unity3D)
 
-This is **Visual Positioning System** SDK for Unity engine. Main features are:
+This is **Visual Positioning System** SDK for Unity3D engine. Main features are:
 - High-precision global user position localization for your AR apps
 - Easy to use public API and prefabs
 - Supports Android and iOS target platforms
@@ -17,8 +17,10 @@ For more information visit [our page on SmartMarket](https://developers.sber.ru/
 
 Just clone this repository. Requires installed [Git-LFS](https://git-lfs.github.com).
 
-Or add git URL to the Package Maneger UI in your project dependencies:
-`https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/`
+You can also add git URL to the Package Maneger UI in your project dependencies:
+```
+https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/
+```
 
 ## Examples
 
@@ -47,3 +49,9 @@ You can adjust VPS behaviour by changing public properties in `VPSLocalisationSe
 | **Send GPS** | Send user GPS location. Recomended for outdoor locations. | true |
 | **Default URL** | URL to your VPS location server. | ... |
 | **Default Building GUID** | Unique ID of your location. | ... |
+
+## License 
+
+This project is licensed under [Sber Public License at-nc-sa v.2](LICENSE).
+
+TensorFlow library is licensed under [Apache License 2.0.](https://github.com/tensorflow/tensorflow/blob/master/LICENSE)
