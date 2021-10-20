@@ -4,7 +4,7 @@ This is **Visual Positioning System** SDK for Unity3D engine. Main features are:
 - High-precision global user position localization for your AR apps
 - Easy to use public API and prefabs
 - Supports Android and iOS target platforms
-- Integration in ARFoundation (for ARCore and ARKit)
+- Integration in ARFoundation (ARCore and ARKit)
 
 For more information visit [our page on SmartMarket](https://developers.sber.ru/portal/tools/visual-positioning-system-sdk). If you want access to other VPS locations or want to scan your own proprerty, please contact us at <arvrlab@sberbank.ru>.
 
@@ -24,7 +24,9 @@ https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/
 
 ## Examples
 
-SDK includes an example scene with basic setup and graphics. Load project in Unity Editor and open `Scenes/TestScene`. You can start this scene in Editor or build on your device.
+SDK includes an example scene with basic setup and graphics. Load project in Unity Editor and open `Scenes/TestScene`. 
+
+You can run this scene in Editor or build it on your mobile device.
 
 ## Usage
 
