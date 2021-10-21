@@ -1,17 +1,14 @@
 {
     "name": "com.arvrlab.vpsservice",
     "displayName": "VPS Service",
-    "version": "1.0.0",
+    "version": "0.3.2",
     "unity": "2021.1",
     "description": "Visual Positioning System SDK for Unity apps.",
-    "keywords": [
-        "AR",
-        "VPS"
-    ],
+    "license": "Sber Public License at-nc-sa v.2",
+    "licensesUrl": "https://sberdevices.github.io/open-license/license",
     "dependencies": {
         "com.unity.xr.arfoundation": "4.0.2",
         "com.unity.xr.arcore": "4.0.3",
         "com.unity.xr.arkit": "4.0.2"
-    },
-    "category": "Unity"
+    }
 }

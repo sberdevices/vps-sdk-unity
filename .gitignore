@@ -3,7 +3,6 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
-InternalTestPhotos/
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory
@@ -35,13 +34,8 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
-Assets/Resources/Buildings.meta
-Modules/AR Barcode.meta
-Modules/ArNavigationPlanTool.meta
-Modules/opencvforunity.meta
-Modules/touchscript.meta
-Modules/Unity ARKit Plugin.meta
-Modules/unity-serialize.meta
-Modules/UnityBarcodeScanner.meta
-Modules/Zenject.meta
+
+# Custom
 /Logs/
+.vsconfig
+/InternalTestPhotos/
