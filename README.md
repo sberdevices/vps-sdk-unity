@@ -17,14 +17,14 @@ For more information visit [our page on SmartMarket](https://developers.sber.ru/
 
 Just clone this repository. Requires installed [Git-LFS](https://git-lfs.github.com).
 
-You can also add git URL to the Package Maneger UI in your project dependencies:
+You can also add git URL to the **Unity Package Manager** UI in your project dependencies:
 ```
 https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/
 ```
 
 ## Examples
 
-SDK includes an example scene with basic setup and graphics. Load project in Unity Editor and open `Scenes/TestScene`. 
+SDK includes an example scene with a basic VPS setup and graphics. Load project in Unity Editor and open `Scenes/TestScene`. 
 
 You can run this scene in Editor or build it on your mobile device.
 
@@ -38,7 +38,7 @@ You can also enable `Mock Mode` for device builds. Just toggle `Use Mock` proper
 
 ### VPS Settings
 
-You can adjust VPS behaviour by changing public properties in `VPSLocalisationService` component:
+You can adjust VPS behaviour by changing public properties in the `VPSLocalisationService` component:
 
 | Property Name | Description | Default |
 | ------ | ------ | ------ |
