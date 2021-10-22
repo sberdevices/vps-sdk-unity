@@ -19,7 +19,7 @@ Just clone this repository. Requires installed [Git-LFS](https://git-lfs.github.
 
 You can also add git URL to the **Unity Package Manager** UI in your project dependencies:
 ```
-https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets/
+https://github.com/sberdevices/vps-sdk-unity.git?path=/Assets
 ```
 
 ## Examples
