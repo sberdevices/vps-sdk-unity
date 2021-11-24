@@ -173,7 +173,8 @@ namespace ARVRLab.VPSService
                 // remember current pose
                 arRFoundationApplyer?.LocalisationStart();
 
-                Meta = DataCollector.CollectData(provider, !isCalibration, sendOnlyFeatures);
+                var metaMsg = DataCollector.CollectData(provider, !isCalibration, sendOnlyFeatures);
+                Meta = DataCollector.Serialize(metaMsg);
 
                 requestVPS.SetUrl(settings.Url);
 
@@ -192,6 +193,12 @@ namespace ARVRLab.VPSService
                         continue;
                     }
 
+                    if (DebugUtils.SaveImagesLocaly)
+                    {
+                        VPSLogger.Log(LogLevel.VERBOSE, "Saving FeatureExtractor image before sending...");
+                        DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, "features");
+                    }
+
                     NativeArray<byte> encoderInput = camera.GetBuffer(mobileVPS.imageEncoderRequirements);
                     if (encoderInput == null || encoderInput.Length == 0)
                     {
@@ -199,6 +206,13 @@ namespace ARVRLab.VPSService
                         yield return null;
                         continue;
                     }
+
+                    if (DebugUtils.SaveImagesLocaly)
+                    {
+                        VPSLogger.Log(LogLevel.VERBOSE, "Saving Encoder image before sending...");
+                        DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, "encoder");
+                    }
+
                     System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
                     stopWatch.Start();
 
@@ -239,6 +253,12 @@ namespace ARVRLab.VPSService
                         VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                         yield return null;
                         continue;
+                    }
+
+                    if (DebugUtils.SaveImagesLocaly)
+                    {
+                        VPSLogger.Log(LogLevel.VERBOSE, "Saving image before sending...");
+                        DebugUtils.SaveDebugImage(Image, metaMsg);
                     }
 
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Request...");

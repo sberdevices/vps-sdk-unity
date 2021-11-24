@@ -11,7 +11,13 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     /// </summary>
     public static class DataCollector
     {
-        private static RequestStruct CollectDataAttributes(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        /// <summary>
+        /// Create request structure from providers data
+        /// </summary>
+        /// <returns>The data.</returns>
+        /// <param name="Provider">Provider.</param>
+        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
+        public static RequestStruct CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
@@ -131,15 +137,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         }
 
         /// <summary>
-        /// Serialize all data in json
+        /// Serialize request to json
         /// </summary>
-        /// <returns>The data.</returns>
-        /// <param name="Provider">Provider.</param>
-        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static string CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        public static string Serialize(RequestStruct meta)
         {
-            var communicationStruct = CollectDataAttributes(Provider, forceVPS, sendOnlyFeatures);
-            var json = JsonUtility.ToJson(communicationStruct);
+            var json = JsonUtility.ToJson(meta);
 
             VPSLogger.LogFormat(LogLevel.DEBUG, "Json to send: {0}", json);
             return json;
