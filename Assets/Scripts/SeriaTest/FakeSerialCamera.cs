@@ -48,7 +48,7 @@ namespace ARVRLab.VPSService
 
             InitBuffers();
 
-            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.x;
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y; 
         }
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace ARVRLab.VPSService
                 convertTexture = Preprocess(FakeTextures[Counter], req.Format);
                 if (convertTexture.width != req.Width || convertTexture.height != req.Height)
                 {
-                    RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, req.Width / req.Height);
-                    convertTexture = CropScale.CropTexture(convertTexture, new Vector2(inputRect.height, inputRect.width), CropOptions.CUSTOM, inputRect.x, inputRect.y);
-                    convertTexture = CropScale.ScaleTexture(convertTexture, req.Width, req.Height);
+                    RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, ((float)req.Height) / ((float)req.Width));
+                    convertTexture = CropScale.CropTexture(convertTexture, new Vector2(inputRect.height, inputRect.width), req.Format, CropOptions.CUSTOM, inputRect.x, inputRect.y);
+                    convertTexture = CropScale.ScaleTexture(convertTexture, req.Width, req.Height, req.Format);
                 }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
@@ -74,7 +74,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1444.24768066f, 1444.24768066f);
+            return new Vector2(1444.24768066f * resizeCoef, 1444.24768066f * resizeCoef);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -97,7 +97,7 @@ namespace ARVRLab.VPSService
         public Vector2 GetPrincipalPoint()
         {
             VPSTextureRequirement req = buffers.FirstOrDefault().Key;
-            return new Vector2(req.Width, req.Height);
+            return new Vector2(req.Width * resizeCoef, req.Height * resizeCoef);
         }
 
         public bool IsCameraReady()
@@ -136,48 +136,31 @@ namespace ARVRLab.VPSService
         /// </summary>
         private Texture2D Preprocess(Texture2D FakeTexture, TextureFormat format)
         {
-            Color32[] original = FakeTexture.GetPixels32();
-            Color32[] rotated = new Color32[original.Length];
             int w = FakeTexture.width;
             int h = FakeTexture.height;
 
-            int iRotated, iOriginal;
-
-            for (int j = 0; j < h; ++j)
-            {
-                for (int i = 0; i < w; ++i)
-                {
-                    iRotated = (i + 1) * h - j - 1;
-                    iOriginal = j * w + i;
-                    rotated[iRotated] = original[iOriginal];
-                }
-            }
-
             bool onlyFeatures = FindObjectOfType<VPSLocalisationService>().SendOnlyFeatures;
-            Texture2D rotatedTexture;
             if (onlyFeatures)
             {
-                rotatedTexture = new Texture2D(h, w, format, false);
-                for (int i = 0; i < h; i++)
+                Texture2D rotatedTexture = new Texture2D(w, h, format, false);
+                for (int i = 0; i < w; i++)
                 {
-                    for (int j = 0; j < w; j++)
+                    for (int j = 0; j < h; j++)
                     {
-                        Color pixel = FakeTexture.GetPixel(j, i);
+                        Color pixel = FakeTexture.GetPixel(i, j);
                         pixel.g = 0;
                         pixel.b = 0;
-                        rotatedTexture.SetPixel(h - i - 1, w - j - 1, pixel);
+                        rotatedTexture.SetPixel(i, j, pixel);
                     }
                 }
+
+                rotatedTexture.Apply();
+                return rotatedTexture;
             }
             else
             {
-                rotatedTexture = new Texture2D(h, w, format, false);
-                rotatedTexture.SetPixels32(rotated);
+                return FakeTexture;
             }
-
-            rotatedTexture.Apply();
-
-            return rotatedTexture;
         }
 
         /// <summary>
@@ -193,6 +176,11 @@ namespace ARVRLab.VPSService
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
             camera.fieldOfView = fovY;
+        }
+
+        public VPSOrientation GetOrientation()
+        {
+            return VPSOrientation.Portrait;
         }
     }
 }

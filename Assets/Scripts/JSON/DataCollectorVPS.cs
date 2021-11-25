@@ -46,13 +46,14 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
-            float resizeCoef = Provider.GetCamera().GetResizeCoefficient();
 
             const string userId = "user_id";
             if (!PlayerPrefs.HasKey(userId))
             {
                 PlayerPrefs.SetString(userId, System.Guid.NewGuid().ToString());
             }
+
+            int orient = sendOnlyFeatures ? 0 : (int)Provider.GetCamera().GetOrientation();
 
             var attrib = new RequestAttributes
             {
@@ -88,25 +89,20 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         yaw = pose.rotation.eulerAngles.z
                     }
                 },
-
+                
                 imageTransform = new ImageTransform
                 {
-                    orientation = sendOnlyFeatures ? 1 : 0,
+                    orientation = orient,
                     mirrorX = false,
-#if UNITY_EDITOR
                     mirrorY = false
-#else
-                    mirrorY = true
-#endif
-
                 },
 
                 intrinsics = new Intrinsics
                 {
-                    fx = sendOnlyFeatures ? FocalPixelLength.y * resizeCoef : FocalPixelLength.x * resizeCoef,
-                    fy = sendOnlyFeatures ? FocalPixelLength.x * resizeCoef : FocalPixelLength.y * resizeCoef,
-                    cx = sendOnlyFeatures ? PrincipalPoint.y * resizeCoef : PrincipalPoint.x * resizeCoef,
-                    cy = sendOnlyFeatures ? PrincipalPoint.x * resizeCoef : PrincipalPoint.y * resizeCoef
+                    fx = FocalPixelLength.x,
+                    fy = FocalPixelLength.y,
+                    cx = PrincipalPoint.x,
+                    cy = PrincipalPoint.y
                 },
 
                 forced_localization = forceVPS,

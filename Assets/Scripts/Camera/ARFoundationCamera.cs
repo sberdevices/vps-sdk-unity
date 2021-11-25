@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -22,11 +23,12 @@ namespace ARVRLab.VPSService
         private NativeArray<XRCameraConfiguration> configurations;
 
         private SimpleJob job;
+        private RotateJob rotateJob;
 
         public static Semaphore semaphore = new Semaphore(1);
 
         private bool isReady = false;
-        private float resizeCoef = 1.0f;
+        private DeviceOrientation currentOrientation;
 
         private void Awake()
         {
@@ -50,6 +52,7 @@ namespace ARVRLab.VPSService
         private IEnumerator Start()
         {   
             job = new SimpleJob();
+            rotateJob = new RotateJob();
 
             while (configurations.Length == 0)
             {
@@ -79,9 +82,6 @@ namespace ARVRLab.VPSService
                 isReady = true;
 
                 cameraManager.currentConfiguration = hdConfig;
-
-                yield return new WaitWhile(() => buffers == null || buffers.Count == 0);
-                resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)hdConfig.width;
             } 
         }
 
@@ -110,7 +110,15 @@ namespace ARVRLab.VPSService
                 // Convert XRCpuImage to texture
                 foreach (var req in buffers.Keys)
                 {
-                    image.Convert(req.GetConversionParams(image), new IntPtr(buffers[req].GetUnsafePtr()), buffers[req].Length);
+                    if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
+                    {
+                        image.Convert(req.GetConversionParams(image, req.Height, req.Width), new IntPtr(buffers[req].GetUnsafePtr()), buffers[req].Length);
+                    }
+                    else
+                    {
+                        image.Convert(req.GetConversionParams(image, req.Width, req.Height), new IntPtr(buffers[req].GetUnsafePtr()), buffers[req].Length);
+                    }
+                    RotateImage(req);
                 }
             }
             catch (Exception ex)
@@ -131,7 +139,6 @@ namespace ARVRLab.VPSService
             {
                 texture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
             }
-            
             texture.LoadRawTextureData(GetBuffer(requir));
             texture.Apply();
 
@@ -154,10 +161,27 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
+            if (buffers == null || buffers.Count == 0 || !cameraManager.currentConfiguration.HasValue)
+                return Vector2.zero;
+
             XRCameraIntrinsics intrins;
             if (cameraManager.TryGetIntrinsics(out intrins))
             {
-                return intrins.focalLength;
+                VPSTextureRequirement req = buffers.FirstOrDefault().Key;
+                float cameraHeight = (float)cameraManager.currentConfiguration.Value.height;
+
+                if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
+                {
+                    float resizeCoef = req.Width / cameraHeight;
+                    return new Vector2(intrins.focalLength.x * resizeCoef,
+                        intrins.focalLength.y * resizeCoef);
+                }
+                else
+                {
+                    float resizeCoef = req.Height / cameraHeight;
+                    return new Vector2(intrins.focalLength.x * resizeCoef,
+                        intrins.focalLength.y * resizeCoef);
+                }
             }
 
             return Vector2.zero;
@@ -165,13 +189,8 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
-            XRCameraIntrinsics intrins;
-            if (cameraManager.TryGetIntrinsics(out intrins))
-            {
-                return intrins.principalPoint;
-            }
-
-            return Vector2.zero;
+            VPSTextureRequirement req = buffers.FirstOrDefault().Key;
+            return new Vector2(req.Width / 2f, req.Height / 2f);
         }
 
         public bool IsCameraReady()
@@ -182,6 +201,26 @@ namespace ARVRLab.VPSService
         public NativeArray<byte> GetBuffer(VPSTextureRequirement requir)
         {
             return buffers[requir];
+        }
+
+        private void RotateImage(VPSTextureRequirement requir)
+        {
+            rotateJob.width = requir.Height;
+            rotateJob.height = requir.Width;
+
+            rotateJob.orientation = currentOrientation;
+            rotateJob.input = buffers[requir];
+            rotateJob.output = new NativeArray<byte>(buffers[requir].Length, Allocator.TempJob);
+
+            JobHandle handle = rotateJob.Schedule(buffers[requir].Length, 64);
+            handle.Complete();
+
+            if (handle.IsCompleted)
+            {
+                buffers[requir].CopyFrom(rotateJob.output);
+            }
+
+            rotateJob.output.Dispose();
         }
 
         /// <summary>
@@ -219,9 +258,54 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public float GetResizeCoefficient()
+        private struct RotateJob : IJobParallelFor
         {
-            return resizeCoef;
+            public int width, height;
+            public NativeArray<byte> input;
+            public NativeArray<byte> output;
+            public DeviceOrientation orientation;
+
+            private int x, y;
+
+            public void Execute(int i)
+            {
+                switch (orientation)
+                {
+                    case DeviceOrientation.LandscapeRight:
+                        // don't rotate
+                        output[i] = input[i];
+                        break;
+                    case DeviceOrientation.LandscapeLeft:
+                        // rotate 180
+                        output[width * height - i - 1] = input[i];
+                        break;
+                    case DeviceOrientation.Portrait:
+                        // rotete 90 clockwise
+                        x = i / width;
+                        y = i % width;
+                        output[y * height + height - x - 1] = input[i];
+                        break;
+                    case DeviceOrientation.PortraitUpsideDown:
+                        // rotete 90 anticlockwise
+                        x = i / width;
+                        y = i % width;
+                        output[(width - y - 1) * height + x] = input[i];
+                        break;
+                }
+            }
+        }
+
+        public VPSOrientation GetOrientation()
+        {
+            return VPSOrientation.Portrait;
+        }
+
+        private void Update()
+        {
+            if (Input.deviceOrientation != DeviceOrientation.FaceDown
+                && Input.deviceOrientation != DeviceOrientation.FaceUp
+                && Input.deviceOrientation != DeviceOrientation.Unknown)
+                currentOrientation = Input.deviceOrientation;
         }
     }
 }

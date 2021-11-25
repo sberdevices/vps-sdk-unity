@@ -35,15 +35,25 @@ namespace ARVRLab.VPSService
             var msgID = metaMsg.data.id;
 
             string fileName;
+            string metaName;
             if (suffix == null)
+            {
                 fileName = $"{msgID}.jpg";
+                metaName = $"{msgID}.json";
+            }
             else
+            {
                 fileName = $"{msgID}_{suffix}.jpg";
+                metaName = $"{msgID}_{suffix}.json";
+            }
 
             var path = Path.Combine(Application.persistentDataPath, fileName);
 
             var jpg = image.EncodeToJPG(100);
             File.WriteAllBytes(path, jpg);
+
+            path = Path.Combine(Application.persistentDataPath, metaName);
+            File.WriteAllText(path, DataCollector.Serialize(metaMsg));
 
             VPSLogger.Log(LogLevel.DEBUG, $"Saved camera image: {path}");
         }

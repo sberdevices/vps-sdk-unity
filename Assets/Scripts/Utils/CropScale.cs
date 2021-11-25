@@ -31,7 +31,7 @@ public static class CropScale
     /// <param name="width">New width</param>
     /// <param name="height">New height</param>
     /// <returns>Scaled texture</returns>
-    public static Texture2D ScaleTexture(Texture2D texture, int width, int height)
+    public static Texture2D ScaleTexture(Texture2D texture, int width, int height, TextureFormat format)
     {
         Color[] sourceColors = texture.GetPixels();
         Color[] newColors = new Color[width * height];
@@ -50,7 +50,7 @@ public static class CropScale
                 newColors[offset + j] = ColorLerpUnclamped(ColorLerpUnclamped(sourceColors[colorY1 + xFloor], sourceColors[colorY1 + xFloor + 1], xLerp), ColorLerpUnclamped(sourceColors[colorY2 + xFloor], sourceColors[colorY2 + xFloor + 1], xLerp), i * ratioY - yFloor);
             }
         }
-        texture.Resize(width, height);
+        texture.Resize(width, height, format, false);
         texture.SetPixels(newColors);
         texture.Apply();
         sourceColors = null;
@@ -75,14 +75,14 @@ public static class CropScale
     /// <param name="x">Offset x for custom crop (begin from top right)</param>
     /// <param name="y">Offset y for custom crop (begin from top right)</param>
     /// <returns>Cropped textute</returns>
-    public static Texture2D CropTexture(Texture2D texture, Vector2 crop, CropOptions options = CropOptions.CENTER, int x = 0, int y = 0)
+    public static Texture2D CropTexture(Texture2D texture, Vector2 crop, TextureFormat format, CropOptions options = CropOptions.CENTER, int x = 0, int y = 0)
     {
         if (crop.x < 0f || crop.y < 0f)
         {
             return texture;
         }
         Rect sizes = new Rect();
-        Texture2D result = new Texture2D((int)crop.x, (int)crop.y);
+        Texture2D result = new Texture2D((int)crop.x, (int)crop.y, format, false);
         if (crop.x != 0f && crop.y != 0f)
         {
             sizes.x = 0;

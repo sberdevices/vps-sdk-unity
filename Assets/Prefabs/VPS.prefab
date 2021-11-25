@@ -46,8 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752167743118256}
-  desiredResolution: {x: 960, y: 540}
-  format: 3
+  desiredResolution: {x: 540, y: 960}
+  format: 63
   PhotosInSerial: 5
 --- !u!114 &1902949982
 MonoBehaviour:
@@ -135,9 +135,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   StartOnAwake: 1
-  UseRuntimeProvider: 0
   RuntimeProvider: {fileID: 8690752168016233484}
   MockProvider: {fileID: 8690752169563304428}
+  UseMock: 0
+  ForceMockInEditor: 1
   UsePhotoSeries: 0
   SendOnlyFeatures: 1
   AlwaysForce: 1
@@ -222,8 +223,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752167743118256}
-  desiredResolution: {x: 960, y: 540}
-  format: 3
+  desiredResolution: {x: 540, y: 960}
+  format: 63
   PhotosInSerial: 5
 --- !u!114 &8690752168016233475
 MonoBehaviour:
@@ -307,8 +308,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arFoundationApplyer: {fileID: 8690752167743118256}
-  desiredResolution: {x: 960, y: 540}
-  format: 3
+  desiredResolution: {x: 540, y: 960}
+  format: 63
   PhotosInSerial: 5
 --- !u!114 &8690752169563304430
 MonoBehaviour:
