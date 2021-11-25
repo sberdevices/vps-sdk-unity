@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    public enum VPSOrientation { LandscapeLeft, Portrait, LandscapeRight, PortraitUpsideDown }
+
     public interface ICamera
     {
         /// <summary>
@@ -32,8 +34,8 @@ namespace ARVRLab.VPSService
         /// </summary>
         NativeArray<byte> GetBuffer(VPSTextureRequirement requir);
         /// <summary>
-        /// Get resize coefficient for intrinsic matrix
+        /// Get device orientation
         /// </summary>
-        float GetResizeCoefficient();
+        VPSOrientation GetOrientation();
     }
 }

@@ -10,8 +10,8 @@ namespace ARVRLab.VPSService
         public ARFoundationApplyer arFoundationApplyer;
 
         [Tooltip("Target photo resolution")]
-        public Vector2Int desiredResolution = new Vector2Int(960, 540);
-        public TextureFormat format = TextureFormat.RGB24;
+        public Vector2Int desiredResolution = new Vector2Int(540, 960);
+        public TextureFormat format = TextureFormat.R8;
 
         [Tooltip("Number photos in serial")]
         [SerializeField]

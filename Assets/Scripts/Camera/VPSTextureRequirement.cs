@@ -21,11 +21,11 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Create ConversionParams to convert XRCpuImage to Texture2D
         /// </summary>
-        public XRCpuImage.ConversionParams GetConversionParams(XRCpuImage image)
+        public XRCpuImage.ConversionParams GetConversionParams(XRCpuImage image, int width, int height)
         {
-            XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, Format);
-            conversionParams.inputRect = GetCropRect(image.width, image.height, ((float)Height) / ((float)Width));
-            conversionParams.outputDimensions = new Vector2Int(Width, Height);
+            XRCpuImage.ConversionParams conversionParams = new XRCpuImage.ConversionParams(image, Format, XRCpuImage.Transformation.MirrorY);
+            conversionParams.inputRect = GetCropRect(image.width, image.height, ((float)height) / ((float)width));
+            conversionParams.outputDimensions = new Vector2Int(width, height);
             return conversionParams;
         }
 
@@ -34,20 +34,42 @@ namespace ARVRLab.VPSService
         /// </summary>
         public RectInt GetCropRect(int width, int height, float cropCoefficient)
         {
-            int requiredWidth = width;
-            int requiredHeight = (int)(width * cropCoefficient);
+            int requiredWidth;
+            int requiredHeight;
             int xpos = 0;
             int ypos = 0;
 
-            if (requiredHeight > height)
+            if (Screen.orientation == ScreenOrientation.Portrait)
             {
-                requiredHeight = height;
-                requiredWidth = (int)(width * (1 / cropCoefficient));
-                xpos = (width - requiredWidth) / 2;
+                requiredWidth = width;
+                requiredHeight = (int)(width * cropCoefficient);
+
+                if (requiredHeight > height)
+                {
+                    requiredHeight = height;
+                    requiredWidth = (int)(width * (1 / cropCoefficient));
+                    xpos = (width - requiredWidth) / 2;
+                }
+                else
+                {
+                    ypos = (height - requiredHeight) / 2;
+                }
             }
             else
             {
-                ypos = (height - requiredHeight) / 2;
+                requiredHeight = height; 
+                requiredWidth = (int)(height / cropCoefficient);
+
+                if (requiredWidth > width)
+                {
+                    requiredWidth = width;
+                    requiredHeight = (int)(height * (1 * cropCoefficient));
+                    ypos = (height - requiredHeight) / 2;
+                }
+                else
+                {
+                    xpos = (width - requiredWidth) / 2;
+                }
             }
 
             return new RectInt(xpos, ypos, requiredWidth, requiredHeight);
