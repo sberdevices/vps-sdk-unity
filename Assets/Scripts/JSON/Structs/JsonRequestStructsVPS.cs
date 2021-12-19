@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
@@ -40,8 +41,10 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 	{
 		public string type;
 		public string location_id;
-		public RequstGps gps;
-		public RequestCompass compass;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public RequstGps gps;
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public RequestCompass compass;
         public string clientCoordinateSystem;
         public LocalPos localPos;
 	}

@@ -112,6 +112,7 @@ namespace ARVRLab.VPSService
         public void StartVPS(SettingsVPS settings)
         {
             StopVps();
+            provider.InitGPS(SendGPS);
 
             if (SendOnlyFeatures)
             {

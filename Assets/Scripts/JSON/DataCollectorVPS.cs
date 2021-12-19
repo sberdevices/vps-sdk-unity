@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ARVRLab.VPSService;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
@@ -28,21 +29,28 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             string relative_type = "relative";
 
+            RequstGps requstGps = null;
+            RequestCompass requestCompass = null;
             IServiceGPS gps = Provider.GetGPS();
-
-            GPSData gpsData = gps != null ? gps.GetGPSData() : new GPSData();
-
-            double lat = gpsData.Latitude;
-            double lon = gpsData.Longitude;
-            double alt = gpsData.Altitude;
-            float accuracy = gpsData.Accuracy;
-            double locationTimeStamp = gpsData.Timestamp;
-
-            CompassData gpsCompass = gps != null ? gps.GetCompassData() : new CompassData();
-
-            float heading = gpsCompass.Heading;
-            float headingAccuracy = gpsCompass.Accuracy;
-            double compassTimeStamp = gpsCompass.Timestamp;
+            if (gps != null)
+            {
+                GPSData gpsData = gps.GetGPSData();
+                requstGps = new RequstGps
+                {
+                    latitude = gpsData.Latitude,
+                    longitude = gpsData.Longitude,
+                    altitude = gpsData.Altitude,
+                    accuracy = gpsData.Accuracy,
+                    timestamp = gpsData.Timestamp
+                };
+                CompassData gpsCompass = gps.GetCompassData();
+                requestCompass = new RequestCompass
+                {
+                    heading = gpsCompass.Heading,
+                    accuracy = gpsCompass.Accuracy,
+                    timestamp = gpsCompass.Timestamp
+                };
+            }
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
@@ -61,21 +69,9 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     type = relative_type,
                     location_id = loc_id,
-                    gps = new RequstGps
-                    {
-                        latitude = lat,
-                        longitude = lon,
-                        altitude = alt,
-                        accuracy = accuracy,
-                        timestamp = locationTimeStamp
-                    },
 
-                    compass = new ARVRLab.VPSService.JSONs.RequestCompass
-                    {
-                        heading = heading,
-                        accuracy = headingAccuracy,
-                        timestamp = compassTimeStamp
-                    },
+                    gps = requstGps,
+                    compass = requestCompass,
 
                     clientCoordinateSystem = "unity",
 
@@ -137,7 +133,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// </summary>
         public static string Serialize(RequestStruct meta)
         {
-            var json = JsonUtility.ToJson(meta);
+            var json = JsonConvert.SerializeObject(meta);
 
             VPSLogger.LogFormat(LogLevel.DEBUG, "Json to send: {0}", json);
             return json;
@@ -150,7 +146,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// <param name="json">Json.</param>
         public static LocationState Deserialize(string json)
         {
-            ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
+            ResponseStruct communicationStruct = JsonConvert.DeserializeObject<ResponseStruct>(json);
 
             int id;
             bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
