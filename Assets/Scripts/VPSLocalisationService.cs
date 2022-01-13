@@ -190,7 +190,7 @@ namespace ARVRLab.VPSService
 
             if (!provider)
             {
-                VPSLogger.Log(LogLevel.ERROR, "Can't load proveder! Select {0} provider for VPS service!");
+                VPSLogger.Log(LogLevel.ERROR, "Can't load proveder! Select provider for VPS service!");
                 return;
             }
 

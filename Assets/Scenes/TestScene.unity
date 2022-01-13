@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.5742193, g: 0.5742193, b: 0.5742193, a: 1}
+  m_IndirectSpecularColor: {r: 0.64697206, g: 0.64697206, b: 0.64697206, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -699,6 +699,49 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 49ba718097c61478eb1b9a3bc7c3834c, type: 3}
+--- !u!1 &1853184941
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1853184943}
+  - component: {fileID: 1853184942}
+  m_Layer: 0
+  m_Name: DebugLogger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1853184942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853184941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b435b67e14ce24c23aeedeb0aec55c7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1853184943
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853184941}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1992666612
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,6 +828,11 @@ PrefabInstance:
     - target: {fileID: 2321813929097405873, guid: 6935d6aa6e7d94d52af230c4800c9919,
         type: 3}
       propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2321813929097405873, guid: 6935d6aa6e7d94d52af230c4800c9919,
+        type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2321813929523334745, guid: 6935d6aa6e7d94d52af230c4800c9919,
@@ -966,5 +1014,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: VPS
       objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultUrl
+      value: https://vps.arvr.sberlabs.com/bootcamp/
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: UsePhotoSeries
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: SendOnlyFeatures
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: defaultBuildingGuid
+      value: eeb38592-4a3c-4d4b-b4c6-38fd68331521
+      objectReference: {fileID: 0}
+    - target: {fileID: 8690752169563304425, guid: f5ddf2d28f817ce42a7d59e707029842,
+        type: 3}
+      propertyPath: FakeTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 0bc546c3d393b4961b45b916c7b16265, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}

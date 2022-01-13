@@ -54,7 +54,16 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
+
+            stopWatch.Stop();
+            TimeSpan requestTS = stopWatch.Elapsed;
+
+            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] ImageVPSRequest {0}", requestTime);
         }
 
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
@@ -75,7 +84,16 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
+
+            stopWatch.Stop();
+            TimeSpan requestTS = stopWatch.Elapsed;
+
+            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSRequest {0}", requestTime);
         }
 
         public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
@@ -105,7 +123,18 @@ namespace ARVRLab.VPSService
                 HttpContent meta = new StringContent(data[i].meta);
                 form.Add(meta, "mes" + i);
             }
+
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             yield return Task.Run(() => SendRequest(uri, form, serialTimeout)).AsCoroutine();
+
+            stopWatch.Stop();
+            TimeSpan requestTS = stopWatch.Elapsed;
+
+            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
+            string comment = data[0].Embedding != null ? "SeriaMVPSRequest" : "SeriaImageVPSRequest";
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", comment, requestTime);
         }
 
         public LocalisationStatus GetStatus()

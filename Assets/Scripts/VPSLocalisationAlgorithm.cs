@@ -135,13 +135,26 @@ namespace ARVRLab.VPSService
                 if (!isCalibration && usingPhotoSeries)
                 {
                     LocalizationImagesCollector imagesCollector = provider.GetImageCollector();
+
+                    System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
                     yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
 
+                    stopWatch.Stop();
+                    TimeSpan collectImagesTS = stopWatch.Elapsed;
+
+                    string collectImagesTime = String.Format("{0:N10}", collectImagesTS.TotalSeconds);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CollectSerialImageTime {0}", collectImagesTime);
+
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Localization Request...");
+                    stopWatch.Start();
                     requestVPS.SetUrl(settings.Url);
 
                     yield return requestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
                     VPSLogger.Log(LogLevel.DEBUG, "VPS Localization answer recieved!");
+
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "LocalizationResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY);
 
                     if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                     {
@@ -165,10 +178,19 @@ namespace ARVRLab.VPSService
                         VPSLogger.LogFormat(LogLevel.DEBUG, "VPS Request Error: {0}", requestVPS.GetErrorCode());
                     }
 
+                    stopWatch.Stop();
+                    TimeSpan fullSeriaRequestTS = stopWatch.Elapsed;
+
+                    string fullSeriaRequestTime = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTime);
+
                     yield return new WaitForSeconds(settings.Timeout - neuronTime);
                     neuronTime = 0;
                     continue;
                 }
+
+                System.Diagnostics.Stopwatch fullStopWatch = new System.Diagnostics.Stopwatch();
+                fullStopWatch.Start();
 
                 // remember current pose
                 arRFoundationApplyer?.LocalisationStart();
@@ -199,14 +221,8 @@ namespace ARVRLab.VPSService
                         yield return null;
                         continue;
                     }
-                    System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-                    stopWatch.Start();
 
                     yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
-
-                    stopWatch.Stop();
-                    neuronTime = stopWatch.Elapsed.Seconds + stopWatch.Elapsed.Milliseconds / 1000f;
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "Neuron time = {0:f3}", neuronTime);
 
                     var preprocessTask = mobileVPS.StartPreprocess(featureExtractorInput, encoderInput);
                     while (!preprocessTask.IsCompleted)
@@ -220,8 +236,19 @@ namespace ARVRLab.VPSService
 
                     var imageFeatureExtractorTask = mobileVPS.GetFeaturesAsync();
                     var imageEncoderTask = mobileVPS.GetGlobalDescriptorAsync();
+
+                    System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+                    stopWatch.Start();
+
                     while (!imageFeatureExtractorTask.IsCompleted || !imageEncoderTask.IsCompleted)
                         yield return null;
+
+                    stopWatch.Stop();
+                    TimeSpan neuronTS = stopWatch.Elapsed;
+                    neuronTime = neuronTS.Seconds + neuronTS.Milliseconds / 1000f;
+
+                    string neuronTimeStr = String.Format("{0:N10}", neuronTS.TotalSeconds);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullNeuronWorkTime {0}", neuronTimeStr);
 
                     ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
@@ -245,7 +272,14 @@ namespace ARVRLab.VPSService
                     yield return requestVPS.SendVpsRequest(Image, Meta);
                 }
 
+                fullStopWatch.Stop();
+                TimeSpan fullRequestTS = fullStopWatch.Elapsed;
+
+                string fullRequestTime = String.Format("{0:N10}", fullRequestTS.TotalSeconds);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullAlone{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullRequestTime);
+
                 VPSLogger.Log(LogLevel.DEBUG, "VPS answer recieved!");
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "LocalizationResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY);
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {

@@ -41,6 +41,9 @@ namespace ARVRLab.VPSService
 
         public MobileVPS()
         {
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var imageFeatureExtractorOptions = new InterpreterOptions
             {
                 threads = 2
@@ -84,6 +87,12 @@ namespace ARVRLab.VPSService
 
             imageFeatureExtractorResult = new ImageFeatureExtractorResult(kpOutputShape, dOutputShape, sOutputShape);
             imageEncoderResult = new ImageEncoderResult(gdOutputShape);
+
+            stopWatch.Stop();
+            TimeSpan mvpsInitTS = stopWatch.Elapsed;
+
+            string mvpsInitTime = String.Format("{0:N10}", mvpsInitTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSInitTime {0}", mvpsInitTime);
         }
 
         ~MobileVPS()
@@ -94,6 +103,7 @@ namespace ARVRLab.VPSService
 
         public void StopTask()
         {
+            VPSLogger.Log(LogLevel.DEBUG, "MVPS task has been canceled");
             if (tokenSource != null)
             {
                 tokenSource.Cancel();
@@ -114,6 +124,9 @@ namespace ARVRLab.VPSService
 
         private bool Preprocess(NativeArray<byte> featureExtractorBuffer, NativeArray<byte> encoderBuffer)
         {
+            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             if (!ConvertToFloat(featureExtractorBuffer, ref imageFeatureExtractorInput, imageFeatureExtractorRequirements))
                 return false;
             if (imageFeatureExtractorRequirements.Equals(imageEncoderRequirements))
@@ -125,6 +138,12 @@ namespace ARVRLab.VPSService
                 if (!ConvertToFloat(encoderBuffer, ref imageEncoderInput, imageEncoderRequirements))
                     return false;
             }
+
+            stopWatch.Stop();
+            TimeSpan mvpsPreprocessTS = stopWatch.Elapsed;
+
+            string mvpsPreprocessTime = String.Format("{0:N10}", mvpsPreprocessTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSPreprocessTime {0}", mvpsPreprocessTime);
 
             return true;
         }
@@ -153,7 +172,7 @@ namespace ARVRLab.VPSService
 
                 if (cancelToken.IsCancellationRequested)
                 {
-                    VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
+                    VPSLogger.Log(LogLevel.DEBUG, "MVPS task has been canceled");
                     return false;
                 }
             }
@@ -166,7 +185,7 @@ namespace ARVRLab.VPSService
             imageFeatureExtractorInterpreter.SetInputTensorData(0, imageFeatureExtractorInput);
             if (cancelToken.IsCancellationRequested)
             {
-                VPSLogger.Log(LogLevel.DEBUG, "Mobile VPS task canceled");
+                VPSLogger.Log(LogLevel.DEBUG, "MVPS task has been canceled");
                 return null;
             }
             else
@@ -183,10 +202,8 @@ namespace ARVRLab.VPSService
             TimeSpan neuronRunTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string neuronRunTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                neuronRunTS.Hours, neuronRunTS.Minutes, neuronRunTS.Seconds,
-                neuronRunTS.Milliseconds / 10);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "FeatureExtractor RunTime {0}", neuronRunTime);
+            string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorRunTime {0}", neuronRunTime);
 
             imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPointsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptorsOutput);
@@ -203,10 +220,8 @@ namespace ARVRLab.VPSService
             TimeSpan postProcessTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string postProcessTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                postProcessTS.Hours, postProcessTS.Minutes, postProcessTS.Seconds,
-                postProcessTS.Milliseconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "FeatureExtractor PostProcessTime {0}", postProcessTime);
+            string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorPostProcessTime {0}", postProcessTime);
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -234,10 +249,8 @@ namespace ARVRLab.VPSService
             TimeSpan neuronRunTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string neuronRunTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                neuronRunTS.Hours, neuronRunTS.Minutes, neuronRunTS.Seconds,
-                neuronRunTS.Milliseconds / 10);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Encoder RunTime {0}", neuronRunTime);
+            string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderRunTime {0}", neuronRunTime);
 
             imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptorOutput);
 
@@ -250,10 +263,8 @@ namespace ARVRLab.VPSService
             TimeSpan postProcessTS = stopWatch.Elapsed;
 
             // Format and display the TimeSpan value.
-            string postProcessTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                postProcessTS.Hours, postProcessTS.Minutes, postProcessTS.Seconds,
-                postProcessTS.Milliseconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Encoder PostProcessTime {0}", postProcessTime);
+            string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderPostProcessTime {0}", postProcessTime);
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;

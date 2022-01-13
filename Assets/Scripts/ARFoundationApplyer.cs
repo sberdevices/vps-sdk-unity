@@ -71,6 +71,8 @@ namespace ARVRLab.VPSService
         /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization rotation: {0}", localisation.LocalRotation);
             LocalisationResult correctedResult = localisation;
 
             correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
@@ -88,6 +90,9 @@ namespace ARVRLab.VPSService
 
             StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
 
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization rotation: {0}", correctedResult.LocalRotation);
+
             return correctedResult;
         }
 
@@ -98,6 +103,8 @@ namespace ARVRLab.VPSService
         /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
         {
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received serial localization position: {0}", localisation.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received serial localization rotation: {0}", localisation.LocalRotation);
             LocalisationResult correctedResult = localisation;
 
             correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
@@ -114,6 +121,9 @@ namespace ARVRLab.VPSService
             StopAllCoroutines();
 
             StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
+
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected serial localization position: {0}", correctedResult.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected serial localization rotation: {0}", correctedResult.LocalRotation);
 
             return correctedResult;
         }
