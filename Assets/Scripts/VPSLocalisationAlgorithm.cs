@@ -145,7 +145,7 @@ namespace ARVRLab.VPSService
                     TimeSpan collectImagesTS = stopWatch.Elapsed;
 
                     string collectImagesTime = String.Format("{0:N10}", collectImagesTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CollectSerialImageTime {0}", collectImagesTime);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CollectSerial{0}Time {1}", sendOnlyFeatures ? "MVPS" : "Image", collectImagesTime);
 
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Localization Request...");
                     stopWatch.Start();
@@ -154,7 +154,7 @@ namespace ARVRLab.VPSService
                     yield return requestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
                     VPSLogger.Log(LogLevel.DEBUG, "VPS Localization answer recieved!");
 
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "LocalizationResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationSerialResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
 
                     if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                     {
@@ -279,7 +279,7 @@ namespace ARVRLab.VPSService
                 VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullAlone{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullRequestTime);
 
                 VPSLogger.Log(LogLevel.DEBUG, "VPS answer recieved!");
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "LocalizationResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationAloneResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {
