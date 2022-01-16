@@ -133,7 +133,7 @@ namespace ARVRLab.VPSService
             TimeSpan requestTS = stopWatch.Elapsed;
 
             string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            string comment = data[0].Embedding != null ? "SeriaMVPSRequest" : "SeriaImageVPSRequest";
+            string comment = data[0].Embedding != null ? "SerialMVPSRequest" : "SerialImageVPSRequest";
             VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", comment, requestTime);
         }
 

@@ -144,7 +144,7 @@ namespace ARVRLab.VPSService
                     stopWatch.Stop();
                     TimeSpan collectImagesTS = stopWatch.Elapsed;
 
-                    string collectImagesTime = String.Format("{0:N10}", collectImagesTS.TotalSeconds);
+                    string collectImagesTime = String.Format("{0:N10}", collectImagesTS.TotalSeconds - imagesCollector.TotalWaitingTime);
                     VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CollectSerial{0}Time {1}", sendOnlyFeatures ? "MVPS" : "Image", collectImagesTime);
 
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Localization Request...");
@@ -181,7 +181,7 @@ namespace ARVRLab.VPSService
                     stopWatch.Stop();
                     TimeSpan fullSeriaRequestTS = stopWatch.Elapsed;
 
-                    string fullSeriaRequestTime = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds);
+                    string fullSeriaRequestTime = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds - imagesCollector.TotalWaitingTime);
                     VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTime);
 
                     yield return new WaitForSeconds(settings.Timeout - neuronTime);
@@ -248,7 +248,7 @@ namespace ARVRLab.VPSService
                     neuronTime = neuronTS.Seconds + neuronTS.Milliseconds / 1000f;
 
                     string neuronTimeStr = String.Format("{0:N10}", neuronTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullNeuronWorkTime {0}", neuronTimeStr);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] TotalInferenceTime {0}", neuronTimeStr);
 
                     ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
@@ -276,10 +276,10 @@ namespace ARVRLab.VPSService
                 TimeSpan fullRequestTS = fullStopWatch.Elapsed;
 
                 string fullRequestTime = String.Format("{0:N10}", fullRequestTS.TotalSeconds);
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullAlone{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullRequestTime);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSingle{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullRequestTime);
 
                 VPSLogger.Log(LogLevel.DEBUG, "VPS answer recieved!");
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationAloneResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationSingleResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
 
                 if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
                 {

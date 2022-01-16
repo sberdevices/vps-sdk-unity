@@ -32,6 +32,8 @@ namespace ARVRLab.VPSService
         public static event System.Action OnPhotoAdded;
         public static event System.Action OnSerialIsReady;
 
+        public float TotalWaitingTime = 0;
+
         System.Diagnostics.Stopwatch stopWatch;
         float neuronTime = 0;
 
@@ -73,15 +75,26 @@ namespace ARVRLab.VPSService
                     }
                     else
                     {
-                        yield return new WaitForSeconds(timeout - neuronTime);
+                        float newTimeout = timeout - neuronTime;
+                        VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] SerialPhotoTimeout {0}", newTimeout);
+                        yield return new WaitForSeconds(newTimeout);
                         neuronTime = 0;
                     }
                 }
 
-                yield return new WaitUntil(() => CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles));
-
                 System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();
+
+                yield return new WaitUntil(() => CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles));
+
+                stopWatch.Stop();
+                TimeSpan waitingTS = stopWatch.Elapsed;
+
+                string waitingTime = String.Format("{0:N10}", waitingTS.TotalSeconds);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] TotalWaitingTime {0}", waitingTime);
+                TotalWaitingTime += (float)waitingTS.TotalSeconds;
+
+                stopWatch.Restart();
 
                 yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
 
@@ -95,6 +108,7 @@ namespace ARVRLab.VPSService
                 predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;
             }
             OnSerialIsReady?.Invoke();
+            TotalWaitingTime = 0;
         }
 
         public List<RequestLocalizationData> GetLocalizationData()
@@ -156,10 +170,10 @@ namespace ARVRLab.VPSService
 
                 stopWatch.Stop();
                 TimeSpan neuronTS = stopWatch.Elapsed;
-                neuronTime = neuronTS.Seconds + neuronTS.Milliseconds / 1000f;
+                neuronTime = (float)neuronTS.TotalSeconds;
 
                 string neuronTimeStr = String.Format("{0:N10}", neuronTS.TotalSeconds);
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullNeuronWorkTime {0}", neuronTimeStr);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] TotalInferenceTime {0}", neuronTimeStr);
 
                 ARFoundationCamera.semaphore.Free();
                 Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
