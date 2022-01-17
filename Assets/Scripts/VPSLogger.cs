@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -66,16 +67,22 @@ namespace ARVRLab.VPSService
             string finalString = string.Format("[{0}] {1}", System.DateTime.Now, logString);
             if (logsStreamWriter == null)
             {
+                FileStream fs;
                 if (!File.Exists(path))
                 {
-                    File.Create(path);
+                    fs = File.Create(path);
 #if UNITY_ANDROID && !UNITY_EDITOR
         RefreshAndroidFile(path);
 #endif
                 }
-                logsStreamWriter = new StreamWriter(path, true);
+                else
+                {
+                    fs = File.Open(path, FileMode.Append);
+                }
+                logsStreamWriter = new StreamWriter(fs);
             }
             logsStreamWriter.WriteLine(finalString);
+            logsStreamWriter.Flush();
         }
 #if UNITY_ANDROID && !UNITY_EDITOR
     static void RefreshAndroidFile(string path) 
