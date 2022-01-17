@@ -21,6 +21,7 @@ namespace ARVRLab.VPSService
 #endif
 
         private static string path = Path.Combine(Application.persistentDataPath, "Log.txt");
+        private static StreamWriter logsStreamWriter;
 
         public static void Log(LogLevel level, object message)
         {
@@ -62,15 +63,19 @@ namespace ARVRLab.VPSService
 
         private static void AddToLogFile(string logString)
         {
-            string finalString = string.Format("[{0}] {1}\n", System.DateTime.Now, logString);
-            if (!File.Exists(path))
+            string finalString = string.Format("[{0}] {1}", System.DateTime.Now, logString);
+            if (logsStreamWriter == null)
             {
-                File.Create(path);
+                if (!File.Exists(path))
+                {
+                    File.Create(path);
 #if UNITY_ANDROID && !UNITY_EDITOR
         RefreshAndroidFile(path);
 #endif
+                }
+                logsStreamWriter = new StreamWriter(path, true);
             }
-            File.AppendAllText(path, finalString);
+            logsStreamWriter.WriteLine(finalString);
         }
 #if UNITY_ANDROID && !UNITY_EDITOR
     static void RefreshAndroidFile(string path) 
