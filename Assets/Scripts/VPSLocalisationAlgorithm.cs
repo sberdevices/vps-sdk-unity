@@ -184,6 +184,9 @@ namespace ARVRLab.VPSService
                     string fullSeriaRequestTime = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds - imagesCollector.TotalWaitingTime);
                     VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTime);
 
+                    string fullSeriaRequestTimeWithWaiting = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTimeWithWaiting {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTimeWithWaiting);
+
                     yield return new WaitForSeconds(settings.Timeout - neuronTime);
                     neuronTime = 0;
                     continue;

@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: arvrlab
-  productName: VPSServise
+  productName: VPSServiseMetrics
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -134,10 +134,10 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.3.2
+  bundleVersion: 0.0.2
   preloadedAssets:
-  - {fileID: 4800000, guid: e7c77f6eaab324a819efdc13b8125a39, type: 3}
-  - {fileID: 2469857932885625709, guid: c4793d07cfa8c46ce8e15fffcbd6cf60, type: 2}
+  - {fileID: -5929913108890525856, guid: c4793d07cfa8c46ce8e15fffcbd6cf60, type: 2}
+  - {fileID: 4800000, guid: c9f956787b1d945e7b36e0516201fc76, type: 3}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -155,8 +155,8 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.arvrlab.VPSServise
-    iPhone: com.arvrlab.VPSServise
+    Android: com.arvrlab.VPSServiseMetrics
+    iPhone: com.arvrlab.VPSServiseMetrics
   buildNumber:
     Standalone: 0
     iPhone: 0
