@@ -63,19 +63,18 @@ namespace ARVRLab.VPSService
         private static void AddToLogFile(string logString)
         {
             string finalString = string.Format("[{0}] {1}\n", System.DateTime.Now, logString);
-            File.AppendAllText(path, finalString);
+            if (!File.Exists(path))
+            {
+                File.Create(path);
 #if UNITY_ANDROID && !UNITY_EDITOR
         RefreshAndroidFile(path);
 #endif
+            }
+            File.AppendAllText(path, finalString);
         }
 #if UNITY_ANDROID && !UNITY_EDITOR
     static void RefreshAndroidFile(string path) 
     {
-        if (!File.Exists(path))
-        {
-            return;
-        }
-
         using (AndroidJavaClass jcUnityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         using (AndroidJavaObject joActivity = jcUnityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
         using (AndroidJavaObject joContext = joActivity.Call<AndroidJavaObject>("getApplicationContext"))
