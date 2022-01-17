@@ -64,11 +64,11 @@ namespace ARVRLab.VPSService
         {
             string finalString = string.Format("[{0}] {1}\n", System.DateTime.Now, logString);
             File.AppendAllText(path, finalString);
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         RefreshAndroidFile(path);
 #endif
         }
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
     static void RefreshAndroidFile(string path) 
     {
         if (!File.Exists(path))

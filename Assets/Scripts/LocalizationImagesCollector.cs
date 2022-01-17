@@ -55,6 +55,7 @@ namespace ARVRLab.VPSService
         /// <param name="provider">Provider.</param>
         public IEnumerator StartCollectPhoto(ServiceProvider provider, bool sendOnlyFeatures)
         {
+            TotalWaitingTime = 0;
             var tracking = provider.GetTracking();
 
             VPSLogger.Log(LogLevel.DEBUG, "Start collect photo serial");
@@ -78,6 +79,7 @@ namespace ARVRLab.VPSService
                         float newTimeout = timeout - neuronTime;
                         VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] SerialPhotoTimeout {0}", newTimeout);
                         yield return new WaitForSeconds(newTimeout);
+                        TotalWaitingTime += newTimeout;
                         neuronTime = 0;
                     }
                 }
@@ -85,7 +87,8 @@ namespace ARVRLab.VPSService
                 System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();
 
-                yield return new WaitUntil(() => CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles));
+                while (!CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles))
+                    yield return null;
 
                 stopWatch.Stop();
                 TimeSpan waitingTS = stopWatch.Elapsed;
@@ -108,7 +111,6 @@ namespace ARVRLab.VPSService
                 predAngle = tracking.GetLocalTracking().Rotation.eulerAngles.y;
             }
             OnSerialIsReady?.Invoke();
-            TotalWaitingTime = 0;
         }
 
         public List<RequestLocalizationData> GetLocalizationData()
