@@ -1,3 +1,5 @@
+![logo](./img/logo.png)
+
 # VPS SDK (Unity3D)
 
 This is **Visual Positioning System** SDK for Unity3D engine. Main features are:

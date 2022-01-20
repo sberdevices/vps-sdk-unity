@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ARVRLab.VPSService;
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
@@ -11,7 +12,13 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     /// </summary>
     public static class DataCollector
     {
-        private static RequestStruct CollectDataAttributes(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        /// <summary>
+        /// Create request structure from providers data
+        /// </summary>
+        /// <returns>The data.</returns>
+        /// <param name="Provider">Provider.</param>
+        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
+        public static RequestStruct CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
@@ -22,25 +29,31 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
             string relative_type = "relative";
 
+            RequstGps requstGps = null;
+            RequestCompass requestCompass = null;
             IServiceGPS gps = Provider.GetGPS();
-
-            GPSData gpsData = gps != null ? gps.GetGPSData() : new GPSData();
-
-            double lat = gpsData.Latitude;
-            double lon = gpsData.Longitude;
-            double alt = gpsData.Altitude;
-            float accuracy = gpsData.Accuracy;
-            double locationTimeStamp = gpsData.Timestamp;
-
-            CompassData gpsCompass = gps != null ? gps.GetCompassData() : new CompassData();
-
-            float heading = gpsCompass.Heading;
-            float headingAccuracy = gpsCompass.Accuracy;
-            double compassTimeStamp = gpsCompass.Timestamp;
+            if (gps != null)
+            {
+                GPSData gpsData = gps.GetGPSData();
+                requstGps = new RequstGps
+                {
+                    latitude = gpsData.Latitude,
+                    longitude = gpsData.Longitude,
+                    altitude = gpsData.Altitude,
+                    accuracy = gpsData.Accuracy,
+                    timestamp = gpsData.Timestamp
+                };
+                CompassData gpsCompass = gps.GetCompassData();
+                requestCompass = new RequestCompass
+                {
+                    heading = gpsCompass.Heading,
+                    accuracy = gpsCompass.Accuracy,
+                    timestamp = gpsCompass.Timestamp
+                };
+            }
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
-            float resizeCoef = Provider.GetCamera().GetResizeCoefficient();
 
             const string userId = "user_id";
             if (!PlayerPrefs.HasKey(userId))
@@ -48,27 +61,17 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 PlayerPrefs.SetString(userId, System.Guid.NewGuid().ToString());
             }
 
+            int orient = sendOnlyFeatures ? 0 : (int)Provider.GetCamera().GetOrientation();
+
             var attrib = new RequestAttributes
             {
                 location = new RequestLocation()
                 {
                     type = relative_type,
                     location_id = loc_id,
-                    gps = new RequstGps
-                    {
-                        latitude = lat,
-                        longitude = lon,
-                        altitude = alt,
-                        accuracy = accuracy,
-                        timestamp = locationTimeStamp
-                    },
 
-                    compass = new ARVRLab.VPSService.JSONs.RequestCompass
-                    {
-                        heading = heading,
-                        accuracy = headingAccuracy,
-                        timestamp = compassTimeStamp
-                    },
+                    gps = requstGps,
+                    compass = requestCompass,
 
                     clientCoordinateSystem = "unity",
 
@@ -82,25 +85,20 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                         yaw = pose.rotation.eulerAngles.z
                     }
                 },
-
+                
                 imageTransform = new ImageTransform
                 {
-                    orientation = sendOnlyFeatures ? 1 : 0,
+                    orientation = orient,
                     mirrorX = false,
-#if UNITY_EDITOR
                     mirrorY = false
-#else
-                    mirrorY = true
-#endif
-
                 },
 
                 intrinsics = new Intrinsics
                 {
-                    fx = sendOnlyFeatures ? FocalPixelLength.y * resizeCoef : FocalPixelLength.x * resizeCoef,
-                    fy = sendOnlyFeatures ? FocalPixelLength.x * resizeCoef : FocalPixelLength.y * resizeCoef,
-                    cx = sendOnlyFeatures ? PrincipalPoint.y * resizeCoef : PrincipalPoint.x * resizeCoef,
-                    cy = sendOnlyFeatures ? PrincipalPoint.x * resizeCoef : PrincipalPoint.y * resizeCoef
+                    fx = FocalPixelLength.x,
+                    fy = FocalPixelLength.y,
+                    cx = PrincipalPoint.x,
+                    cy = PrincipalPoint.y
                 },
 
                 forced_localization = forceVPS,
@@ -131,15 +129,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         }
 
         /// <summary>
-        /// Serialize all data in json
+        /// Serialize request to json
         /// </summary>
-        /// <returns>The data.</returns>
-        /// <param name="Provider">Provider.</param>
-        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static string CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        public static string Serialize(RequestStruct meta)
         {
-            var communicationStruct = CollectDataAttributes(Provider, forceVPS, sendOnlyFeatures);
-            var json = JsonUtility.ToJson(communicationStruct);
+            var json = JsonConvert.SerializeObject(meta);
 
             VPSLogger.LogFormat(LogLevel.DEBUG, "Json to send: {0}", json);
             return json;
@@ -152,7 +146,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// <param name="json">Json.</param>
         public static LocationState Deserialize(string json)
         {
-            ResponseStruct communicationStruct = JsonUtility.FromJson<ResponseStruct>(json);
+            ResponseStruct communicationStruct = JsonConvert.DeserializeObject<ResponseStruct>(json);
 
             int id;
             bool checkImgId = int.TryParse(communicationStruct.data.id, out id);

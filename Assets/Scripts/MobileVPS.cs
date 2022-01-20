@@ -64,13 +64,13 @@ namespace ARVRLab.VPSService
             int[] inputShape = imageFeatureExtractorInterpreter.GetInputTensorInfo(0).shape;
             imageFeatureExtractorInput = new float[inputShape[1], inputShape[2], inputShape[3]];
             TextureFormat format = inputShape[3] == 1 ? TextureFormat.R8 : TextureFormat.RGB24;
-            imageFeatureExtractorRequirements = new VPSTextureRequirement(inputShape[1], inputShape[2], format);
+            imageFeatureExtractorRequirements = new VPSTextureRequirement(inputShape[2], inputShape[1], format);
 
             // ImageEncoder inputs
             inputShape = imageEncoderInterpreter.GetInputTensorInfo(0).shape;
             imageEncoderInput = new float[inputShape[1], inputShape[2], inputShape[3]];
             format = inputShape[3] == 1 ? TextureFormat.R8 : TextureFormat.RGB24;
-            imageEncoderRequirements = new VPSTextureRequirement(inputShape[1], inputShape[2], format);
+            imageEncoderRequirements = new VPSTextureRequirement(inputShape[2], inputShape[1], format);
 
             //keypoints
             int[] kpOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(0).shape;
@@ -160,14 +160,14 @@ namespace ARVRLab.VPSService
 
         private bool ConvertToFloat(NativeArray<byte> input, ref float[,,] result, VPSTextureRequirement requirement)
         {
-            int width = requirement.Height;
             int height = requirement.Width;
+            int width = requirement.Height;
             // for input - convert bytes to float, rotate and mirror image
-            for (int i = 0; i < width; i++)
+            for (int x = 0; x < width; x++) 
             {
-                for (int j = 0; j < height; j++)
+                for (int y = 0; y < height; y++)
                 {
-                    result[height - j - 1, width - i - 1, 0] = (float)(input[((i + 1) * height - j - 1)]);
+                    result[width - x - 1, y, 0] = input[y + x * height];
                 }
 
                 if (cancelToken.IsCancellationRequested)

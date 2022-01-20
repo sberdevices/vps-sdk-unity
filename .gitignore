@@ -39,3 +39,6 @@ sysinfo.txt
 /Logs/
 .vsconfig
 /InternalTestPhotos/
+
+# Other
+.DS_STORE

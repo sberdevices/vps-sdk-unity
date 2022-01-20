@@ -42,6 +42,11 @@ namespace ARVRLab.VPSService
         public bool UseCustomUrl;
         public string CustomUrl = "";
 
+        [Header("Debug")]
+        [Tooltip("Save images in request localy before sending them to server")]
+        [SerializeField]
+        private bool saveImagesLocaly;
+
         private SettingsVPS defaultSettings;
         private VPSPrepareStatus vpsPreparing;
 
@@ -107,6 +112,7 @@ namespace ARVRLab.VPSService
         public void StartVPS(SettingsVPS settings)
         {
             StopVps();
+            provider.InitGPS(SendGPS);
 
             if (SendOnlyFeatures)
             {
@@ -184,6 +190,8 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
+            DebugUtils.SaveImagesLocaly = saveImagesLocaly;
+
             // check what provider should VPS use
             var isMockMode = UseMock || Application.isEditor && ForceMockInEditor;
             provider = isMockMode ? MockProvider : RuntimeProvider;

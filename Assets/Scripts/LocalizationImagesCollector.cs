@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -99,7 +99,7 @@ namespace ARVRLab.VPSService
 
                 stopWatch.Restart();
 
-                yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i]);
+                yield return AddPhoto(provider, sendOnlyFeatures, localizationData[i], i);
 
                 stopWatch.Stop();
                 TimeSpan addPhotoTS = stopWatch.Elapsed;
@@ -118,7 +118,7 @@ namespace ARVRLab.VPSService
             return localizationData;
         }
 
-        private IEnumerator AddPhoto(ServiceProvider provider, bool sendOnlyFeatures, RequestLocalizationData currentData)
+        private IEnumerator AddPhoto(ServiceProvider provider, bool sendOnlyFeatures, RequestLocalizationData currentData, int index)
         {
             ICamera camera = provider.GetCamera();
 
@@ -127,13 +127,16 @@ namespace ARVRLab.VPSService
             // if send features - get them
             byte[] Embedding;
             byte[] ImageBytes;
+
+            // todo: merge this logic with VPSLocalisationAlgorithm
             if (sendOnlyFeatures)
             {
                 MobileVPS mobileVPS = provider.GetMobileVPS();
                 yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
                 ARFoundationCamera.semaphore.TakeOne();
 
-                Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
+                var metaMsg = DataCollector.CollectData(provider, true, sendOnlyFeatures);
+                Meta = DataCollector.Serialize(metaMsg);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
 
                 NativeArray<byte> featureExtractorInput = camera.GetBuffer(mobileVPS.imageFeatureExtractorRequirements);
@@ -143,11 +146,23 @@ namespace ARVRLab.VPSService
                     yield break;
                 }
 
+                if (DebugUtils.SaveImagesLocaly)
+                {
+                    VPSLogger.Log(LogLevel.VERBOSE, "Saving FeatureExtractor image before sending...");
+                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, $"features_{index}");
+                }
+
                 NativeArray<byte> encoderInput = camera.GetBuffer(mobileVPS.imageEncoderRequirements);
                 if (encoderInput == null || encoderInput.Length == 0)
                 {
                     VPSLogger.Log(LogLevel.ERROR, "Cannot take camera image as ByteArray for Encoder");
                     yield break;
+                }
+
+                if (DebugUtils.SaveImagesLocaly)
+                {
+                    VPSLogger.Log(LogLevel.VERBOSE, "Saving Encoder image before sending...");
+                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, $"encoder_{index}");
                 }
 
                 yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
@@ -183,13 +198,20 @@ namespace ARVRLab.VPSService
             }
             else
             {
-                Meta = DataCollector.CollectData(provider, true, sendOnlyFeatures);
+                var metaMsg = DataCollector.CollectData(provider, true, sendOnlyFeatures);
+                Meta = DataCollector.Serialize(metaMsg);
                 pose = provider.GetARFoundationApplyer().GetCurrentPose();
                 Texture2D Image = camera.GetFrame(provider.GetTextureRequirement());
                 if (Image == null)
                 {
                     VPSLogger.Log(LogLevel.ERROR, "Image from camera is not available");
                     yield break;
+                }
+
+                if (DebugUtils.SaveImagesLocaly)
+                {
+                    VPSLogger.Log(LogLevel.VERBOSE, "Saving image before sending...");
+                    DebugUtils.SaveDebugImage(Image, metaMsg);
                 }
 
                 ImageBytes = Image.EncodeToJPG(100);

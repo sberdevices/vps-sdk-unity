@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,7 @@ namespace ARVRLab.VPSService
         public Toggle AlwaysForce;
         public Toggle SendGPS;
         public Toggle Occluder;
+        public Toggle SaveImages;
 
         public Button RestartVPSButton;
         public float PressTime = 2f;
@@ -55,6 +57,7 @@ namespace ARVRLab.VPSService
             AlwaysForce?.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
+            SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
 
             RestartVPSButton.onClick.AddListener(() =>
             {
@@ -75,6 +78,11 @@ namespace ARVRLab.VPSService
             HideToggles();
         }
 
+        private void OnSaveImages(bool saveImages)
+        {
+            DebugUtils.SaveImagesLocaly = saveImages;
+        }
+
         private void Start()
         {
             if (UsePhotoSerial != null)
@@ -89,6 +97,8 @@ namespace ARVRLab.VPSService
                 SendGPS.isOn = VPS.SendGPS;
             if (Occluder != null)
                 Occluder.isOn = false;
+            if (SaveImages != null)
+                SaveImages.isOn = DebugUtils.SaveImagesLocaly;
         }
 
         private void Update()
