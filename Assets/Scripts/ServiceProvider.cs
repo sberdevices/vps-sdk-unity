@@ -41,7 +41,6 @@ namespace ARVRLab.VPSService
             camera = GetComponent<ICamera>();
             textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
 
-            gps = GetComponent<IServiceGPS>();
             tracking = GetComponent<ITracking>();
             imagesCollector = new LocalizationImagesCollector(PhotosInSerial, false);
         }
@@ -52,6 +51,11 @@ namespace ARVRLab.VPSService
             {
                 mobileVPS = new MobileVPS();
             }
+        }
+
+        public void InitGPS(bool useGPS)
+        {
+            gps = useGPS ? GetComponent<IServiceGPS>() : null;
         }
 
         public IServiceGPS GetGPS()

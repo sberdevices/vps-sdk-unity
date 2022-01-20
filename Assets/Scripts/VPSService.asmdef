@@ -1,9 +1,11 @@
 {
     "name": "VPSService",
+    "rootNamespace": "",
     "references": [
         "GUID:a9420e37d7990b54abdef6688edbe313",
         "GUID:92703082f92b41ba80f0d6912de66115",
-        "GUID:57f91c87bc51d4ede8f8f699564b58b6"
+        "GUID:57f91c87bc51d4ede8f8f699564b58b6",
+        "GUID:ea73f805f48068f409cafb2b12726b78"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
