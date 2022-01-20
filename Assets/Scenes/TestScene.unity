@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.6474604, g: 0.6474604, b: 0.6474604, a: 1}
+  m_IndirectSpecularColor: {r: 0.64697206, g: 0.64697206, b: 0.64697206, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -231,7 +231,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &239181121
 Transform:
   m_ObjectHideFlags: 0
@@ -245,6 +245,7 @@ Transform:
   m_Children:
   - {fileID: 966749504}
   - {fileID: 1220837163}
+  - {fileID: 1670876346}
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -773,6 +774,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 49ba718097c61478eb1b9a3bc7c3834c, type: 3}
+--- !u!4 &1670876346 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 49ba718097c61478eb1b9a3bc7c3834c,
+    type: 3}
+  m_PrefabInstance: {fileID: 1670876345}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1853184941
 GameObject:
   m_ObjectHideFlags: 0
@@ -1091,17 +1098,17 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: SendGPS
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultUrl
-      value: https://vps.arvr.sberlabs.com/bootcamp/
+      value: https://vps.arvr.sberlabs.com/polytech/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: UsePhotoSeries
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
@@ -1111,12 +1118,12 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultBuildingGuid
-      value: eeb38592-4a3c-4d4b-b4c6-38fd68331521
+      value: Polytech
       objectReference: {fileID: 0}
     - target: {fileID: 8690752169563304425, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: FakeTexture
       value: 
-      objectReference: {fileID: 2800000, guid: 0bc546c3d393b4961b45b916c7b16265, type: 3}
+      objectReference: {fileID: 2800000, guid: c64cc1a210aae483993451944bee6813, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
