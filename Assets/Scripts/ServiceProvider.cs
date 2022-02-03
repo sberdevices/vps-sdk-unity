@@ -26,6 +26,8 @@ namespace ARVRLab.VPSService
 
         private VPSTextureRequirement textureRequir;
 
+        private string sessionId;
+
         public ICamera GetCamera()
         {
             return camera;
@@ -81,6 +83,17 @@ namespace ARVRLab.VPSService
         public MobileVPS GetMobileVPS()
         {
             return mobileVPS; 
+        }
+
+        public string GetSessionId()
+        {
+            return sessionId;
+        }
+
+        public void ResetSessionId()
+        {
+            sessionId = System.Guid.NewGuid().ToString();
+            VPSLogger.Log(LogLevel.VERBOSE, $"New session: {sessionId}");
         }
     }
 }

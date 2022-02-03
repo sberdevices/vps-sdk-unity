@@ -15,7 +15,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 	{
 		public string id;
 		public string type;
-		public RequestAttributes attributes;
+        public string session_id;
+        public RequestAttributes attributes;
 	}
 
 	[Serializable]

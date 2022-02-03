@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService
 {
@@ -35,6 +36,8 @@ namespace ARVRLab.VPSService
         private string DefaultGuidPointcloud = "";
         private TrackingData trackingData;
 
+        private GameObject ARCamera;
+
         private void Start()
         {
             LocalizationImagesCollector.OnPhotoAdded += IncPhotoCounter;
@@ -44,6 +47,7 @@ namespace ARVRLab.VPSService
             {
                 GuidPointcloud = DefaultGuidPointcloud
             };
+            ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
         }
 
         /// <summary>
@@ -263,9 +267,17 @@ namespace ARVRLab.VPSService
         /// </summary>
         private void UpdateTrackingData()
         {
-            Pose currentPose = MetaParser.Parse(fakeDatas[Counter].Pose.text);
-            trackingData.Position = currentPose.position;
-            trackingData.Rotation = currentPose.rotation;
+            if (fakeDatas[Counter].Pose != null)
+            {
+                Pose currentPose = MetaParser.Parse(fakeDatas[Counter].Pose.text);
+                trackingData.Position = currentPose.position;
+                trackingData.Rotation = currentPose.rotation;
+            }
+            else
+            {
+                trackingData.Position = ARCamera.transform.position;
+                trackingData.Rotation = ARCamera.transform.rotation;
+            }
         }
 
         public void SetGuidPointcloud(string guid)

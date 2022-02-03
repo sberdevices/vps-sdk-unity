@@ -15,6 +15,7 @@ namespace ARVRLab.VPSService
     public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
+        private string api_path_session = "vps/api/v1/first_loc_session/job";
         // api for serial photo localization
         private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api for one photo localisation
@@ -32,7 +33,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsRequest(Texture2D image, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -68,7 +69,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsRequest(byte[] embedding, string meta)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {

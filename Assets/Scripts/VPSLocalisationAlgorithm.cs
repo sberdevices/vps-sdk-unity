@@ -65,6 +65,8 @@ namespace ARVRLab.VPSService
             locationState = new LocationState();
 
             localisationService.StartCoroutine(LocalisationRoutine());
+
+            provider.ResetSessionId();
         }
 
         public void Stop()

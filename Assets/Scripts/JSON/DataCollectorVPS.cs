@@ -117,7 +117,8 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
 
                 type = "job",
 
-                attributes = attrib
+                attributes = attrib,
+                session_id = Provider.GetSessionId()
             };
 
             var communicationStruct = new RequestStruct
