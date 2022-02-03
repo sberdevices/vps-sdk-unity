@@ -1,30 +1,49 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ARVRLab.VPSService
 {
-    public class FakeSerialCamera : MonoBehaviour, ICamera
+    [Serializable]
+    public class FakeData
+    {
+        public Texture2D Texture;
+        public TextAsset Pose;
+    }
+
+    public class FakeSerialCamera : MonoBehaviour, ICamera, ITracking
     {
         private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
+        public FakeTextureLoadingType LoadingType;
 
-        public Texture2D[] FakeTextures;
+        public FakeData[] fakeDatas;
+
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
-
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private int Counter = 0;
 
-        private VPSTextureRequirement textureRequir;
+        private Image mockImage;
         private float resizeCoef = 1.0f;
 
-        private void Awake()
+        private string DefaultGuidPointcloud = "";
+        private TrackingData trackingData;
+
+        private void Start()
         {
             LocalizationImagesCollector.OnPhotoAdded += IncPhotoCounter;
+            PrepareApplyer();
+
+            trackingData = new TrackingData
+            {
+                GuidPointcloud = DefaultGuidPointcloud
+            };
         }
 
         /// <summary>
@@ -33,9 +52,11 @@ namespace ARVRLab.VPSService
         private void IncPhotoCounter()
         {
             Counter++;
-            if (Counter >= FakeTextures.Length)
+            if (Counter >= fakeDatas.Length)
                 Counter = 0;
+
             InitBuffers();
+            UpdateTrackingData();
         }
 
         public void Init(VPSTextureRequirement[] requirements)
@@ -47,8 +68,7 @@ namespace ARVRLab.VPSService
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
-
-            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y; 
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y;
         }
 
         /// <summary>
@@ -61,7 +81,7 @@ namespace ARVRLab.VPSService
 
             foreach (var req in buffers.Keys)
             {
-                convertTexture = Preprocess(FakeTextures[Counter], req.Format);
+                convertTexture = Preprocess(fakeDatas[Counter].Texture, req.Format);
                 if (convertTexture.width != req.Width || convertTexture.height != req.Height)
                 {
                     RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, ((float)req.Height) / ((float)req.Width));
@@ -70,6 +90,13 @@ namespace ARVRLab.VPSService
                 }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
+        }
+
+        private void PrepareApplyer()
+        {
+            var applyer = FindObjectOfType<ARFoundationApplyer>();
+            if (applyer)
+                applyer.RotateOnlyY = false;
         }
 
         public Vector2 GetFocalPixelLength()
@@ -102,7 +129,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return FakeTextures[0] != null;
+            return fakeDatas[0].Texture != null;
         }
 
         private void OnDestroy()
@@ -126,11 +153,6 @@ namespace ARVRLab.VPSService
             buffers.Clear();
         }
 
-        public float GetResizeCoefficient()
-        {
-            return resizeCoef;
-        }
-
         /// <summary>
         /// Rotate FakeTexture and copy the red channel to green and blue
         /// </summary>
@@ -140,9 +162,9 @@ namespace ARVRLab.VPSService
             int h = FakeTexture.height;
 
             bool onlyFeatures = FindObjectOfType<VPSLocalisationService>().SendOnlyFeatures;
+            Texture2D rotatedTexture = new Texture2D(w, h, format, false);
             if (onlyFeatures)
             {
-                Texture2D rotatedTexture = new Texture2D(w, h, format, false);
                 for (int i = 0; i < w; i++)
                 {
                     for (int j = 0; j < h; j++)
@@ -155,12 +177,49 @@ namespace ARVRLab.VPSService
                 }
 
                 rotatedTexture.Apply();
-                return rotatedTexture;
             }
             else
             {
-                return FakeTexture;
+                rotatedTexture.SetPixels(FakeTexture.GetPixels());
+                rotatedTexture.Apply();
             }
+
+            return rotatedTexture;
+        }
+
+        /// <summary>
+        /// Create mock frame on the background
+        /// </summary>
+        private void ShowMockFrame(Texture mockTexture)
+        {
+            if (!mockImage)
+            {
+                var canvasGO = new GameObject("FakeCamera");
+                var canvas = canvasGO.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+
+                var camera = FindObjectOfType<Camera>();
+                if (!camera)
+                {
+                    VPSLogger.Log(LogLevel.ERROR, "Virtual camera is not found");
+                    return;
+                }
+
+                canvas.worldCamera = camera;
+                canvas.planeDistance = camera.farClipPlane - 10f;
+
+                var imgGO = new GameObject("FakeFrame");
+                var imgTransform = imgGO.AddComponent<RectTransform>();
+                imgTransform.SetParent(canvasGO.transform, false);
+
+                imgTransform.anchorMin = Vector2.zero;
+                imgTransform.anchorMax = Vector2.one;
+
+                mockImage = imgGO.AddComponent<Image>();
+                mockImage.preserveAspect = true;
+            }
+
+            mockImage.sprite = Sprite.Create((Texture2D)mockTexture, new Rect(0, 0, mockTexture.width, mockTexture.height), Vector2.zero);
         }
 
         /// <summary>
@@ -181,6 +240,47 @@ namespace ARVRLab.VPSService
         public VPSOrientation GetOrientation()
         {
             return VPSOrientation.Portrait;
+        }
+
+        public void SetDefaultBuilding(string defaultBuilding)
+        {
+            if (trackingData == null)
+            {
+                trackingData = new TrackingData();
+            }
+            trackingData.GuidPointcloud = defaultBuilding;
+            DefaultGuidPointcloud = defaultBuilding;
+        }
+
+        public TrackingData GetLocalTracking()
+        {
+            UpdateTrackingData();
+            return trackingData;
+        }
+
+        /// <summary>
+        /// Write current position and rotation from current file in the structure
+        /// </summary>
+        private void UpdateTrackingData()
+        {
+            Pose currentPose = MetaParser.Parse(fakeDatas[Counter].Pose.text);
+            trackingData.Position = currentPose.position;
+            trackingData.Rotation = currentPose.rotation;
+        }
+
+        public void SetGuidPointcloud(string guid)
+        {
+            trackingData.GuidPointcloud = guid;
+            trackingData.IsLocalisedFloor = true;
+        }
+
+        public void ResetTracking()
+        {
+            if (trackingData != null)
+            {
+                trackingData.GuidPointcloud = DefaultGuidPointcloud;
+                trackingData.IsLocalisedFloor = false;
+            }
         }
     }
 }
