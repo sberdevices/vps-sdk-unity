@@ -121,7 +121,7 @@ namespace ARVRLab.VPSService
                 if (DebugUtils.SaveImagesLocaly)
                 {
                     VPSLogger.Log(LogLevel.VERBOSE, "Saving FeatureExtractor image before sending...");
-                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, $"features_{index}");
+                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg.data.id, $"features_{index}");
                 }
 
                 NativeArray<byte> encoderInput = camera.GetBuffer(mobileVPS.imageEncoderRequirements);
@@ -134,7 +134,10 @@ namespace ARVRLab.VPSService
                 if (DebugUtils.SaveImagesLocaly)
                 {
                     VPSLogger.Log(LogLevel.VERBOSE, "Saving Encoder image before sending...");
-                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, $"encoder_{index}");
+                    DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg.data.id, $"encoder_{index}");
+
+                    // also save json, we are done here
+                    DebugUtils.SaveJson(metaMsg, index.ToString());
                 }
 
                 yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
@@ -161,7 +164,16 @@ namespace ARVRLab.VPSService
                 VPSLogger.LogFormat(LogLevel.VERBOSE, "Neuron time = {0:f3}", neuronTime);
 
                 ARFoundationCamera.semaphore.Free();
-                Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
+                Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores,
+                    imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
+
+
+                if (DebugUtils.SaveImagesLocaly)
+                {
+                    VPSLogger.Log(LogLevel.VERBOSE, "Saving embeding before sending...");
+                    DebugUtils.SaveDebugEmbd(Embedding, metaMsg.data.id);
+                }
+
                 ImageBytes = null;
             }
             else
@@ -179,7 +191,8 @@ namespace ARVRLab.VPSService
                 if (DebugUtils.SaveImagesLocaly)
                 {
                     VPSLogger.Log(LogLevel.VERBOSE, "Saving image before sending...");
-                    DebugUtils.SaveDebugImage(Image, metaMsg);
+                    DebugUtils.SaveDebugImage(Image, metaMsg.data.id);
+                    DebugUtils.SaveJson(metaMsg);
                 }
 
                 ImageBytes = Image.EncodeToJPG(100);
