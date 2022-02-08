@@ -14,15 +14,11 @@ namespace ARVRLab.VPSService
         /// <summary>
         /// Send requst: image and meta
         /// </summary>
-        IEnumerator SendVpsRequest(Texture2D image, string meta);
+        IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback);
         /// <summary>
         /// Send requst: meta and mobileVPS result
         /// </summary>
-        IEnumerator SendVpsRequest(byte[] embedding, string meta);
-        /// <summary>
-        /// Send requst: photo serial and meta 
-        /// </summary>
-        IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data);
+        IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback);
         /// <summary>
         /// Get latest request status
         /// </summary>

@@ -48,24 +48,6 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Get current camera pose
-        /// </summary>
-        public Pose GetCurrentPose()
-        {
-            Vector3 pos = arSessionOrigin.camera.transform.position;
-            Vector3 rot;
-            if (RotateOnlyY)
-            {
-                rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0);
-            }
-            else
-            {
-                rot = arSessionOrigin.camera.transform.eulerAngles;
-            }
-            return new Pose(pos, Quaternion.Euler(rot));
-        }
-
-        /// <summary>
         /// Apply taked transform and return adjusted ARFoundation localisation
         /// </summary>
         /// <returns>The VPS Transform.</returns>
@@ -90,36 +72,6 @@ namespace ARVRLab.VPSService
             StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
 
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.LocalPosition);
-
-            return correctedResult;
-        }
-
-        /// <summary>
-        /// Apply taked transform and return adjusted ARFoundation localisation
-        /// relative to a custom start position
-        /// </summary>
-        /// <returns>The VPS Transform.</returns>
-        public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
-        {
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received serial localization position: {0}", localisation.LocalPosition);
-            LocalisationResult correctedResult = localisation;
-
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
-
-            if (RotateOnlyY)
-            {
-                var qrot = Quaternion.Inverse(CustomStartPose.rotation) * Quaternion.Euler(localisation.LocalRotation);
-                correctedResult.LocalRotation = qrot.eulerAngles;
-            }
-
-            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
-            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
-
-            StopAllCoroutines();
-
-            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
-
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected serial localization position: {0}", correctedResult.LocalPosition);
 
             return correctedResult;
         }

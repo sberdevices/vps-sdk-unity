@@ -40,7 +40,6 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            LocalizationImagesCollector.OnPhotoAdded += IncPhotoCounter;
             PrepareApplyer();
 
             trackingData = new TrackingData
@@ -50,6 +49,8 @@ namespace ARVRLab.VPSService
             ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
         }
 
+
+        // ГДЕТО НАДО ВЫЗЫВАТЬ!
         /// <summary>
         /// Switch to next texture
         /// </summary>

@@ -21,9 +21,7 @@ namespace ARVRLab.VPSService
 
         private SettingsVPS settings;
 
-        private bool usingPhotoSeries;
         private bool sendOnlyFeatures;
-        private bool alwaysForceVPS;
 
         IRequestVPS requestVPS = new HttpClientRequestVPS();
 
@@ -45,15 +43,13 @@ namespace ARVRLab.VPSService
         /// <param name="vps_servise">Parent GameObject, for start coroutine</param>
         /// <param name="vps_provider">Provider to get camera, gps and tracking</param>
         /// <param name="vps_settings">Settings</param>
-        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool usePhotoSeries, bool onlyFeatures,
-                                        bool alwaysForce, bool sendGps)
+        public VPSLocalisationAlgorithm(VPSLocalisationService vps_servise, ServiceProvider vps_provider, SettingsVPS vps_settings, bool onlyFeatures,
+                                        bool sendGps)
         {
             localisationService = vps_servise;
             provider = vps_provider;
 
-            usingPhotoSeries = usePhotoSeries;
             sendOnlyFeatures = onlyFeatures;
-            alwaysForceVPS = alwaysForce;
 
             var gps = provider.GetGPS();
             if (gps != null)
@@ -103,9 +99,9 @@ namespace ARVRLab.VPSService
                 yield break;
             }
 
+            MobileVPS mobileVPS = provider.GetMobileVPS();
             if (sendOnlyFeatures)
             {
-                MobileVPS mobileVPS = provider.GetMobileVPS();
                 camera.Init(new VPSTextureRequirement[] { mobileVPS.imageFeatureExtractorRequirements, mobileVPS.imageEncoderRequirements });
             }
             else
@@ -125,74 +121,8 @@ namespace ARVRLab.VPSService
 
             while (true)
             {
-                yield return new WaitUntil(() => camera.IsCameraReady());
-
-                // send localisation (force) or calibration (not force) request?
-                bool isCalibration;
-                if (alwaysForceVPS)
-                    isCalibration = false;
-                else
-                    isCalibration = tracking.GetLocalTracking().IsLocalisedFloor;
-
-                if (!isCalibration && usingPhotoSeries)
-                {
-                    LocalizationImagesCollector imagesCollector = provider.GetImageCollector();
-
-                    System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-                    stopWatch.Start();
-
-                    yield return imagesCollector.StartCollectPhoto(provider, sendOnlyFeatures);
-
-                    stopWatch.Stop();
-                    TimeSpan collectImagesTS = stopWatch.Elapsed;
-
-                    string collectImagesTime = String.Format("{0:N10}", collectImagesTS.TotalSeconds - imagesCollector.TotalWaitingTime);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CollectSerial{0}Time {1}", sendOnlyFeatures ? "MVPS" : "Image", collectImagesTime);
-
-                    VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Localization Request...");
-                    stopWatch.Start();
-                    requestVPS.SetUrl(settings.Url);
-
-                    yield return requestVPS.SendVpsLocalizationRequest(imagesCollector.GetLocalizationData());
-                    VPSLogger.Log(LogLevel.DEBUG, "VPS Localization answer recieved!");
-
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationSerialResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
-
-                    if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
-                    {
-                        var response = requestVPS.GetResponce();
-                        tracking.SetGuidPointcloud(response.GuidPointcloud);
-
-                        locationState.Status = LocalisationStatus.VPS_READY;
-                        locationState.Error = ErrorCode.NO_ERROR;
-                        locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response, imagesCollector.GetLocalizationData()[response.Img_id].pose);
-                        
-
-                        OnLocalisationHappend?.Invoke(locationState);
-                    }
-                    else
-                    {
-                        locationState.Status = LocalisationStatus.GPS_ONLY;
-                        locationState.Error = requestVPS.GetErrorCode();
-                        locationState.Localisation = null;
-
-                        OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
-                        VPSLogger.LogFormat(LogLevel.DEBUG, "VPS Request Error: {0}", requestVPS.GetErrorCode());
-                    }
-
-                    stopWatch.Stop();
-                    TimeSpan fullSeriaRequestTS = stopWatch.Elapsed;
-
-                    string fullSeriaRequestTime = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds - imagesCollector.TotalWaitingTime);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTime);
-
-                    string fullSeriaRequestTimeWithWaiting = String.Format("{0:N10}", fullSeriaRequestTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSerial{0}RequestTimeWithWaiting {1}", sendOnlyFeatures ? "MVPS" : "Image", fullSeriaRequestTimeWithWaiting);
-
-                    yield return new WaitForSeconds(settings.Timeout - neuronTime);
-                    neuronTime = 0;
-                    continue;
-                }
+                while (!camera.IsCameraReady())
+                    yield return null;
 
                 System.Diagnostics.Stopwatch fullStopWatch = new System.Diagnostics.Stopwatch();
                 fullStopWatch.Start();
@@ -200,7 +130,7 @@ namespace ARVRLab.VPSService
                 // remember current pose
                 arRFoundationApplyer?.LocalisationStart();
 
-                var metaMsg = DataCollector.CollectData(provider, !isCalibration, sendOnlyFeatures);
+                var metaMsg = DataCollector.CollectData(provider, sendOnlyFeatures);
                 Meta = DataCollector.Serialize(metaMsg);
 
                 requestVPS.SetUrl(settings.Url);
@@ -208,8 +138,8 @@ namespace ARVRLab.VPSService
                 // if send features - send them
                 if (sendOnlyFeatures)
                 {
-                    MobileVPS mobileVPS = provider.GetMobileVPS();
-                    yield return new WaitUntil(() => ARFoundationCamera.semaphore.CheckState());
+                    while (!ARFoundationCamera.semaphore.CheckState())
+                        yield return null;
                     ARFoundationCamera.semaphore.TakeOne();
 
                     NativeArray<byte> featureExtractorInput = camera.GetBuffer(mobileVPS.imageFeatureExtractorRequirements);
@@ -240,7 +170,8 @@ namespace ARVRLab.VPSService
                         DebugUtils.SaveDebugImage(featureExtractorInput, mobileVPS.imageFeatureExtractorRequirements, metaMsg, "encoder");
                     }
 
-                    yield return new WaitWhile(() => mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking);
+                    while (mobileVPS.ImageFeatureExtractorIsWorking || mobileVPS.ImageEncoderIsWorking)
+                        yield return null;
 
                     var preprocessTask = mobileVPS.StartPreprocess(featureExtractorInput, encoderInput);
                     while (!preprocessTask.IsCompleted)
@@ -272,7 +203,7 @@ namespace ARVRLab.VPSService
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Request...");
 
-                    yield return requestVPS.SendVpsRequest(Embedding, Meta);
+                    localisationService.StartCoroutine(requestVPS.SendVpsRequest(Embedding, Meta, () => Callback(tracking, arRFoundationApplyer)));
                 }
                 // if not - send only photo and meta
                 else
@@ -293,40 +224,37 @@ namespace ARVRLab.VPSService
                     }
 
                     VPSLogger.Log(LogLevel.DEBUG, "Sending VPS Request...");
-                    yield return requestVPS.SendVpsRequest(Image, Meta);
+                    localisationService.StartCoroutine(requestVPS.SendVpsRequest(Image, Meta, () => Callback(tracking, arRFoundationApplyer)));
                 }
 
-                fullStopWatch.Stop();
-                TimeSpan fullRequestTS = fullStopWatch.Elapsed;
-
-                string fullRequestTime = String.Format("{0:N10}", fullRequestTS.TotalSeconds);
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FullSingle{0}RequestTime {1}", sendOnlyFeatures ? "MVPS" : "Image", fullRequestTime);
-
-                VPSLogger.Log(LogLevel.DEBUG, "VPS answer recieved!");
-                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] LocalizationSingleResult {0}", requestVPS.GetStatus() == LocalisationStatus.VPS_READY ? 1 : 0);
-
-                if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
-                {
-                    var response = requestVPS.GetResponce();
-                    tracking.SetGuidPointcloud(response.GuidPointcloud);
-
-                    locationState.Status = LocalisationStatus.VPS_READY;
-                    locationState.Error = ErrorCode.NO_ERROR;
-                    locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response);
-
-                    OnLocalisationHappend?.Invoke(locationState);
-                }
+                if (tracking.GetLocalTracking().IsLocalisedFloor)
+                    yield return new WaitForSeconds(settings.localizationTimeout - neuronTime);
                 else
-                {
-                    locationState.Status = LocalisationStatus.GPS_ONLY;
-                    locationState.Error = requestVPS.GetErrorCode();
-                    locationState.Localisation = null;
+                    yield return new WaitForSeconds(settings.calibrationTimeout - neuronTime);
+            }
+        }
 
-                    OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
-                    VPSLogger.LogFormat(LogLevel.NONE, "VPS Request Error: {0}", requestVPS.GetErrorCode());
-                }
+        private void Callback(ITracking tracking, ARFoundationApplyer arRFoundationApplyer)
+        {
+            if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
+            {
+                var response = requestVPS.GetResponce();
+                tracking.SetGuidPointcloud(response.GuidPointcloud);
 
-                yield return new WaitForSeconds(settings.Timeout);
+                locationState.Status = LocalisationStatus.VPS_READY;
+                locationState.Error = ErrorCode.NO_ERROR;
+                locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response);
+
+                OnLocalisationHappend?.Invoke(locationState);
+            }
+            else
+            {
+                locationState.Status = LocalisationStatus.GPS_ONLY;
+                locationState.Error = requestVPS.GetErrorCode();
+                locationState.Localisation = null;
+
+                OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
+                VPSLogger.LogFormat(LogLevel.NONE, "VPS Request Error: {0}", requestVPS.GetErrorCode());
             }
         }
     }

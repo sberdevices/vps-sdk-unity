@@ -21,7 +21,6 @@ namespace ARVRLab.VPSService
         private IServiceGPS gps;
         private ITracking tracking;
 
-        private LocalizationImagesCollector imagesCollector;
         private MobileVPS mobileVPS;
 
         private VPSTextureRequirement textureRequir;
@@ -42,9 +41,7 @@ namespace ARVRLab.VPSService
         {
             camera = GetComponent<ICamera>();
             textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
-
             tracking = GetComponent<ITracking>();
-            imagesCollector = new LocalizationImagesCollector(PhotosInSerial, false);
         }
 
         public void InitMobileVPS()
@@ -73,11 +70,6 @@ namespace ARVRLab.VPSService
         public ARFoundationApplyer GetARFoundationApplyer()
         {
             return arFoundationApplyer;
-        }
-
-        public LocalizationImagesCollector GetImageCollector()
-        {
-            return imagesCollector;
         }
 
         public MobileVPS GetMobileVPS()

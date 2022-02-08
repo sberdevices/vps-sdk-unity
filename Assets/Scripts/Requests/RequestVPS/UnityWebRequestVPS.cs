@@ -31,7 +31,7 @@ namespace ARVRLab.VPSService
             serverUrl = url;
         }
 
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback)
         {
             string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
@@ -54,9 +54,11 @@ namespace ARVRLab.VPSService
             form.AddField("json", meta);
 
             yield return SendRequest(uri, form);
+
+            callback();
         }
 
-        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback)
         {
             string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
 
@@ -73,34 +75,8 @@ namespace ARVRLab.VPSService
             form.AddField("json", meta);
 
             yield return SendRequest(uri, form);
-        }
 
-        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
-        {
-            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
-
-            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
-            {
-                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
-                yield break;
-            }
-
-            WWWForm form = new WWWForm();
-
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (data[i].Embedding != null)
-                {
-                    form.AddBinaryData("embd" + i, data[i].Embedding, "data.embd");
-                }
-                else
-                {
-                    form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
-                }
-                form.AddField("mes" + i, data[i].meta);
-            }
-
-            yield return SendRequest(uri, form);
+            callback();
         }
 
         public LocalisationStatus GetStatus()

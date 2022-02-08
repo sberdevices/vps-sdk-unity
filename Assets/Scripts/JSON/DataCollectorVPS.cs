@@ -18,7 +18,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// <returns>The data.</returns>
         /// <param name="Provider">Provider.</param>
         /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static RequestStruct CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        public static RequestStruct CollectData(ServiceProvider Provider, bool sendOnlyFeatures = false)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
@@ -101,7 +101,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     cy = PrincipalPoint.y
                 },
 
-                forced_localization = forceVPS,
+                forced_localization = true,
 
                 version = 1,
 

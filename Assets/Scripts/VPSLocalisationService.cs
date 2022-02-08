@@ -25,12 +25,8 @@ namespace ARVRLab.VPSService
         public bool ForceMockInEditor = true;
 
         [Header("Default VPS Settings")]
-        [Tooltip("Use photo serial pipeline")]
-        public bool UsePhotoSeries;
         [Tooltip("Send features or photo")]
         public bool SendOnlyFeatures;
-        [Tooltip("Always send force vps")]
-        public bool AlwaysForce;
         [Tooltip("Send GPS")]
         public bool SendGPS;
 
@@ -123,8 +119,7 @@ namespace ARVRLab.VPSService
                     return;
                 }
             }
-
-            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, UsePhotoSeries, SendOnlyFeatures, AlwaysForce, SendGPS);
+            algorithm = new VPSLocalisationAlgorithm(this, provider, settings, SendOnlyFeatures, SendGPS);
 
             algorithm.OnErrorHappend += (e) => OnErrorHappend?.Invoke(e);
             algorithm.OnLocalisationHappend += (ls) => OnPositionUpdated?.Invoke(ls);

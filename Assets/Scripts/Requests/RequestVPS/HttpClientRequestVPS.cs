@@ -15,14 +15,10 @@ namespace ARVRLab.VPSService
     public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
+        // api for localisation
         private string api_path_session = "vps/api/v1/first_loc_session/job";
-        // api for serial photo localization
-        private string api_path_firstloc = "vps/api/v1/first_loc/job";
-        // api for one photo localisation
-        private string api_path = "vps/api/v1/job";
 
-        private int aloneTimeout = 4;
-        private int serialTimeout = 12;
+        private int timeout = 4;
 
         private LocationState locationState = new LocationState();
 
@@ -31,7 +27,7 @@ namespace ARVRLab.VPSService
             serverUrl = url;
         }
 
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback)
         {
             string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
@@ -58,16 +54,18 @@ namespace ARVRLab.VPSService
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
-            yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
+            yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
 
             stopWatch.Stop();
             TimeSpan requestTS = stopWatch.Elapsed;
 
             string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
             VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] ImageVPSRequest {0}", requestTime);
+
+            callback();
         }
 
-        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback)
         {
             string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
@@ -88,54 +86,15 @@ namespace ARVRLab.VPSService
             System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
-            yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
+            yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
 
             stopWatch.Stop();
             TimeSpan requestTS = stopWatch.Elapsed;
 
             string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
             VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSRequest {0}", requestTime);
-        }
 
-        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
-        {
-            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
-
-            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
-            {
-                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
-                yield break;
-            }
-
-            MultipartFormDataContent form = new MultipartFormDataContent();
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (data[i].Embedding != null)
-                {
-                    HttpContent embd = new ByteArrayContent(data[i].Embedding);
-                    form.Add(embd, "embd" + i, "data.embd");
-                }
-                else
-                {
-                    HttpContent img = new ByteArrayContent(data[i].image);
-                    form.Add(img, "mes" + i, CreateFileName());
-                }
-
-                HttpContent meta = new StringContent(data[i].meta);
-                form.Add(meta, "mes" + i);
-            }
-
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
-
-            yield return Task.Run(() => SendRequest(uri, form, serialTimeout)).AsCoroutine();
-
-            stopWatch.Stop();
-            TimeSpan requestTS = stopWatch.Elapsed;
-
-            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            string comment = data[0].Embedding != null ? "SerialMVPSRequest" : "SerialImageVPSRequest";
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", comment, requestTime);
+            callback();
         }
 
         public LocalisationStatus GetStatus()

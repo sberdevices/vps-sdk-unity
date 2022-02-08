@@ -10,10 +10,8 @@ namespace ARVRLab.VPSService
     public class SettingsToggles : MonoBehaviour
     {
         public GameObject Root;
-        public Toggle UsePhotoSerial;
         public Toggle Autofocus;
         public Toggle SendOnlyFeatures;
-        public Toggle AlwaysForce;
         public Toggle SendGPS;
         public Toggle Occluder;
         public Toggle SaveImages;
@@ -50,11 +48,8 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-
-            UsePhotoSerial?.onValueChanged.AddListener((value) => VPS.UsePhotoSeries = value);
             Autofocus?.onValueChanged.AddListener((value) => CameraManager.autoFocusRequested = value);
             SendOnlyFeatures?.onValueChanged.AddListener((value) => VPS.SendOnlyFeatures = value);
-            AlwaysForce?.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
             SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
@@ -85,14 +80,10 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            if (UsePhotoSerial != null)
-                UsePhotoSerial.isOn = VPS.UsePhotoSeries;
             if (Autofocus != null)
                 Autofocus.isOn = CameraManager.autoFocusRequested;
             if (SendOnlyFeatures != null)
                 SendOnlyFeatures.isOn = VPS.SendOnlyFeatures;
-            if (AlwaysForce != null)
-                AlwaysForce.isOn = VPS.AlwaysForce;
             if (SendGPS != null)
                 SendGPS.isOn = VPS.SendGPS;
             if (Occluder != null)

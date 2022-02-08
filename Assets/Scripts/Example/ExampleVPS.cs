@@ -21,7 +21,7 @@ public class ExampleVPS : MonoBehaviour
 
 		// Create custom settings to VPS: generate url in constructor and set delay between requests
 		SettingsVPS settings = new SettingsVPS("https://vps.arvr.sberlabs.com/polytech-pub/", "Polytech");
-		settings.Timeout = 3;
+		settings.localizationTimeout = 3;
 
 		// Start service
 		VPS.StartVPS(settings);
