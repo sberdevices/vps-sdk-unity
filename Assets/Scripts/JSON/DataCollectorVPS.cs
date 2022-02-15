@@ -17,17 +17,13 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// </summary>
         /// <returns>The data.</returns>
         /// <param name="Provider">Provider.</param>
-        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static RequestStruct CollectData(ServiceProvider Provider, bool sendOnlyFeatures = false)
+        public static RequestStruct CollectData(ServiceProvider Provider)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
-            var loc_id = tracking.GuidPointcloud;
 
             pose.position = tracking.Position;
             pose.rotation = tracking.Rotation;
-
-            string relative_type = "relative";
 
             RequstGps requstGps = null;
             RequestCompass requestCompass = null;
@@ -55,70 +51,50 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
 
-            const string userId = "user_id";
-            if (!PlayerPrefs.HasKey(userId))
+            const string userIdKey = "user_id";
+            if (!PlayerPrefs.HasKey(userIdKey))
             {
-                PlayerPrefs.SetString(userId, System.Guid.NewGuid().ToString());
+                PlayerPrefs.SetString(userIdKey, Guid.NewGuid().ToString());
             }
-
-            int orient = sendOnlyFeatures ? 0 : (int)Provider.GetCamera().GetOrientation();
 
             var attrib = new RequestAttributes
             {
+                sessionId = Provider.GetSessionId(),
+                userId = PlayerPrefs.GetString(userIdKey),
+                timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d,
+
                 location = new RequestLocation()
                 {
-                    type = relative_type,
-                    location_id = loc_id,
-
                     gps = requstGps,
                     compass = requestCompass,
 
                     clientCoordinateSystem = "unity",
 
-                    localPos = new LocalPos
+                    trackingPose = new TrackingPose
                     {
                         x = pose.position.x,
                         y = pose.position.y,
                         z = pose.position.z,
-                        roll = pose.rotation.eulerAngles.x,
-                        pitch = pose.rotation.eulerAngles.y,
-                        yaw = pose.rotation.eulerAngles.z
+                        rx = pose.rotation.eulerAngles.x,
+                        ry = pose.rotation.eulerAngles.y,
+                        rz = pose.rotation.eulerAngles.z
+                    },
+
+                    intrinsics = new Intrinsics
+                    {
+                        fx = FocalPixelLength.x,
+                        fy = FocalPixelLength.y,
+                        cx = PrincipalPoint.x,
+                        cy = PrincipalPoint.y
                     }
-                },
-                
-                imageTransform = new ImageTransform
-                {
-                    orientation = orient,
-                    mirrorX = false,
-                    mirrorY = false
-                },
-
-                intrinsics = new Intrinsics
-                {
-                    fx = FocalPixelLength.x,
-                    fy = FocalPixelLength.y,
-                    cx = PrincipalPoint.x,
-                    cy = PrincipalPoint.y
-                },
-
-                forced_localization = true,
-
-                version = 1,
-
-                user_id = PlayerPrefs.GetString(userId),
-
-                timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d
+                }
         };
 
 
             var data = new RequestData
             {
-                id = System.Guid.NewGuid().ToString(),
-
-                type = "job",
-
-                attributes = attrib,
-                session_id = Provider.GetSessionId()
+                id = Guid.NewGuid().ToString(),
+                attributes = attrib
             };
 
             var communicationStruct = new RequestStruct
@@ -149,18 +125,14 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonConvert.DeserializeObject<ResponseStruct>(json);
 
-            int id;
-            bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
-
             LocalisationResult localisation = new LocalisationResult
             {
-                LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
-                communicationStruct.data.attributes.location.relative.z),
-                LocalRotation = new Vector3(communicationStruct.data.attributes.location.relative.roll,
-                                            communicationStruct.data.attributes.location.relative.pitch,
-                                            communicationStruct.data.attributes.location.relative.yaw),
-                Img_id = checkImgId ? id : -1,
-                GuidPointcloud = communicationStruct.data.attributes.location.location_id,
+                LocalPosition = new Vector3(communicationStruct.data.attributes.vpsPose.x,
+                                            communicationStruct.data.attributes.vpsPose.y,
+                                            communicationStruct.data.attributes.vpsPose.z),
+                LocalRotation = new Vector3(communicationStruct.data.attributes.vpsPose.rx,
+                                            communicationStruct.data.attributes.vpsPose.ry,
+                                            communicationStruct.data.attributes.vpsPose.rz)
             };
 
             LocationState request = new LocationState
@@ -181,7 +153,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             switch(status)
             {
-                case "progress": return LocalisationStatus.NO_LOCALISATION;
                 case "done": return LocalisationStatus.VPS_READY;
                 case "fail": return LocalisationStatus.GPS_ONLY;
                 default: return LocalisationStatus.GPS_ONLY;

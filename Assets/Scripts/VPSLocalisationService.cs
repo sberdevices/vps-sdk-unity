@@ -32,7 +32,6 @@ namespace ARVRLab.VPSService
 
         [Header("Location Settings")]
         public string defaultUrl = "https://vps.arvr.sberlabs.com/polytech-pub/";
-        public string defaultBuildingGuid = "Polytech";
 
         [Header("Custom URL")]
         public bool UseCustomUrl;
@@ -70,11 +69,11 @@ namespace ARVRLab.VPSService
 
             if (UseCustomUrl)
             {
-                defaultSettings = new SettingsVPS(CustomUrl, defaultBuildingGuid);
+                defaultSettings = new SettingsVPS(CustomUrl);
             }
             else
             {
-                defaultSettings = new SettingsVPS(defaultUrl, defaultBuildingGuid);
+                defaultSettings = new SettingsVPS(defaultUrl);
             }
 
             if (SendOnlyFeatures)

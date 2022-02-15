@@ -13,6 +13,7 @@ namespace ARVRLab.VPSService
     [Serializable]
     public class FakeData
     {
+        public string ImageLocalPath;
         public Texture2D Texture;
         public TextAsset Pose;
     }
@@ -24,6 +25,9 @@ namespace ARVRLab.VPSService
 
         public FakeData[] fakeDatas;
 
+        [Tooltip("Update current photo by this timeout")]
+        public float updateTimeout;
+
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
@@ -33,7 +37,6 @@ namespace ARVRLab.VPSService
         private Image mockImage;
         private float resizeCoef = 1.0f;
 
-        private string DefaultGuidPointcloud = "";
         private TrackingData trackingData;
 
         private GameObject ARCamera;
@@ -42,15 +45,11 @@ namespace ARVRLab.VPSService
         {
             PrepareApplyer();
 
-            trackingData = new TrackingData
-            {
-                GuidPointcloud = DefaultGuidPointcloud
-            };
+            trackingData = new TrackingData();
             ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
+            StartCoroutine(UpdateFrame());
         }
 
-
-        // ГДЕТО НАДО ВЫЗЫВАТЬ!
         /// <summary>
         /// Switch to next texture
         /// </summary>
@@ -84,6 +83,17 @@ namespace ARVRLab.VPSService
             if (buffers == null || buffers.Count == 0)
                 return;
 
+            if (LoadingType == FakeTextureLoadingType.TEXTURE)
+            {
+                if (fakeDatas[Counter] == null)
+                    return;
+            }
+            else
+            {
+                string fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, fakeDatas[Counter].ImageLocalPath);
+                fakeDatas[Counter].Texture.LoadImage(File.ReadAllBytes(fullPath));
+            }
+
             foreach (var req in buffers.Keys)
             {
                 convertTexture = Preprocess(fakeDatas[Counter].Texture, req.Format);
@@ -95,6 +105,8 @@ namespace ARVRLab.VPSService
                 }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
+
+            ShowMockFrame(fakeDatas[Counter].Texture);
         }
 
         private void PrepareApplyer()
@@ -199,7 +211,7 @@ namespace ARVRLab.VPSService
         {
             if (!mockImage)
             {
-                var canvasGO = new GameObject("FakeCamera");
+                var canvasGO = new GameObject("FakeSerialCamera");
                 var canvas = canvasGO.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceCamera;
 
@@ -242,21 +254,6 @@ namespace ARVRLab.VPSService
             camera.fieldOfView = fovY;
         }
 
-        public VPSOrientation GetOrientation()
-        {
-            return VPSOrientation.Portrait;
-        }
-
-        public void SetDefaultBuilding(string defaultBuilding)
-        {
-            if (trackingData == null)
-            {
-                trackingData = new TrackingData();
-            }
-            trackingData.GuidPointcloud = defaultBuilding;
-            DefaultGuidPointcloud = defaultBuilding;
-        }
-
         public TrackingData GetLocalTracking()
         {
             UpdateTrackingData();
@@ -281,18 +278,28 @@ namespace ARVRLab.VPSService
             }
         }
 
-        public void SetGuidPointcloud(string guid)
+        public void Localize()
         {
-            trackingData.GuidPointcloud = guid;
-            trackingData.IsLocalisedFloor = true;
+            if (trackingData != null)
+            {
+                trackingData.IsLocalisedFloor = true;
+            }
         }
 
         public void ResetTracking()
         {
             if (trackingData != null)
             {
-                trackingData.GuidPointcloud = DefaultGuidPointcloud;
                 trackingData.IsLocalisedFloor = false;
+            }
+        }
+
+        private IEnumerator UpdateFrame()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(updateTimeout);
+                IncPhotoCounter();
             }
         }
     }

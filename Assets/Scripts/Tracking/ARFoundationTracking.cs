@@ -7,8 +7,6 @@ namespace ARVRLab.VPSService
 {
     public class ARFoundationTracking : MonoBehaviour, ITracking
     {
-        private string DefaultGuidPointcloud = "";
-
         private GameObject ARCamera;
         private TrackingData trackingData;
 
@@ -19,10 +17,7 @@ namespace ARVRLab.VPSService
             {
                 VPSLogger.Log(LogLevel.ERROR, "Camera is not available for tracking");
             }
-            if (trackingData == null)
-            {
-                trackingData = new TrackingData();
-            }
+            trackingData = new TrackingData();
         }
 
         /// <summary>
@@ -43,27 +38,18 @@ namespace ARVRLab.VPSService
             return trackingData;
         }
 
-        public void SetGuidPointcloud(string guid)
+        public void Localize()
         {
-            trackingData.GuidPointcloud = guid;
-            trackingData.IsLocalisedFloor = true;
-        }
-
-        public void SetDefaultBuilding(string defaultBuilding)
-        {
-            if (trackingData == null)
+            if (trackingData != null)
             {
-                trackingData = new TrackingData();
+                trackingData.IsLocalisedFloor = true;
             }
-            trackingData.GuidPointcloud = defaultBuilding;
-            DefaultGuidPointcloud = defaultBuilding;
         }
 
         public void ResetTracking()
         {
             if (trackingData != null)
             {
-                trackingData.GuidPointcloud = DefaultGuidPointcloud;
                 trackingData.IsLocalisedFloor = false;
             }
         }

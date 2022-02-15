@@ -16,7 +16,7 @@ namespace ARVRLab.VPSService
     {
         private string serverUrl;
         // api for localisation
-        private string api_path_session = "vps/api/v1/first_loc_session/job";
+        private string api_path_session = "vps/api/v2";
 
         private int timeout = 4;
 

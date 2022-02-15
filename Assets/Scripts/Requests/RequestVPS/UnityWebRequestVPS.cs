@@ -17,12 +17,10 @@ namespace ARVRLab.VPSService
     public class UnityWebRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api for serial photo localization
-        private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api for one photo localisation
-        private string api_path = "vps/api/v1/job";
+        private string api_path = "vps/api/v2";
 
-        private int timeout = 10;
+        private int timeout = 4;
 
         private LocationState locationState = new LocationState();
 

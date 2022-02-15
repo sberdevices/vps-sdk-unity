@@ -178,18 +178,17 @@ namespace ARVRLab.VPSService
                 VPSTextureRequirement req = buffers.FirstOrDefault().Key;
                 float cameraHeight = (float)cameraManager.currentConfiguration.Value.height;
 
+                float resizeCoef;
                 if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
                 {
-                    float resizeCoef = req.Width / cameraHeight;
-                    return new Vector2(intrins.focalLength.x * resizeCoef,
-                        intrins.focalLength.y * resizeCoef);
+                    resizeCoef = req.Width / cameraHeight;
                 }
                 else
                 {
-                    float resizeCoef = req.Height / cameraHeight;
-                    return new Vector2(intrins.focalLength.x * resizeCoef,
-                        intrins.focalLength.y * resizeCoef);
+                    resizeCoef = req.Height / cameraHeight;
                 }
+
+                return new Vector2(intrins.focalLength.x * resizeCoef, intrins.focalLength.y * resizeCoef);
             }
 
             return Vector2.zero;
@@ -197,6 +196,9 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
+            if (buffers == null || buffers.Count == 0 || !cameraManager.currentConfiguration.HasValue)
+                return Vector2.zero;
+
             VPSTextureRequirement req = buffers.FirstOrDefault().Key;
             return new Vector2(req.Width / 2f, req.Height / 2f);
         }
@@ -301,11 +303,6 @@ namespace ARVRLab.VPSService
                         break;
                 }
             }
-        }
-
-        public VPSOrientation GetOrientation()
-        {
-            return VPSOrientation.Portrait;
         }
 
         private void Update()

@@ -10,11 +10,9 @@ namespace ARVRLab.VPSService
         public Vector3 LocalRotation;
         public double GpsLatitude;
         public double GpsLongitude;
-        public string GuidPointcloud;
         public float Heading;
         public float Accuracy;
         public double Timestamp;
-        public int Img_id;
 
         public LocalisationResult()
         {
@@ -22,11 +20,9 @@ namespace ARVRLab.VPSService
             LocalRotation = Vector3.zero;
             GpsLatitude = 0;
             GpsLongitude = 0;
-            GuidPointcloud = "";
             Heading = 0;
             Accuracy = 0;
             Timestamp = 0;
-            Img_id = -1;
         }
     }
 }

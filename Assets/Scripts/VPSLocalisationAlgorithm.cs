@@ -56,7 +56,6 @@ namespace ARVRLab.VPSService
                 gps.SetEnable(sendGps);
 
             settings = vps_settings;
-            provider.GetTracking().SetDefaultBuilding(vps_settings.defaultLocationId);
 
             locationState = new LocationState();
 
@@ -82,7 +81,7 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Main cycle. Check readiness every service, send request (force / not force), apply the resulting localization if success
+        /// Main cycle. Check readiness every service, send request, apply the resulting localization if success
         /// </summary>
         /// <returns>The routine.</returns>
         public IEnumerator LocalisationRoutine()
@@ -130,7 +129,7 @@ namespace ARVRLab.VPSService
                 // remember current pose
                 arRFoundationApplyer?.LocalisationStart();
 
-                var metaMsg = DataCollector.CollectData(provider, sendOnlyFeatures);
+                var metaMsg = DataCollector.CollectData(provider);
                 Meta = DataCollector.Serialize(metaMsg);
 
                 requestVPS.SetUrl(settings.Url);
@@ -239,7 +238,7 @@ namespace ARVRLab.VPSService
             if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
             {
                 var response = requestVPS.GetResponce();
-                tracking.SetGuidPointcloud(response.GuidPointcloud);
+                tracking.Localize();
 
                 locationState.Status = LocalisationStatus.VPS_READY;
                 locationState.Error = ErrorCode.NO_ERROR;

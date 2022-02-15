@@ -9,6 +9,5 @@ namespace ARVRLab.VPSService
         public Vector3 Position;
         public Quaternion Rotation;
         public bool IsLocalisedFloor;
-        public string GuidPointcloud;
     }
 }

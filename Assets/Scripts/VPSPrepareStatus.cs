@@ -100,7 +100,7 @@ namespace ARVRLab.VPSService
                     }
 
                     // check error
-                    if (www.isNetworkError || www.isHttpError)
+                    if (www.result != UnityWebRequest.Result.Success)
                     {
                         VPSLogger.LogFormat(LogLevel.ERROR, "Can't download mobile vps network: {0}", www.error);
                         yield return null;

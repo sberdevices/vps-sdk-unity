@@ -13,12 +13,9 @@ namespace ARVRLab.VPSService
         // Delay between sending
         public float calibrationTimeout = 5;
 
-        public string defaultLocationId = "";
-
-        public SettingsVPS(string buildingUrl, string buildingGuid)
+        public SettingsVPS(string buildingUrl)
         {
             Url = buildingUrl;
-            defaultLocationId = buildingGuid;
         }
     }
 }

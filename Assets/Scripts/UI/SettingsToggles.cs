@@ -60,11 +60,11 @@ namespace ARVRLab.VPSService
                 SettingsVPS settings;
                 if (VPS.UseCustomUrl)
                 {
-                    settings = new SettingsVPS(VPS.CustomUrl, VPS.defaultBuildingGuid);
+                    settings = new SettingsVPS(VPS.CustomUrl);
                 }
                 else
                 {
-                    settings = new SettingsVPS(VPS.defaultUrl, VPS.defaultBuildingGuid);
+                    settings = new SettingsVPS(VPS.defaultUrl);
                 }
                 VPS.StartVPS(settings);
                 HideToggles();

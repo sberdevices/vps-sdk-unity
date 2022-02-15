@@ -189,6 +189,9 @@ namespace ARVRLab.VPSService
         /// </summary>
         private void ShowMockFrame(Texture mockTexture)
         {
+            if (!gameObject.activeSelf)
+                return;
+
             if (!mockImage)
             {
                 var canvasGO = new GameObject("FakeCamera");
@@ -232,11 +235,6 @@ namespace ARVRLab.VPSService
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
             camera.fieldOfView = fovY;
-        }
-
-        public VPSOrientation GetOrientation()
-        {
-            return VPSOrientation.Portrait;
         }
     }
 }
