@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
@@ -20,8 +21,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
     {
         public string status;
         public ResponseLocation location;
+        [JsonProperty("client_coordinate_system")]
         public string clientCoordinateSystem;
+        [JsonProperty("tracking_pose")]
         public TrackingPose trackingPose;
+        [JsonProperty("vps_pose")]
         public TrackingPose vpsPose;
     }
 

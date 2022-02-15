@@ -26,6 +26,11 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public string userId;
         public double timestamp;
         public RequestLocation location;
+        [JsonProperty("client_coordinate_system")]
+        public string clientCoordinateSystem;
+        [JsonProperty("tracking_pose")]
+        public TrackingPose trackingPose;
+        public Intrinsics intrinsics;
     }
 
     [Serializable]
@@ -35,10 +40,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         public RequstGps gps;
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public RequestCompass compass;
-        public string clientCoordinateSystem;
-        [JsonProperty("tracking_pose")]
-        public TrackingPose trackingPose;
-        public Intrinsics intrinsics;
     }
 
     [Serializable]

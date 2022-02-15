@@ -27,8 +27,8 @@ namespace ARVRLab.VPSService
         {
             if (ARCamera != null)
             {
-                trackingData.Position = ARCamera.transform.position;
-                trackingData.Rotation = ARCamera.transform.rotation;
+                trackingData.Position = ARCamera.transform.localPosition;
+                trackingData.Rotation = ARCamera.transform.localRotation;
             }
         }
 

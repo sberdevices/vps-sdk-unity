@@ -227,9 +227,9 @@ namespace ARVRLab.VPSService
                 }
 
                 if (tracking.GetLocalTracking().IsLocalisedFloor)
-                    yield return new WaitForSeconds(settings.localizationTimeout - neuronTime);
-                else
                     yield return new WaitForSeconds(settings.calibrationTimeout - neuronTime);
+                else
+                    yield return new WaitForSeconds(settings.localizationTimeout - neuronTime);
             }
         }
 

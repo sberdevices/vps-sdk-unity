@@ -67,28 +67,28 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 {
                     gps = requstGps,
                     compass = requestCompass,
+                },
 
-                    clientCoordinateSystem = "unity",
+                clientCoordinateSystem = "unity",
 
-                    trackingPose = new TrackingPose
-                    {
-                        x = pose.position.x,
-                        y = pose.position.y,
-                        z = pose.position.z,
-                        rx = pose.rotation.eulerAngles.x,
-                        ry = pose.rotation.eulerAngles.y,
-                        rz = pose.rotation.eulerAngles.z
-                    },
+                trackingPose = new TrackingPose
+                {
+                    x = pose.position.x,
+                    y = pose.position.y,
+                    z = pose.position.z,
+                    rx = pose.rotation.eulerAngles.x,
+                    ry = pose.rotation.eulerAngles.y,
+                    rz = pose.rotation.eulerAngles.z
+                },
 
-                    intrinsics = new Intrinsics
-                    {
-                        fx = FocalPixelLength.x,
-                        fy = FocalPixelLength.y,
-                        cx = PrincipalPoint.x,
-                        cy = PrincipalPoint.y
-                    }
+                intrinsics = new Intrinsics
+                {
+                    fx = FocalPixelLength.x,
+                    fy = FocalPixelLength.y,
+                    cx = PrincipalPoint.x,
+                    cy = PrincipalPoint.y
                 }
-        };
+            };
 
 
             var data = new RequestData
