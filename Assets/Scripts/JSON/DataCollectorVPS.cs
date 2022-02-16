@@ -25,13 +25,12 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
             pose.position = tracking.Position;
             pose.rotation = tracking.Rotation;
 
-            RequstGps requstGps = null;
-            RequestCompass requestCompass = null;
             IServiceGPS gps = Provider.GetGPS();
+            RequestLocation requestLocation = null;
             if (gps != null)
             {
                 GPSData gpsData = gps.GetGPSData();
-                requstGps = new RequstGps
+                RequstGps requstGps = new RequstGps
                 {
                     latitude = gpsData.Latitude,
                     longitude = gpsData.Longitude,
@@ -40,11 +39,17 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     timestamp = gpsData.Timestamp
                 };
                 CompassData gpsCompass = gps.GetCompassData();
-                requestCompass = new RequestCompass
+                RequestCompass requestCompass = new RequestCompass
                 {
                     heading = gpsCompass.Heading,
                     accuracy = gpsCompass.Accuracy,
                     timestamp = gpsCompass.Timestamp
+                };
+
+                requestLocation = new RequestLocation()
+                {
+                    gps = requstGps,
+                    compass = requestCompass
                 };
             }
 
@@ -63,11 +68,7 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                 userId = PlayerPrefs.GetString(userIdKey),
                 timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d,
 
-                location = new RequestLocation()
-                {
-                    gps = requstGps,
-                    compass = requestCompass,
-                },
+                location = requestLocation,
 
                 clientCoordinateSystem = "unity",
 
@@ -125,24 +126,30 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonConvert.DeserializeObject<ResponseStruct>(json);
 
-            LocalisationResult localisation = new LocalisationResult
-            {
-                LocalPosition = new Vector3(communicationStruct.data.attributes.vpsPose.x,
-                                            communicationStruct.data.attributes.vpsPose.y,
-                                            communicationStruct.data.attributes.vpsPose.z),
-                LocalRotation = new Vector3(communicationStruct.data.attributes.vpsPose.rx,
-                                            communicationStruct.data.attributes.vpsPose.ry,
-                                            communicationStruct.data.attributes.vpsPose.rz)
-            };
-
             LocationState request = new LocationState
             {
                 Status = GetStatusFromString(communicationStruct.data.attributes.status),
-                Localisation = localisation
             };
 
             if (request.Status == LocalisationStatus.VPS_READY)
+            {
                 request.Error = ErrorCode.NO_ERROR;
+                request.Localisation = new LocalisationResult
+                {
+                    VpsPosition = new Vector3(communicationStruct.data.attributes.vpsPose.x,
+                                communicationStruct.data.attributes.vpsPose.y,
+                                communicationStruct.data.attributes.vpsPose.z),
+                    VpsRotation = new Vector3(communicationStruct.data.attributes.vpsPose.rx,
+                                communicationStruct.data.attributes.vpsPose.ry,
+                                communicationStruct.data.attributes.vpsPose.rz),
+                    TrackingPosition = new Vector3(communicationStruct.data.attributes.trackingPose.x,
+                                communicationStruct.data.attributes.trackingPose.y,
+                                communicationStruct.data.attributes.trackingPose.z),
+                    TrackingRotation = new Vector3(communicationStruct.data.attributes.trackingPose.rx,
+                                communicationStruct.data.attributes.trackingPose.ry,
+                                communicationStruct.data.attributes.trackingPose.rz)
+                };
+            }
             else if (request.Status == LocalisationStatus.GPS_ONLY)
                 request.Error = ErrorCode.LOCALISATION_FAIL;
 

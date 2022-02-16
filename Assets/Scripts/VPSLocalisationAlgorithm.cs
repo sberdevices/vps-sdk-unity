@@ -14,6 +14,9 @@ namespace ARVRLab.VPSService
     /// </summary>
     public class VPSLocalisationAlgorithm
     {
+        private const float MaxAngleX = 30;
+        private const float MaxAngleZ = 30;
+
         private VPSLocalisationService localisationService;
         private ServiceProvider provider;
 
@@ -123,11 +126,11 @@ namespace ARVRLab.VPSService
                 while (!camera.IsCameraReady())
                     yield return null;
 
+                while (!CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles))
+                    yield return null;
+
                 System.Diagnostics.Stopwatch fullStopWatch = new System.Diagnostics.Stopwatch();
                 fullStopWatch.Start();
-
-                // remember current pose
-                arRFoundationApplyer?.LocalisationStart();
 
                 var metaMsg = DataCollector.CollectData(provider);
                 Meta = DataCollector.Serialize(metaMsg);
@@ -255,6 +258,12 @@ namespace ARVRLab.VPSService
                 OnErrorHappend?.Invoke(requestVPS.GetErrorCode());
                 VPSLogger.LogFormat(LogLevel.NONE, "VPS Request Error: {0}", requestVPS.GetErrorCode());
             }
+        }
+
+        private bool CheckTakePhotoConditions(Vector3 curAngle)
+        {
+            return (curAngle.x < MaxAngleX || curAngle.x > 360 - MaxAngleX) &&
+            (curAngle.z < MaxAngleZ || curAngle.z > 360 - MaxAngleZ);
         }
     }
 }

@@ -33,7 +33,7 @@ public class ExampleVPS : MonoBehaviour
     /// <param name="locationState"></param> 
 	private void OnPositionUpdatedHandler(LocationState locationState)
 	{
-		Debug.LogFormat("[Event] Localisation successful! Receive position {0} and rotation {1}", locationState.Localisation.LocalPosition, locationState.Localisation.LocalRotation);
+		Debug.LogFormat("[Event] Localisation successful! Receive position {0} and rotation {1}", locationState.Localisation.VpsPosition, locationState.Localisation.VpsRotation);
 	}
 
 	/// <summary>

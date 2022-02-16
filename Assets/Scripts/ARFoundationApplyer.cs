@@ -9,8 +9,6 @@ namespace ARVRLab.VPSService
     {
         private ARSessionOrigin arSessionOrigin;
 
-        private Pose startPose;
-
         [Tooltip("Max distance for interpolation")]
         public float MaxInterpolationDistance = 5;
 
@@ -30,48 +28,28 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Save camera pose before sending request
-        /// </summary>
-        public void LocalisationStart()
-        {
-            Vector3 pos = arSessionOrigin.camera.transform.position;
-            Vector3 rot;
-            if (RotateOnlyY)
-            {
-                rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0); 
-            }
-            else
-            {
-                rot = arSessionOrigin.camera.transform.eulerAngles;
-            }
-            startPose = new Pose(pos, Quaternion.Euler(rot));
-        }
-
-        /// <summary>
         /// Apply taked transform and return adjusted ARFoundation localisation
         /// </summary>
         /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.VpsPosition);
             LocalisationResult correctedResult = localisation;
 
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
+            var qrot = Quaternion.Euler(localisation.VpsRotation) * Quaternion.Inverse(Quaternion.Euler(correctedResult.TrackingRotation));
+            correctedResult.VpsRotation = qrot.eulerAngles;
 
-            if (RotateOnlyY)
-            {
-                var qrot = Quaternion.Inverse(startPose.rotation) * Quaternion.Euler(localisation.LocalRotation);
-                correctedResult.LocalRotation = qrot.eulerAngles;
-            }
+            arSessionOrigin.transform.eulerAngles = correctedResult.VpsRotation;
+
+            Pose StartPose = arSessionOrigin.transform.TransformPose(new Pose(localisation.TrackingPosition, Quaternion.Euler(localisation.TrackingRotation)));
+
+            correctedResult.VpsPosition = arSessionOrigin.transform.localPosition + localisation.VpsPosition - StartPose.position;
 
             VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
-            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
 
-            StopAllCoroutines();
+            StartCoroutine(UpdatePosAndRot(correctedResult.VpsPosition, correctedResult.VpsRotation));
 
-            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
-
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.LocalPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.VpsPosition);
 
             return correctedResult;
         }
@@ -84,26 +62,26 @@ namespace ARVRLab.VPSService
         /// <param name="NewRotation">New rotation y.</param>
         IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation)
         {
-            // if the offset is greater than MaxInterpolationDistance - move instantly
-            if (!RotateOnlyY || Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
+            if (RotateOnlyY)
             {
-                arSessionOrigin.transform.localPosition = NewPosition;
-                if (RotateOnlyY)
-                    arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotation.y);
-                else
-                    arSessionOrigin.transform.eulerAngles = NewRotation;
+                NewRotation.x = 0;
+                NewRotation.z = 0;
+            }
+
+            // if the offset is greater than MaxInterpolationDistance - move instantly
+            if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
+            {
+                arSessionOrigin.transform.position = NewPosition;
+                arSessionOrigin.transform.eulerAngles = NewRotation;
                 yield break;
             }
 
-            float CurAngle = 0;
+            Quaternion NewRotQuaternion = Quaternion.Euler(NewRotation);
 
             while (true)
             {
-                arSessionOrigin.transform.localPosition = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
-
-                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, -CurAngle);
-                CurAngle = Mathf.LerpAngle(CurAngle, NewRotation.y, LerpSpeed * Time.deltaTime);
-                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, CurAngle);
+                arSessionOrigin.transform.position = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
+                arSessionOrigin.transform.rotation = Quaternion.Lerp(arSessionOrigin.transform.localRotation, NewRotQuaternion, LerpSpeed * Time.deltaTime);
                 yield return null;
             }
         }

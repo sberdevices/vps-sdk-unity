@@ -43,8 +43,6 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            PrepareApplyer();
-
             trackingData = new TrackingData();
             ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
             StartCoroutine(UpdateFrame());
@@ -107,13 +105,6 @@ namespace ARVRLab.VPSService
             }
 
             ShowMockFrame(fakeDatas[Counter].Texture);
-        }
-
-        private void PrepareApplyer()
-        {
-            var applyer = FindObjectOfType<ARFoundationApplyer>();
-            if (applyer)
-                applyer.RotateOnlyY = false;
         }
 
         public Vector2 GetFocalPixelLength()

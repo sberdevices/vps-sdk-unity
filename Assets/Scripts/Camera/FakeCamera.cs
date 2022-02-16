@@ -63,7 +63,6 @@ namespace ARVRLab.VPSService
 
 #if UNITY_EDITOR
                 EditorApplication.delayCall = () => ShowMockFrame(FakeTexture);
-                PrepareApplyer();
 #endif
             }
         }
@@ -87,13 +86,6 @@ namespace ARVRLab.VPSService
                 }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
-        }
-
-        private void PrepareApplyer()
-        {
-            var applyer = FindObjectOfType<ARFoundationApplyer>();
-            if (applyer)
-                applyer.RotateOnlyY = false;
         }
 
         public Vector2 GetFocalPixelLength()
