@@ -13,10 +13,6 @@ namespace ARVRLab.VPSService
         public Vector2Int desiredResolution = new Vector2Int(540, 960);
         public TextureFormat format = TextureFormat.R8;
 
-        [Tooltip("Number photos in serial")]
-        [SerializeField]
-        public int PhotosInSerial = 5;
-
         private new ICamera camera;
         private IServiceGPS gps;
         private ITracking tracking;
