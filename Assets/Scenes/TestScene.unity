@@ -1481,7 +1481,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118256, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: RotateOnlyY
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118258, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
