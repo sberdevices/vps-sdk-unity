@@ -63,8 +63,6 @@ namespace ARVRLab.VPSService
             locationState = new LocationState();
 
             localisationService.StartCoroutine(LocalisationRoutine());
-
-            provider.ResetSessionId();
         }
 
         public void Stop()
@@ -126,11 +124,17 @@ namespace ARVRLab.VPSService
                 while (!camera.IsCameraReady())
                     yield return null;
 
+                System.Diagnostics.Stopwatch waitingStopWatch = new System.Diagnostics.Stopwatch();
+                waitingStopWatch.Start();
+
                 while (!CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles))
                     yield return null;
 
-                System.Diagnostics.Stopwatch fullStopWatch = new System.Diagnostics.Stopwatch();
-                fullStopWatch.Start();
+                waitingStopWatch.Stop();
+                TimeSpan waitingTS = waitingStopWatch.Elapsed;
+
+                string waitingTimeStr = String.Format("{0:N10}", waitingTS.TotalSeconds);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] TotalWaitingTime {0}", waitingTimeStr);
 
                 var metaMsg = DataCollector.CollectData(provider);
                 Meta = DataCollector.Serialize(metaMsg);
@@ -199,7 +203,7 @@ namespace ARVRLab.VPSService
                     neuronTime = neuronTS.Seconds + neuronTS.Milliseconds / 1000f;
 
                     string neuronTimeStr = String.Format("{0:N10}", neuronTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] TotalInferenceTime {0}", neuronTimeStr);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] TotalInferenceTime {0}", neuronTimeStr);
 
                     ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);

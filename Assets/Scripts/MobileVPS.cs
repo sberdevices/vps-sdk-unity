@@ -92,7 +92,7 @@ namespace ARVRLab.VPSService
             TimeSpan mvpsInitTS = stopWatch.Elapsed;
 
             string mvpsInitTime = String.Format("{0:N10}", mvpsInitTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSInitTime {0}", mvpsInitTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] MVPSInitTime {0}", mvpsInitTime);
         }
 
         ~MobileVPS()
@@ -143,7 +143,7 @@ namespace ARVRLab.VPSService
             TimeSpan mvpsPreprocessTS = stopWatch.Elapsed;
 
             string mvpsPreprocessTime = String.Format("{0:N10}", mvpsPreprocessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSImagePreprocessTime {0}", mvpsPreprocessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] MVPSImagePreprocessTime {0}", mvpsPreprocessTime);
 
             return true;
         }
@@ -203,7 +203,7 @@ namespace ARVRLab.VPSService
 
             // Format and display the TimeSpan value.
             string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorInferenceTime {0}", neuronRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] FeatureExtractorInferenceTime {0}", neuronRunTime);
 
             imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPointsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptorsOutput);
@@ -221,7 +221,7 @@ namespace ARVRLab.VPSService
 
             // Format and display the TimeSpan value.
             string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorPostProcessTime {0}", postProcessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] FeatureExtractorPostProcessTime {0}", postProcessTime);
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -250,7 +250,7 @@ namespace ARVRLab.VPSService
 
             // Format and display the TimeSpan value.
             string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderInferenceTime {0}", neuronRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] EncoderInferenceTime {0}", neuronRunTime);
 
             imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptorOutput);
 
@@ -264,7 +264,7 @@ namespace ARVRLab.VPSService
 
             // Format and display the TimeSpan value.
             string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderPostProcessTime {0}", postProcessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] EncoderPostProcessTime {0}", postProcessTime);
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;

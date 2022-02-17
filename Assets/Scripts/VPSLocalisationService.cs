@@ -56,6 +56,8 @@ namespace ARVRLab.VPSService
         /// </summary>
         public event System.Action OnVPSReady;
 
+        public event System.Action OnReset;
+
         private VPSLocalisationAlgorithm algorithm;
 
         private IEnumerator Start()
@@ -96,6 +98,7 @@ namespace ARVRLab.VPSService
         public void StartVPS(SettingsVPS settings)
         {
             StopVps();
+            provider.ResetSessionId();
             provider.InitGPS(SendGPS);
 
             if (SendOnlyFeatures)
@@ -119,6 +122,7 @@ namespace ARVRLab.VPSService
         public void StopVps()
         {
             algorithm?.Stop();
+            OnReset?.Invoke();
         }
 
         /// <summary>
