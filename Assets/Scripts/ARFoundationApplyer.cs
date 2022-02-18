@@ -34,7 +34,11 @@ namespace ARVRLab.VPSService
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.VpsPosition);
-            LocalisationResult correctedResult = localisation;
+            LocalisationResult correctedResult = new LocalisationResult();
+            correctedResult.VpsPosition = localisation.VpsPosition;
+            correctedResult.VpsRotation = localisation.VpsRotation;
+            correctedResult.TrackingPosition = localisation.TrackingPosition;
+            correctedResult.TrackingRotation = localisation.TrackingRotation;
 
             var qrot = Quaternion.Euler(localisation.VpsRotation) * Quaternion.Inverse(Quaternion.Euler(correctedResult.TrackingRotation));
             correctedResult.VpsRotation = qrot.eulerAngles;
