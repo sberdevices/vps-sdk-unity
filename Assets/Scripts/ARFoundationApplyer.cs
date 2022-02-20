@@ -34,26 +34,17 @@ namespace ARVRLab.VPSService
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.VpsPosition);
-            LocalisationResult correctedResult = new LocalisationResult();
-            correctedResult.VpsPosition = localisation.VpsPosition;
-            correctedResult.VpsRotation = localisation.VpsRotation;
-            correctedResult.TrackingPosition = localisation.TrackingPosition;
-            correctedResult.TrackingRotation = localisation.TrackingRotation;
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization rotation: {0}", localisation.VpsRotation);
+            LocalisationResult correctedResult = (LocalisationResult)localisation.Clone();
 
-            var qrot = Quaternion.Euler(localisation.VpsRotation) * Quaternion.Inverse(Quaternion.Euler(correctedResult.TrackingRotation));
-            correctedResult.VpsRotation = qrot.eulerAngles;
+            correctedResult.VpsPosition -= correctedResult.TrackingPosition;
+            correctedResult.VpsRotation -= correctedResult.TrackingRotation;
 
-            arSessionOrigin.transform.eulerAngles = correctedResult.VpsRotation;
-
-            Pose StartPose = arSessionOrigin.transform.TransformPose(new Pose(localisation.TrackingPosition, Quaternion.Euler(localisation.TrackingRotation)));
-
-            correctedResult.VpsPosition = arSessionOrigin.transform.localPosition + localisation.VpsPosition - StartPose.position;
-
-            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
-
+            StopAllCoroutines();
             StartCoroutine(UpdatePosAndRot(correctedResult.VpsPosition, correctedResult.VpsRotation));
 
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.VpsPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization rotation: {0}", correctedResult.VpsRotation);
 
             return correctedResult;
         }
@@ -73,21 +64,36 @@ namespace ARVRLab.VPSService
             }
 
             // if the offset is greater than MaxInterpolationDistance - move instantly
-            if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
+            //if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
             {
-                arSessionOrigin.transform.position = NewPosition;
-                arSessionOrigin.transform.eulerAngles = NewRotation;
+                arSessionOrigin.transform.localPosition = NewPosition;
+                arSessionOrigin.transform.rotation = Quaternion.identity;
+
+                RotateAroundThreeAxes(NewRotation);
+
                 yield break;
             }
 
-            Quaternion NewRotQuaternion = Quaternion.Euler(NewRotation);
+            //Vector3 CurRotation = Vector3.zero;
 
-            while (true)
-            {
-                arSessionOrigin.transform.position = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
-                arSessionOrigin.transform.rotation = Quaternion.Lerp(arSessionOrigin.transform.localRotation, NewRotQuaternion, LerpSpeed * Time.deltaTime);
-                yield return null;
-            }
+            //while (true)
+            //{
+            //    arSessionOrigin.transform.localPosition = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
+
+            //    RotateAroundThreeAxes(-CurRotation);
+            //    CurRotation.x = Mathf.LerpAngle(CurRotation.x, NewRotation.x, LerpSpeed * Time.deltaTime);
+            //    CurRotation.y = Mathf.LerpAngle(CurRotation.y, NewRotation.y, LerpSpeed * Time.deltaTime);
+            //    CurRotation.z = Mathf.LerpAngle(CurRotation.z, NewRotation.z, LerpSpeed * Time.deltaTime);
+            //    RotateAroundThreeAxes(CurRotation);
+            //    yield return null;
+            //}
+        }
+
+        private void RotateAroundThreeAxes(Vector3 rotateVector)
+        {
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.forward, rotateVector.z);
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.right, rotateVector.x);
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.up, rotateVector.y);
         }
 
         public void ResetTracking()

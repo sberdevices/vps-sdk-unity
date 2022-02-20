@@ -63,7 +63,6 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement[] requirements)
         {
-            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
@@ -71,6 +70,7 @@ namespace ARVRLab.VPSService
 
             InitBuffers();
             resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y;
+            SetCameraFov();
         }
 
         /// <summary>

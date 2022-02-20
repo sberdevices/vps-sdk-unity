@@ -34,14 +34,14 @@ namespace ARVRLab.VPSService
 
         public void Init(VPSTextureRequirement[] requirements)
         {
-            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
-            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y; 
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y;
+            SetCameraFov();
         }
 
         private void OnValidate()

@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
-    public class LocalisationResult
+    public class LocalisationResult: ICloneable
     {
         public Vector3 TrackingPosition;
         public Vector3 TrackingRotation;
@@ -29,6 +30,11 @@ namespace ARVRLab.VPSService
             Heading = 0;
             Accuracy = 0;
             Timestamp = 0;
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

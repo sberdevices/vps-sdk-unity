@@ -252,6 +252,7 @@ namespace ARVRLab.VPSService
                 locationState.Localisation = arRFoundationApplyer?.ApplyVPSTransform(response);
 
                 OnLocalisationHappend?.Invoke(locationState);
+                VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
             }
             else
             {
