@@ -63,30 +63,28 @@ namespace ARVRLab.VPSService
                 NewRotation.z = 0;
             }
 
+            Vector3 startPosition = arSessionOrigin.transform.position;
+            Quaternion startRotation = arSessionOrigin.transform.rotation;
+
+            arSessionOrigin.transform.position = NewPosition;
+            arSessionOrigin.transform.rotation = Quaternion.identity;
+            RotateAroundThreeAxes(NewRotation);
+
+            Vector3 targetPosition = arSessionOrigin.transform.position;
+            Quaternion targetRotation = arSessionOrigin.transform.rotation;
+
             // if the offset is greater than MaxInterpolationDistance - move instantly
-            //if (Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
-            {
-                arSessionOrigin.transform.localPosition = NewPosition;
-                arSessionOrigin.transform.rotation = Quaternion.identity;
-
-                RotateAroundThreeAxes(NewRotation);
-
+            if (Vector3.Distance(startPosition, targetPosition) > MaxInterpolationDistance)
                 yield break;
+
+            float interpolant = 0;
+            while (interpolant < 1)
+            {
+                interpolant += LerpSpeed * Time.deltaTime;
+                arSessionOrigin.transform.position = Vector3.Lerp(startPosition, targetPosition, interpolant);
+                arSessionOrigin.transform.rotation = Quaternion.Lerp(startRotation, targetRotation, interpolant);
+                yield return null;
             }
-
-            //Vector3 CurRotation = Vector3.zero;
-
-            //while (true)
-            //{
-            //    arSessionOrigin.transform.localPosition = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
-
-            //    RotateAroundThreeAxes(-CurRotation);
-            //    CurRotation.x = Mathf.LerpAngle(CurRotation.x, NewRotation.x, LerpSpeed * Time.deltaTime);
-            //    CurRotation.y = Mathf.LerpAngle(CurRotation.y, NewRotation.y, LerpSpeed * Time.deltaTime);
-            //    CurRotation.z = Mathf.LerpAngle(CurRotation.z, NewRotation.z, LerpSpeed * Time.deltaTime);
-            //    RotateAroundThreeAxes(CurRotation);
-            //    yield return null;
-            //}
         }
 
         private void RotateAroundThreeAxes(Vector3 rotateVector)
