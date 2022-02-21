@@ -525,49 +525,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 966749503}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1029588411
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1029588413}
-  - component: {fileID: 1029588412}
-  m_Layer: 0
-  m_Name: MetricsTaker
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1029588412
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1029588411}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3835802ea9ac34285a37d02c8fa97679, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &1029588413
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1029588411}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 639.2876, y: 272.20792, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1220837162
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -775,6 +732,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7918335002988649766, guid: 02656c3ee9b684edb9188212ff56820c,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 6ae154d820e3fe14fad8d561666ee46b, type: 2}
+    - target: {fileID: -7899607792098564796, guid: 02656c3ee9b684edb9188212ff56820c,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 6ae154d820e3fe14fad8d561666ee46b, type: 2}
     - target: {fileID: 919132149155446097, guid: 02656c3ee9b684edb9188212ff56820c,
         type: 3}
       propertyPath: m_Name
@@ -783,7 +750,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 02656c3ee9b684edb9188212ff56820c,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 02656c3ee9b684edb9188212ff56820c, type: 3}
@@ -858,6 +825,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: troyka_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 47378152346004a7ca684ee63686da6f,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 47378152346004a7ca684ee63686da6f,
         type: 3}
@@ -1473,7 +1445,7 @@ PrefabInstance:
     - target: {fileID: 1902949982, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
       propertyPath: fakeDatas.Array.data[0].Texture
       value: 
-      objectReference: {fileID: 2800000, guid: 75a297c1a2d9b4219b9dcb33f60dd519, type: 3}
+      objectReference: {fileID: 2800000, guid: 0d42c58c3c7734183b686e0ceb3968a0, type: 3}
     - target: {fileID: 1902949982, guid: f5ddf2d28f817ce42a7d59e707029842, type: 3}
       propertyPath: fakeDatas.Array.data[1].Texture
       value: 
@@ -1551,7 +1523,7 @@ PrefabInstance:
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
       propertyPath: defaultUrl
-      value: https://2gis-vps.arvr.sberlabs.com/troyka-floor2-stage/
+      value: https://vps.arvr.sberlabs.com/bootcamp-stage/
       objectReference: {fileID: 0}
     - target: {fileID: 8690752167743118269, guid: f5ddf2d28f817ce42a7d59e707029842,
         type: 3}
