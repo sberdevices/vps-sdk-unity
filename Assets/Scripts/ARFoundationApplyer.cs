@@ -91,9 +91,9 @@ namespace ARVRLab.VPSService
 
         private void RotateAroundThreeAxes(Vector3 rotateVector)
         {
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.forward, rotateVector.z);
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.right, rotateVector.x);
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, arSessionOrigin.camera.transform.up, rotateVector.y);
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.forward, rotateVector.z);
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.right, rotateVector.x);
+            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, rotateVector.y);
         }
 
         public void ResetTracking()
