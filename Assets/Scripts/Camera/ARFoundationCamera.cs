@@ -47,6 +47,8 @@ namespace ARVRLab.VPSService
 
             var distinctRequir = requirements.Distinct().ToList();
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
+
+            isReady = false;
         }
 
         private IEnumerator Start()
@@ -178,16 +180,16 @@ namespace ARVRLab.VPSService
             if (cameraManager.TryGetIntrinsics(out intrins))
             {
                 VPSTextureRequirement req = buffers.FirstOrDefault().Key;
-                float cameraHeight = (float)cameraManager.currentConfiguration.Value.height;
+                float cameraWidth = (float)cameraManager.currentConfiguration.Value.width;
 
                 float resizeCoef;
                 if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
                 {
-                    resizeCoef = req.Width / cameraHeight;
+                    resizeCoef = req.Height / cameraWidth;
                 }
                 else
                 {
-                    resizeCoef = req.Height / cameraHeight;
+                    resizeCoef = req.Width / cameraWidth;
                 }
 
                 return new Vector2(intrins.focalLength.x * resizeCoef, intrins.focalLength.y * resizeCoef);
