@@ -37,6 +37,7 @@ namespace ARVRLab.VPSService
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization rotation: {0}", localisation.VpsRotation);
             LocalisationResult correctedResult = (LocalisationResult)localisation.Clone();
 
+            // subtract the sent position and rotation because the child has them
             correctedResult.VpsPosition -= correctedResult.TrackingPosition;
             correctedResult.VpsRotation -= correctedResult.TrackingRotation;
 
@@ -63,20 +64,26 @@ namespace ARVRLab.VPSService
                 NewRotation.z = 0;
             }
 
+            // save current anchor position and rotation
             Vector3 startPosition = arSessionOrigin.transform.position;
             Quaternion startRotation = arSessionOrigin.transform.rotation;
 
+            // set new position
             arSessionOrigin.transform.position = NewPosition;
+            // we need rotate only camera, so we reset parent rotation
             arSessionOrigin.transform.rotation = Quaternion.identity;
+            // and rotate parent around child on three axes
             RotateAroundThreeAxes(NewRotation);
 
+            // save anchor position and rotation
             Vector3 targetPosition = arSessionOrigin.transform.position;
             Quaternion targetRotation = arSessionOrigin.transform.rotation;
 
-            // if the offset is greater than MaxInterpolationDistance - move instantly
+            // if the offset is greater than MaxInterpolationDistance - don't use interpolation (move instantly)
             if (Vector3.Distance(startPosition, targetPosition) > MaxInterpolationDistance)
                 yield break;
 
+            // interpolate position and rotation from start pos to target
             float interpolant = 0;
             while (interpolant < 1)
             {
@@ -89,6 +96,7 @@ namespace ARVRLab.VPSService
 
         private void RotateAroundThreeAxes(Vector3 rotateVector)
         {
+            // rotate anchor (parent) around camera (child)
             arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.forward, rotateVector.z);
             arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.right, rotateVector.x);
             arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, rotateVector.y);
