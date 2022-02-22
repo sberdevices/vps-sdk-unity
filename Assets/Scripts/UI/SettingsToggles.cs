@@ -15,14 +15,14 @@ namespace ARVRLab.VPSService
         public Toggle SendGPS;
         public Toggle Occluder;
         public Toggle SaveImages;
-        private static Dropdown LocType;
 
         public Button RestartVPSButton;
         public float PressTime = 2f;
         private float mouseDeltaTime = 0;
         public string ContentTag;
 
-        GameObject content;
+        public Material occluderMaterial;
+        public Material standartMaterial;
 
         private VPSLocalisationService vps;
         private VPSLocalisationService VPS
@@ -53,18 +53,24 @@ namespace ARVRLab.VPSService
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
             SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
-            content = GameObject.FindGameObjectWithTag(ContentTag);
 
             RestartVPSButton.onClick.AddListener(() =>
             {
                 VPS.ResetTracking();
-                VPS.StartVPS();
-                //HideToggles();
+                SettingsVPS settings;
+                if (VPS.UseCustomUrl)
+                {
+                    settings = new SettingsVPS(VPS.CustomUrl);
+                }
+                else
+                {
+                    settings = new SettingsVPS(VPS.defaultUrl);
+                }
+                VPS.StartVPS(settings);
+                HideToggles();
             });
 
-            //HideToggles();
-
-            LocType = GetComponentInChildren<Dropdown>();
+            HideToggles();
         }
 
         private void OnSaveImages(bool saveImages)
@@ -81,7 +87,7 @@ namespace ARVRLab.VPSService
             if (SendGPS != null)
                 SendGPS.isOn = VPS.SendGPS;
             if (Occluder != null)
-                Occluder.isOn = content.activeSelf;
+                Occluder.isOn = false;
             if (SaveImages != null)
                 SaveImages.isOn = DebugUtils.SaveImagesLocaly;
         }
@@ -133,12 +139,13 @@ namespace ARVRLab.VPSService
 
         private void ApplyOccluder(bool enable)
         {
-            content.SetActive(enable);
-        }
+            Material material = enable ? occluderMaterial : standartMaterial;
 
-        public static int GetLocType()
-        {
-            return LocType.value;
+            GameObject[] contents = GameObject.FindGameObjectsWithTag(ContentTag);
+            foreach (var content in contents)
+            {
+                content.GetComponent<Renderer>().material = material;
+            }
         }
     }
 }

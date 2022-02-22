@@ -60,7 +60,7 @@ namespace ARVRLab.VPSService
             TimeSpan requestTS = stopWatch.Elapsed;
 
             string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] ImageVPSRequest {0}", requestTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] ImageVPSRequest {0}", requestTime);
 
             callback();
         }
@@ -92,7 +92,7 @@ namespace ARVRLab.VPSService
             TimeSpan requestTS = stopWatch.Elapsed;
 
             string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] MVPSRequest {0}", requestTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSRequest {0}", requestTime);
 
             callback();
         }

@@ -116,7 +116,7 @@ namespace ARVRLab.VPSService
                     TimeSpan downloadMVPSTS = stopWatch.Elapsed;
 
                     string downloadMVPSTime = String.Format("{0:N10}", downloadMVPSTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] DownloadMVPSTime{0} {1}", neuron.Name, downloadMVPSTime);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] DownloadMVPSTime{0} {1}", neuron.Name, downloadMVPSTime);
 
                     break;
                 }

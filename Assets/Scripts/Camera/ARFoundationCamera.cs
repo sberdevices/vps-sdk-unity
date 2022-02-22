@@ -167,7 +167,7 @@ namespace ARVRLab.VPSService
             TimeSpan copyChannelTS = stopWatch.Elapsed;
 
             string copyChannelTime = String.Format("{0:N10}", copyChannelTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric" + SettingsToggles.GetLocType() + "] CopyImageFrameChannelRunTime {0}", copyChannelTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CopyImageFrameChannelRunTime {0}", copyChannelTime);
             return texture;
         }
 
