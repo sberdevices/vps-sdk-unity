@@ -79,7 +79,6 @@ namespace ARVRLab.VPSService
                     // Get the best resolution
                     hdConfig = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
-                isReady = true;
 
                 cameraManager.currentConfiguration = hdConfig;
             } 
@@ -102,6 +101,7 @@ namespace ARVRLab.VPSService
             if (!cameraManager.TryAcquireLatestCpuImage(out image))
             {
                 VPSLogger.Log(LogLevel.ERROR, "Can't take camera image");
+                isReady = false;
                 return;
             }
 
@@ -124,6 +124,7 @@ namespace ARVRLab.VPSService
             catch (Exception ex)
             {
                 VPSLogger.Log(LogLevel.ERROR, ex);
+                isReady = false;
             }
             finally
             {
@@ -131,6 +132,7 @@ namespace ARVRLab.VPSService
                 image.Dispose();
             }
             semaphore.Free();
+            isReady = true;
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)

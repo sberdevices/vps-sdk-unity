@@ -38,7 +38,6 @@ namespace ARVRLab.VPSService
             camera = GetComponent<ICamera>();
             textureRequir = new VPSTextureRequirement(desiredResolution.x, desiredResolution.y, format);
             tracking = GetComponent<ITracking>();
-            ResetSessionId();
         }
 
         public void InitMobileVPS()
