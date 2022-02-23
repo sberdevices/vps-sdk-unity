@@ -97,6 +97,7 @@ namespace ARVRLab.VPSService
         {
             StopVps();
             provider.InitGPS(SendGPS);
+            provider.ResetSessionId();
 
             if (SendOnlyFeatures)
             {

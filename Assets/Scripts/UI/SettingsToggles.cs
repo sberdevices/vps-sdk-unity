@@ -21,8 +21,7 @@ namespace ARVRLab.VPSService
         private float mouseDeltaTime = 0;
         public string ContentTag;
 
-        public Material occluderMaterial;
-        public Material standartMaterial;
+        private GameObject content;
 
         private VPSLocalisationService vps;
         private VPSLocalisationService VPS
@@ -53,20 +52,12 @@ namespace ARVRLab.VPSService
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
             SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
+            content = GameObject.FindGameObjectWithTag(ContentTag);
 
             RestartVPSButton.onClick.AddListener(() =>
             {
                 VPS.ResetTracking();
-                SettingsVPS settings;
-                if (VPS.UseCustomUrl)
-                {
-                    settings = new SettingsVPS(VPS.CustomUrl);
-                }
-                else
-                {
-                    settings = new SettingsVPS(VPS.defaultUrl);
-                }
-                VPS.StartVPS(settings);
+                VPS.StartVPS();
                 HideToggles();
             });
 
@@ -87,7 +78,7 @@ namespace ARVRLab.VPSService
             if (SendGPS != null)
                 SendGPS.isOn = VPS.SendGPS;
             if (Occluder != null)
-                Occluder.isOn = false;
+                Occluder.isOn = content.activeSelf;
             if (SaveImages != null)
                 SaveImages.isOn = DebugUtils.SaveImagesLocaly;
         }
@@ -139,13 +130,7 @@ namespace ARVRLab.VPSService
 
         private void ApplyOccluder(bool enable)
         {
-            Material material = enable ? occluderMaterial : standartMaterial;
-
-            GameObject[] contents = GameObject.FindGameObjectsWithTag(ContentTag);
-            foreach (var content in contents)
-            {
-                content.GetComponent<Renderer>().material = material;
-            }
+            content.SetActive(enable);
         }
     }
 }
