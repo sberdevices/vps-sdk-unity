@@ -181,6 +181,7 @@ namespace ARVRLab.VPSService
             {
                 VPSTextureRequirement req = buffers.FirstOrDefault().Key;
                 float cameraWidth = (float)cameraManager.currentConfiguration.Value.width;
+                float cameraHeight = (float)cameraManager.currentConfiguration.Value.height;
 
                 float resizeCoef;
                 if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
@@ -189,7 +190,7 @@ namespace ARVRLab.VPSService
                 }
                 else
                 {
-                    resizeCoef = req.Width / cameraWidth;
+                    resizeCoef = req.Height / cameraHeight;
                 }
 
                 return new Vector2(intrins.focalLength.x * resizeCoef, intrins.focalLength.y * resizeCoef);
