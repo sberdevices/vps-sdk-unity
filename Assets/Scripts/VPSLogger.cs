@@ -13,6 +13,8 @@ namespace ARVRLab.VPSService
     /// </summary>
     public static class VPSLogger
     {
+        public static bool WriteLogsInFile = false;
+
 #if VPS_DEBUG
         private static LogLevel currentLogLevel = LogLevel.DEBUG;
 #elif VPS_VERBOSE
@@ -64,6 +66,9 @@ namespace ARVRLab.VPSService
 
         private static void AddToLogFile(string logString)
         {
+            if (!WriteLogsInFile)
+                return;
+
             string finalString = string.Format("[{0}] {1}", System.DateTime.Now, logString);
             if (logsStreamWriter == null)
             {

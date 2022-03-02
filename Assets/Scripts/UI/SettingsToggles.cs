@@ -15,6 +15,7 @@ namespace ARVRLab.VPSService
         public Toggle SendGPS;
         public Toggle Occluder;
         public Toggle SaveImages;
+        public Toggle WriteLogsInFile;
 
         public Button RestartVPSButton;
         public float PressTime = 2f;
@@ -52,6 +53,7 @@ namespace ARVRLab.VPSService
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
             SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
+            WriteLogsInFile.onValueChanged.AddListener((value) => VPSLogger.WriteLogsInFile = value);
             content = GameObject.FindGameObjectWithTag(ContentTag);
 
             RestartVPSButton.onClick.AddListener(() =>
@@ -81,6 +83,8 @@ namespace ARVRLab.VPSService
                 Occluder.isOn = content.activeSelf;
             if (SaveImages != null)
                 SaveImages.isOn = DebugUtils.SaveImagesLocaly;
+            if (WriteLogsInFile != null)
+                WriteLogsInFile.isOn = VPSLogger.WriteLogsInFile;
         }
 
         private void Update()

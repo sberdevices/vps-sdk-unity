@@ -18,11 +18,18 @@ namespace ARVRLab.VPSService
     {
         private string serverUrl;
         // api for one photo localisation
-        private string api_path = "vps/api/v2";
+        private string api_path_session = "vps/api/v2";
 
         private int timeout = 4;
 
         private LocationState locationState = new LocationState();
+
+        #region Metrics
+
+        private const string ImageVPSRequest = "ImageVPSRequest";
+        private const string MVPSRequest = "MVPSRequest";
+
+        #endregion
 
         public void SetUrl(string url)
         {
@@ -31,7 +38,7 @@ namespace ARVRLab.VPSService
 
         public IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -51,14 +58,20 @@ namespace ARVRLab.VPSService
 
             form.AddField("json", meta);
 
+            MetricsCollector.Instance.StartStopwatch(ImageVPSRequest);
+
             yield return SendRequest(uri, form);
+
+            MetricsCollector.Instance.StopStopwatch(ImageVPSRequest);
+
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", ImageVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(ImageVPSRequest));
 
             callback();
         }
 
         public IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -72,7 +85,12 @@ namespace ARVRLab.VPSService
 
             form.AddField("json", meta);
 
+            MetricsCollector.Instance.StartStopwatch(MVPSRequest);
+
             yield return SendRequest(uri, form);
+
+            MetricsCollector.Instance.StopStopwatch(MVPSRequest);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSRequest));
 
             callback();
         }
