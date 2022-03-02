@@ -32,6 +32,12 @@ namespace ARVRLab.VPSService
 
         public event System.Action OnVPSReady;
 
+        #region Metrics
+
+        private const string DownloadMVPSTime = "DownloadMVPSTime";
+
+        #endregion
+
         public VPSPrepareStatus()
         {
             imageEncoder = new DownloadNeuronStatus("mnv_960x540x1_4096.tflite");
@@ -86,8 +92,7 @@ namespace ARVRLab.VPSService
                 }
                 yield return new WaitWhile(() => Application.internetReachability == NetworkReachability.NotReachable);
 
-                System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-                stopWatch.Start();
+                MetricsCollector.Instance.StartStopwatch(DownloadMVPSTime);
 
                 using (UnityWebRequest www = UnityWebRequest.Get(neuron.Url))
                 {
@@ -112,11 +117,9 @@ namespace ARVRLab.VPSService
                     VPSLogger.Log(LogLevel.DEBUG, "Mobile vps network downloaded successfully!");
                     OnVPSReady?.Invoke();
 
-                    stopWatch.Stop();
-                    TimeSpan downloadMVPSTS = stopWatch.Elapsed;
+                    MetricsCollector.Instance.StopStopwatch(DownloadMVPSTime);
 
-                    string downloadMVPSTime = String.Format("{0:N10}", downloadMVPSTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] DownloadMVPSTime{0} {1}", neuron.Name, downloadMVPSTime);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0}{1} {2}", DownloadMVPSTime, neuron.Name, MetricsCollector.Instance.GetStopwatchSecondsAsString(DownloadMVPSTime));
 
                     break;
                 }

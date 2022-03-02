@@ -40,6 +40,15 @@ namespace ARVRLab.VPSService
 
         float neuronTime = 0;
 
+        #region Metrics
+
+        int attemptCount;
+        private const string FullLocalizationStopWatch = "FullLocalizationStopWatch";
+        private const string TotalWaitingTime = "TotalWaitingTime";
+        private const string TotalInferenceTime = "TotalInferenceTime";
+
+        #endregion
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -89,6 +98,9 @@ namespace ARVRLab.VPSService
         /// <returns>The routine.</returns>
         public IEnumerator LocalisationRoutine()
         {
+            attemptCount = 0;
+            MetricsCollector.Instance.StartStopwatch(FullLocalizationStopWatch);
+
             Texture2D Image;
             string Meta;
             byte[] Embedding;
@@ -126,11 +138,13 @@ namespace ARVRLab.VPSService
                 while (!camera.IsCameraReady())
                     yield return null;
 
+                MetricsCollector.Instance.StartStopwatch(TotalWaitingTime);
+
                 while (!CheckTakePhotoConditions(tracking.GetLocalTracking().Rotation.eulerAngles))
                     yield return null;
 
-                System.Diagnostics.Stopwatch fullStopWatch = new System.Diagnostics.Stopwatch();
-                fullStopWatch.Start();
+                MetricsCollector.Instance.StopStopwatch(TotalWaitingTime);
+                VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", TotalWaitingTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(TotalWaitingTime));
 
                 var metaMsg = DataCollector.CollectData(provider);
                 Meta = DataCollector.Serialize(metaMsg);
@@ -188,18 +202,16 @@ namespace ARVRLab.VPSService
                     var imageFeatureExtractorTask = mobileVPS.GetFeaturesAsync();
                     var imageEncoderTask = mobileVPS.GetGlobalDescriptorAsync();
 
-                    System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-                    stopWatch.Start();
+                    MetricsCollector.Instance.StartStopwatch(TotalInferenceTime);
 
                     while (!imageFeatureExtractorTask.IsCompleted || !imageEncoderTask.IsCompleted)
                         yield return null;
 
-                    stopWatch.Stop();
-                    TimeSpan neuronTS = stopWatch.Elapsed;
+                    MetricsCollector.Instance.StopStopwatch(TotalInferenceTime);
+                    TimeSpan neuronTS = MetricsCollector.Instance.GetStopwatchTimespan(TotalInferenceTime);
                     neuronTime = neuronTS.Seconds + neuronTS.Milliseconds / 1000f;
 
-                    string neuronTimeStr = String.Format("{0:N10}", neuronTS.TotalSeconds);
-                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] TotalInferenceTime {0}", neuronTimeStr);
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", TotalInferenceTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(TotalInferenceTime));
 
                     ARFoundationCamera.semaphore.Free();
                     Embedding = EMBDCollector.ConvertToEMBD(1, 2, imageFeatureExtractorTask.Result.keyPoints, imageFeatureExtractorTask.Result.scores, imageFeatureExtractorTask.Result.descriptors, imageEncoderTask.Result.globalDescriptor);
@@ -238,8 +250,21 @@ namespace ARVRLab.VPSService
 
         private void Callback(ITracking tracking, ARFoundationApplyer arRFoundationApplyer)
         {
+            attemptCount++;
+
             if (requestVPS.GetStatus() == LocalisationStatus.VPS_READY)
             {
+                #region Metrics
+                if (!tracking.GetLocalTracking().IsLocalisedFloor)
+                {
+                    MetricsCollector.Instance.StopStopwatch(FullLocalizationStopWatch);
+
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", FullLocalizationStopWatch, MetricsCollector.Instance.GetStopwatchSecondsAsString(FullLocalizationStopWatch));
+                    VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] SerialAttemptCount {0}", attemptCount);
+                }
+
+                #endregion
+
                 var response = requestVPS.GetResponce();
                 tracking.Localize();
 

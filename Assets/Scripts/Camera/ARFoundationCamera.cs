@@ -30,6 +30,12 @@ namespace ARVRLab.VPSService
         private bool isReady = false;
         private DeviceOrientation currentOrientation;
 
+        #region Metrics
+
+        private const string CopyImageFrameChannelRunTime = "CopyImageFrameChannelRunTime";
+
+        #endregion
+
         private void Awake()
         {
             cameraManager = FindObjectOfType<ARCameraManager>();
@@ -139,8 +145,7 @@ namespace ARVRLab.VPSService
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
         {
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(CopyImageFrameChannelRunTime);
             if (texture == null || texture.width != requir.Width || texture.height != requir.Height || texture.format != requir.Format)
             {
                 texture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
@@ -163,11 +168,8 @@ namespace ARVRLab.VPSService
 
             array.Dispose();
 
-            stopWatch.Stop();
-            TimeSpan copyChannelTS = stopWatch.Elapsed;
-
-            string copyChannelTime = String.Format("{0:N10}", copyChannelTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] CopyImageFrameChannelRunTime {0}", copyChannelTime);
+            MetricsCollector.Instance.StopStopwatch(CopyImageFrameChannelRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", CopyImageFrameChannelRunTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(CopyImageFrameChannelRunTime));
             return texture;
         }
 

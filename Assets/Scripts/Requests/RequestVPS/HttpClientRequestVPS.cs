@@ -22,6 +22,13 @@ namespace ARVRLab.VPSService
 
         private LocationState locationState = new LocationState();
 
+        #region Metrics
+
+        private const string ImageVPSRequest = "ImageVPSRequest";
+        private const string MVPSRequest = "MVPSRequest";
+
+        #endregion
+
         public void SetUrl(string url)
         {
             serverUrl = url;
@@ -51,16 +58,13 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(ImageVPSRequest);
 
             yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
 
-            stopWatch.Stop();
-            TimeSpan requestTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StopStopwatch(ImageVPSRequest);
 
-            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] ImageVPSRequest {0}", requestTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", ImageVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(ImageVPSRequest));
 
             callback();
         }
@@ -83,16 +87,12 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(MVPSRequest);
 
             yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
 
-            stopWatch.Stop();
-            TimeSpan requestTS = stopWatch.Elapsed;
-
-            string requestTime = String.Format("{0:N10}", requestTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSRequest {0}", requestTime);
+            MetricsCollector.Instance.StopStopwatch(MVPSRequest);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSRequest));
 
             callback();
         }

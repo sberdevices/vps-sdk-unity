@@ -39,10 +39,20 @@ namespace ARVRLab.VPSService
         public VPSTextureRequirement imageFeatureExtractorRequirements;
         public VPSTextureRequirement imageEncoderRequirements;
 
+        #region Metrics
+
+        private const string MVPSInitTime = "MVPSInitTime";
+        private const string MVPSImagePreprocessTime = "MVPSImagePreprocessTime";
+        private const string FeatureExtractorInferenceTime = "FeatureExtractorInferenceTime";
+        private const string FeatureExtractorPostProcessTime = "FeatureExtractorPostProcessTime";
+        private const string EncoderInferenceTime = "EncoderInferenceTime";
+        private const string EncoderPostProcessTime = "EncoderPostProcessTime";
+
+        #endregion
+
         public MobileVPS()
         {
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(MVPSInitTime);
 
             var imageFeatureExtractorOptions = new InterpreterOptions
             {
@@ -88,11 +98,9 @@ namespace ARVRLab.VPSService
             imageFeatureExtractorResult = new ImageFeatureExtractorResult(kpOutputShape, dOutputShape, sOutputShape);
             imageEncoderResult = new ImageEncoderResult(gdOutputShape);
 
-            stopWatch.Stop();
-            TimeSpan mvpsInitTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StopStopwatch(MVPSInitTime);
 
-            string mvpsInitTime = String.Format("{0:N10}", mvpsInitTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSInitTime {0}", mvpsInitTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSInitTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSInitTime));
         }
 
         ~MobileVPS()
@@ -124,8 +132,7 @@ namespace ARVRLab.VPSService
 
         private bool Preprocess(NativeArray<byte> featureExtractorBuffer, NativeArray<byte> encoderBuffer)
         {
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(MVPSImagePreprocessTime);
 
             if (!ConvertToFloat(featureExtractorBuffer, ref imageFeatureExtractorInput, imageFeatureExtractorRequirements))
                 return false;
@@ -139,11 +146,8 @@ namespace ARVRLab.VPSService
                     return false;
             }
 
-            stopWatch.Stop();
-            TimeSpan mvpsPreprocessTS = stopWatch.Elapsed;
-
-            string mvpsPreprocessTime = String.Format("{0:N10}", mvpsPreprocessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] MVPSImagePreprocessTime {0}", mvpsPreprocessTime);
+            MetricsCollector.Instance.StopStopwatch(MVPSImagePreprocessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSImagePreprocessTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSImagePreprocessTime));
 
             return true;
         }
@@ -193,35 +197,26 @@ namespace ARVRLab.VPSService
                 ImageFeatureExtractorIsWorking = true;
             }
 
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(FeatureExtractorInferenceTime);
             imageFeatureExtractorInterpreter.Invoke();
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan neuronRunTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StopStopwatch(FeatureExtractorInferenceTime);
 
-            // Format and display the TimeSpan value.
-            string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorInferenceTime {0}", neuronRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", FeatureExtractorInferenceTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(FeatureExtractorInferenceTime));
 
             imageFeatureExtractorInterpreter.GetOutputTensorData(0, keyPointsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(1, descriptorsOutput);
             imageFeatureExtractorInterpreter.GetOutputTensorData(2, scoresOutput);
 
-            stopWatch.Restart();
+            MetricsCollector.Instance.StartStopwatch(FeatureExtractorPostProcessTime);
 
             imageFeatureExtractorResult.setKeyPoints(keyPointsOutput);
             imageFeatureExtractorResult.setDescriptors(descriptorsOutput);
             imageFeatureExtractorResult.setScores(scoresOutput);
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan postProcessTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StopStopwatch(FeatureExtractorPostProcessTime);
 
-            // Format and display the TimeSpan value.
-            string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] FeatureExtractorPostProcessTime {0}", postProcessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", FeatureExtractorPostProcessTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(FeatureExtractorPostProcessTime));
 
             ImageFeatureExtractorIsWorking = false;
             return imageFeatureExtractorResult;
@@ -240,31 +235,22 @@ namespace ARVRLab.VPSService
                 ImageEncoderIsWorking = true;
             }
 
-            System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
-            stopWatch.Start();
+            MetricsCollector.Instance.StartStopwatch(EncoderInferenceTime);
             imageEncoderInterpreter.Invoke();
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan neuronRunTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StopStopwatch(EncoderInferenceTime);
 
-            // Format and display the TimeSpan value.
-            string neuronRunTime = String.Format("{0:N10}", neuronRunTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderInferenceTime {0}", neuronRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", EncoderInferenceTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(EncoderInferenceTime));
 
             imageEncoderInterpreter.GetOutputTensorData(0, globalDescriptorOutput);
 
-            stopWatch.Restart();
+            MetricsCollector.Instance.StartStopwatch(EncoderPostProcessTime);
 
             imageEncoderResult.setGlobalDescriptor(globalDescriptorOutput);
 
-            stopWatch.Stop();
-            // Get the elapsed time as a TimeSpan value.
-            TimeSpan postProcessTS = stopWatch.Elapsed;
+            MetricsCollector.Instance.StartStopwatch(EncoderPostProcessTime);
 
-            // Format and display the TimeSpan value.
-            string postProcessTime = String.Format("{0:N10}", postProcessTS.TotalSeconds);
-            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] EncoderPostProcessTime {0}", postProcessTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", EncoderPostProcessTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(EncoderPostProcessTime));
 
             ImageEncoderIsWorking = false;
             return imageEncoderResult;
