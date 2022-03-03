@@ -37,12 +37,15 @@ namespace ARVRLab.VPSService
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization rotation: {0}", localisation.VpsRotation);
             LocalisationResult correctedResult = (LocalisationResult)localisation.Clone();
 
+            // calculate camera offset for the time of sending request
+            Vector3 cameraOffset = arSessionOrigin.camera.transform.localPosition - localisation.TrackingPosition;
+
             // subtract the sent position and rotation because the child has them
             correctedResult.VpsPosition -= correctedResult.TrackingPosition;
             correctedResult.VpsRotation -= correctedResult.TrackingRotation;
 
             StopAllCoroutines();
-            StartCoroutine(UpdatePosAndRot(correctedResult.VpsPosition, correctedResult.VpsRotation));
+            StartCoroutine(UpdatePosAndRot(correctedResult.VpsPosition, correctedResult.VpsRotation, cameraOffset));
 
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.VpsPosition);
             VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization rotation: {0}", correctedResult.VpsRotation);
@@ -56,7 +59,7 @@ namespace ARVRLab.VPSService
         /// <returns>The position and rotation.</returns>
         /// <param name="NewPosition">New position.</param>
         /// <param name="NewRotation">New rotation y.</param>
-        IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation)
+        IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation, Vector3 cameraOffset)
         {
             if (RotateOnlyY)
             {
@@ -72,8 +75,10 @@ namespace ARVRLab.VPSService
             arSessionOrigin.transform.position = NewPosition;
             // we need rotate only camera, so we reset parent rotation
             arSessionOrigin.transform.rotation = Quaternion.identity;
+            // calculate camera world position without offset
+            Vector3 cameraPosWithoutOffet = arSessionOrigin.camera.transform.position - cameraOffset;
             // and rotate parent around child on three axes
-            RotateAroundThreeAxes(NewRotation);
+            RotateAroundThreeAxes(NewRotation, cameraPosWithoutOffet);
 
             // save anchor position and rotation
             Vector3 targetPosition = arSessionOrigin.transform.position;
@@ -94,12 +99,12 @@ namespace ARVRLab.VPSService
             }
         }
 
-        private void RotateAroundThreeAxes(Vector3 rotateVector)
+        private void RotateAroundThreeAxes(Vector3 rotateVector, Vector3 cameraPosWithoutOffet)
         {
             // rotate anchor (parent) around camera (child)
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.forward, rotateVector.z);
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.right, rotateVector.x);
-            arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, rotateVector.y);
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.forward, rotateVector.z);
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.right, rotateVector.x);
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.up, rotateVector.y);
         }
 
         public void ResetTracking()
