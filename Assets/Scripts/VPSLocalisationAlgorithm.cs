@@ -40,6 +40,10 @@ namespace ARVRLab.VPSService
 
         float neuronTime = 0;
 
+        const int failsToReset = 5;
+        int currentFailsCount = 0;
+        bool isLocalization = true;
+
         #region Metrics
 
         int attemptCount;
@@ -74,6 +78,11 @@ namespace ARVRLab.VPSService
             localisationService.StartCoroutine(LocalisationRoutine());
 
             neuronTime = 0;
+
+            OnErrorHappend += (error) => ResetIfFails(failsToReset);
+
+            currentFailsCount = 0;
+            isLocalization = true;
         }
 
         public void Stop()
@@ -241,10 +250,10 @@ namespace ARVRLab.VPSService
                     localisationService.StartCoroutine(requestVPS.SendVpsRequest(Image, Meta, () => Callback(tracking, arRFoundationApplyer)));
                 }
 
-                if (tracking.GetLocalTracking().IsLocalisedFloor)
-                    yield return new WaitForSeconds(settings.calibrationTimeout - neuronTime);
+                if (isLocalization)
+                    yield return new WaitForSeconds(settings.localizationTimeout - neuronTime); 
                 else
-                    yield return new WaitForSeconds(settings.localizationTimeout - neuronTime);
+                    yield return new WaitForSeconds(settings.calibrationTimeout - neuronTime);
             }
         }
 
@@ -264,6 +273,9 @@ namespace ARVRLab.VPSService
                 }
 
                 #endregion
+
+                isLocalization = false;
+                currentFailsCount = 0;
 
                 var response = requestVPS.GetResponce();
                 tracking.Localize();
@@ -290,6 +302,20 @@ namespace ARVRLab.VPSService
         {
             return (curAngle.x < MaxAngleX || curAngle.x > 360 - MaxAngleX) &&
             (curAngle.z < MaxAngleZ || curAngle.z > 360 - MaxAngleZ);
+        }
+
+        private void ResetIfFails(int count)
+        {
+            if (isLocalization)
+                return;
+
+            currentFailsCount++;
+            if (currentFailsCount >= count)
+            {
+                currentFailsCount = 0;
+                provider.ResetSessionId();
+                isLocalization = true;
+            }
         }
     }
 }
