@@ -11,7 +11,7 @@ namespace ARVRLab.VPSService
         // Delay between sending
         public float localizationTimeout = 1;
         // Delay between sending
-        public float calibrationTimeout = 5;
+        public float calibrationTimeout = 2.5f;
 
         public SettingsVPS(string buildingUrl)
         {
