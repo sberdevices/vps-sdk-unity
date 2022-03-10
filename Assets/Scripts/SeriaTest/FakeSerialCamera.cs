@@ -41,6 +41,8 @@ namespace ARVRLab.VPSService
 
         private GameObject ARCamera;
 
+        private const float fakeFocalPixelLength = 1444.24768066f;
+
         private void Start()
         {
             trackingData = new TrackingData();
@@ -109,7 +111,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1444.24768066f * resizeCoef, 1444.24768066f * resizeCoef);
+            return new Vector2(fakeFocalPixelLength * resizeCoef, fakeFocalPixelLength * resizeCoef);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -238,7 +240,7 @@ namespace ARVRLab.VPSService
             Camera camera = Camera.main;
 
             float h = cameraResolution.x;
-            float fy = GetFocalPixelLength().y;
+            float fy = fakeFocalPixelLength;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 

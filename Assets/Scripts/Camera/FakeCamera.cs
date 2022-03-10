@@ -32,6 +32,8 @@ namespace ARVRLab.VPSService
         private Image mockImage;
         private float resizeCoef = 1.0f;
 
+        private const float fakeFocalPixelLength = 1444.24768066f;
+
         public void Init(VPSTextureRequirement[] requirements)
         {
             FreeBufferMemory();
@@ -90,7 +92,7 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1444.24768066f * resizeCoef, 1444.24768066f * resizeCoef);
+            return new Vector2(fakeFocalPixelLength * resizeCoef, fakeFocalPixelLength * resizeCoef);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -222,7 +224,7 @@ namespace ARVRLab.VPSService
             Camera camera = Camera.main;
 
             float h = cameraResolution.x;
-            float fy = GetFocalPixelLength().y;
+            float fy = fakeFocalPixelLength;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
