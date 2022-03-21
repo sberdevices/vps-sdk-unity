@@ -105,11 +105,11 @@ namespace ARVRLab.VPSService
             semaphore.TakeOne();
 
             // Get latest camera image
-            XRCpuImage image;
-            if (!cameraManager.TryAcquireLatestCpuImage(out image))
+            if (!cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
             {
                 VPSLogger.Log(LogLevel.ERROR, "Can't take camera image");
                 isReady = false;
+                semaphore.Free();
                 return;
             }
 
