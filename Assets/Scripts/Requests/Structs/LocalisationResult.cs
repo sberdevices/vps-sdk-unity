@@ -1,32 +1,40 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
-    public class LocalisationResult
+    public class LocalisationResult: ICloneable
     {
-        public Vector3 LocalPosition;
-        public Vector3 LocalRotation;
+        public Vector3 TrackingPosition;
+        public Vector3 TrackingRotation;
+
+        public Vector3 VpsPosition;
+        public Vector3 VpsRotation;
+
         public double GpsLatitude;
         public double GpsLongitude;
-        public string GuidPointcloud;
         public float Heading;
         public float Accuracy;
         public double Timestamp;
-        public int Img_id;
 
         public LocalisationResult()
         {
-            LocalPosition = Vector3.zero;
-            LocalRotation = Vector3.zero;
+            TrackingPosition = Vector3.zero;
+            TrackingRotation = Vector3.zero;
+            VpsPosition = Vector3.zero;
+            VpsRotation = Vector3.zero;
             GpsLatitude = 0;
             GpsLongitude = 0;
-            GuidPointcloud = "";
             Heading = 0;
             Accuracy = 0;
             Timestamp = 0;
-            Img_id = -1;
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

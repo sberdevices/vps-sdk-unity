@@ -17,25 +17,20 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         /// </summary>
         /// <returns>The data.</returns>
         /// <param name="Provider">Provider.</param>
-        /// <param name="forceVPS">If set to <c>true</c> force vps.</param>
-        public static RequestStruct CollectData(ServiceProvider Provider, bool forceVPS = false, bool sendOnlyFeatures = false)
+        public static RequestStruct CollectData(ServiceProvider Provider)
         {
             Pose pose = new Pose();
             var tracking = Provider.GetTracking().GetLocalTracking();
-            var loc_id = tracking.GuidPointcloud;
 
             pose.position = tracking.Position;
             pose.rotation = tracking.Rotation;
 
-            string relative_type = "relative";
-
-            RequstGps requstGps = null;
-            RequestCompass requestCompass = null;
             IServiceGPS gps = Provider.GetGPS();
+            RequestLocation requestLocation = null;
             if (gps != null)
             {
                 GPSData gpsData = gps.GetGPSData();
-                requstGps = new RequstGps
+                RequstGps requstGps = new RequstGps
                 {
                     latitude = gpsData.Latitude,
                     longitude = gpsData.Longitude,
@@ -44,53 +39,47 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     timestamp = gpsData.Timestamp
                 };
                 CompassData gpsCompass = gps.GetCompassData();
-                requestCompass = new RequestCompass
+                RequestCompass requestCompass = new RequestCompass
                 {
                     heading = gpsCompass.Heading,
                     accuracy = gpsCompass.Accuracy,
                     timestamp = gpsCompass.Timestamp
+                };
+
+                requestLocation = new RequestLocation()
+                {
+                    gps = requstGps,
+                    compass = requestCompass
                 };
             }
 
             Vector2 FocalPixelLength = Provider.GetCamera().GetFocalPixelLength();
             Vector2 PrincipalPoint = Provider.GetCamera().GetPrincipalPoint();
 
-            const string userId = "user_id";
-            if (!PlayerPrefs.HasKey(userId))
+            const string userIdKey = "user_id";
+            if (!PlayerPrefs.HasKey(userIdKey))
             {
-                PlayerPrefs.SetString(userId, System.Guid.NewGuid().ToString());
+                PlayerPrefs.SetString(userIdKey, Guid.NewGuid().ToString());
             }
-
-            int orient = sendOnlyFeatures ? 0 : (int)Provider.GetCamera().GetOrientation();
 
             var attrib = new RequestAttributes
             {
-                location = new RequestLocation()
+                sessionId = Provider.GetSessionId(),
+                userId = PlayerPrefs.GetString(userIdKey),
+                timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d,
+
+                location = requestLocation,
+
+                clientCoordinateSystem = "unity",
+
+                trackingPose = new TrackingPose
                 {
-                    type = relative_type,
-                    location_id = loc_id,
-
-                    gps = requstGps,
-                    compass = requestCompass,
-
-                    clientCoordinateSystem = "unity",
-
-                    localPos = new LocalPos
-                    {
-                        x = pose.position.x,
-                        y = pose.position.y,
-                        z = pose.position.z,
-                        roll = pose.rotation.eulerAngles.x,
-                        pitch = pose.rotation.eulerAngles.y,
-                        yaw = pose.rotation.eulerAngles.z
-                    }
-                },
-                
-                imageTransform = new ImageTransform
-                {
-                    orientation = orient,
-                    mirrorX = false,
-                    mirrorY = false
+                    x = pose.position.x,
+                    y = pose.position.y,
+                    z = pose.position.z,
+                    rx = pose.rotation.eulerAngles.x,
+                    ry = pose.rotation.eulerAngles.y,
+                    rz = pose.rotation.eulerAngles.z
                 },
 
                 intrinsics = new Intrinsics
@@ -99,24 +88,13 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
                     fy = FocalPixelLength.y,
                     cx = PrincipalPoint.x,
                     cy = PrincipalPoint.y
-                },
-
-                forced_localization = forceVPS,
-
-                version = 1,
-
-                user_id = PlayerPrefs.GetString(userId),
-
-                timestamp = new DateTimeOffset(DateTime.Now).ToUnixTimeMilliseconds() / 1000d
-        };
+                }
+            };
 
 
             var data = new RequestData
             {
-                id = System.Guid.NewGuid().ToString(),
-
-                type = "job",
-
+                id = Guid.NewGuid().ToString(),
                 attributes = attrib
             };
 
@@ -148,28 +126,30 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             ResponseStruct communicationStruct = JsonConvert.DeserializeObject<ResponseStruct>(json);
 
-            int id;
-            bool checkImgId = int.TryParse(communicationStruct.data.id, out id);
-
-            LocalisationResult localisation = new LocalisationResult
-            {
-                LocalPosition = new Vector3(communicationStruct.data.attributes.location.relative.x, communicationStruct.data.attributes.location.relative.y,
-                communicationStruct.data.attributes.location.relative.z),
-                LocalRotation = new Vector3(communicationStruct.data.attributes.location.relative.roll,
-                                            communicationStruct.data.attributes.location.relative.pitch,
-                                            communicationStruct.data.attributes.location.relative.yaw),
-                Img_id = checkImgId ? id : -1,
-                GuidPointcloud = communicationStruct.data.attributes.location.location_id,
-            };
-
             LocationState request = new LocationState
             {
                 Status = GetStatusFromString(communicationStruct.data.attributes.status),
-                Localisation = localisation
             };
 
             if (request.Status == LocalisationStatus.VPS_READY)
+            {
                 request.Error = ErrorCode.NO_ERROR;
+                request.Localisation = new LocalisationResult
+                {
+                    VpsPosition = new Vector3(communicationStruct.data.attributes.vpsPose.x,
+                                communicationStruct.data.attributes.vpsPose.y,
+                                communicationStruct.data.attributes.vpsPose.z),
+                    VpsRotation = new Vector3(communicationStruct.data.attributes.vpsPose.rx,
+                                communicationStruct.data.attributes.vpsPose.ry,
+                                communicationStruct.data.attributes.vpsPose.rz),
+                    TrackingPosition = new Vector3(communicationStruct.data.attributes.trackingPose.x,
+                                communicationStruct.data.attributes.trackingPose.y,
+                                communicationStruct.data.attributes.trackingPose.z),
+                    TrackingRotation = new Vector3(communicationStruct.data.attributes.trackingPose.rx,
+                                communicationStruct.data.attributes.trackingPose.ry,
+                                communicationStruct.data.attributes.trackingPose.rz)
+                };
+            }
             else if (request.Status == LocalisationStatus.GPS_ONLY)
                 request.Error = ErrorCode.LOCALISATION_FAIL;
 
@@ -180,7 +160,6 @@ namespace ARVRLab.ARVRLab.VPSService.JSONs
         {
             switch(status)
             {
-                case "progress": return LocalisationStatus.NO_LOCALISATION;
                 case "done": return LocalisationStatus.VPS_READY;
                 case "fail": return LocalisationStatus.GPS_ONLY;
                 default: return LocalisationStatus.GPS_ONLY;

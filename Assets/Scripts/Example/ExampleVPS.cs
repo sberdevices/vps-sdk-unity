@@ -20,8 +20,8 @@ public class ExampleVPS : MonoBehaviour
 		VPS.OnErrorHappend += OnErrorHappendHandler;
 
 		// Create custom settings to VPS: generate url in constructor and set delay between requests
-		SettingsVPS settings = new SettingsVPS("https://vps.arvr.sberlabs.com/polytech-pub/", "Polytech");
-		settings.Timeout = 3;
+		SettingsVPS settings = new SettingsVPS("https://vps.arvr.sberlabs.com/polytech-pub/");
+		settings.localizationTimeout = 3;
 
 		// Start service
 		VPS.StartVPS(settings);
@@ -33,7 +33,7 @@ public class ExampleVPS : MonoBehaviour
     /// <param name="locationState"></param> 
 	private void OnPositionUpdatedHandler(LocationState locationState)
 	{
-		Debug.LogFormat("[Event] Localisation successful! Receive position {0} and rotation {1}", locationState.Localisation.LocalPosition, locationState.Localisation.LocalRotation);
+		Debug.LogFormat("[Event] Localisation successful! Receive position {0} and rotation {1}", locationState.Localisation.VpsPosition, locationState.Localisation.VpsRotation);
 	}
 
 	/// <summary>

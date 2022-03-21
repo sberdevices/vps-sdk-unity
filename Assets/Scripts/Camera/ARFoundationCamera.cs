@@ -30,6 +30,12 @@ namespace ARVRLab.VPSService
         private bool isReady = false;
         private DeviceOrientation currentOrientation;
 
+        #region Metrics
+
+        private const string CopyImageFrameChannelRunTime = "CopyImageFrameChannelRunTime";
+
+        #endregion
+
         private void Awake()
         {
             cameraManager = FindObjectOfType<ARCameraManager>();
@@ -47,6 +53,8 @@ namespace ARVRLab.VPSService
 
             var distinctRequir = requirements.Distinct().ToList();
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
+
+            isReady = false;
         }
 
         private IEnumerator Start()
@@ -79,7 +87,6 @@ namespace ARVRLab.VPSService
                     // Get the best resolution
                     hdConfig = configurations.OrderByDescending(a => a.width * a.height).FirstOrDefault();
                 }
-                isReady = true;
 
                 cameraManager.currentConfiguration = hdConfig;
             } 
@@ -101,6 +108,7 @@ namespace ARVRLab.VPSService
             if (!cameraManager.TryAcquireLatestCpuImage(out XRCpuImage image))
             {
                 VPSLogger.Log(LogLevel.ERROR, "Can't take camera image");
+                isReady = false;
                 semaphore.Free();
                 return;
             }
@@ -124,6 +132,7 @@ namespace ARVRLab.VPSService
             catch (Exception ex)
             {
                 VPSLogger.Log(LogLevel.ERROR, ex);
+                isReady = false;
             }
             finally
             {
@@ -131,10 +140,12 @@ namespace ARVRLab.VPSService
                 image.Dispose();
             }
             semaphore.Free();
+            isReady = true;
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
         {
+            MetricsCollector.Instance.StartStopwatch(CopyImageFrameChannelRunTime);
             if (texture == null || texture.width != requir.Width || texture.height != requir.Height || texture.format != requir.Format)
             {
                 texture = new Texture2D(requir.Width, requir.Height, requir.Format, false);
@@ -156,6 +167,9 @@ namespace ARVRLab.VPSService
             texture.Apply();
 
             array.Dispose();
+
+            MetricsCollector.Instance.StopStopwatch(CopyImageFrameChannelRunTime);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", CopyImageFrameChannelRunTime, MetricsCollector.Instance.GetStopwatchSecondsAsString(CopyImageFrameChannelRunTime));
             return texture;
         }
 
@@ -168,20 +182,20 @@ namespace ARVRLab.VPSService
             if (cameraManager.TryGetIntrinsics(out intrins))
             {
                 VPSTextureRequirement req = buffers.FirstOrDefault().Key;
+                float cameraWidth = (float)cameraManager.currentConfiguration.Value.width;
                 float cameraHeight = (float)cameraManager.currentConfiguration.Value.height;
 
+                float resizeCoef;
                 if (currentOrientation == DeviceOrientation.Portrait || currentOrientation == DeviceOrientation.PortraitUpsideDown)
                 {
-                    float resizeCoef = req.Width / cameraHeight;
-                    return new Vector2(intrins.focalLength.x * resizeCoef,
-                        intrins.focalLength.y * resizeCoef);
+                    resizeCoef = req.Height / cameraWidth;
                 }
                 else
                 {
-                    float resizeCoef = req.Height / cameraHeight;
-                    return new Vector2(intrins.focalLength.x * resizeCoef,
-                        intrins.focalLength.y * resizeCoef);
+                    resizeCoef = req.Height / cameraHeight;
                 }
+
+                return new Vector2(intrins.focalLength.x * resizeCoef, intrins.focalLength.y * resizeCoef);
             }
 
             return Vector2.zero;
@@ -189,6 +203,9 @@ namespace ARVRLab.VPSService
 
         public Vector2 GetPrincipalPoint()
         {
+            if (buffers == null || buffers.Count == 0 || !cameraManager.currentConfiguration.HasValue)
+                return Vector2.zero;
+
             VPSTextureRequirement req = buffers.FirstOrDefault().Key;
             return new Vector2(req.Width / 2f, req.Height / 2f);
         }
@@ -293,11 +310,6 @@ namespace ARVRLab.VPSService
                         break;
                 }
             }
-        }
-
-        public VPSOrientation GetOrientation()
-        {
-            return VPSOrientation.Portrait;
         }
 
         private void Update()

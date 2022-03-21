@@ -4,127 +4,80 @@ using UnityEngine;
 
 namespace ARVRLab.ARVRLab.VPSService.JSONs
 {
-	[Serializable]
-	public class RequestStruct
-	{
-		public RequestData data;
-	}
-
-	[Serializable]
-	public class RequestData
-	{
-		public string id;
-		public string type;
-		public RequestAttributes attributes;
-	}
-
-	[Serializable]
-	public class RequestAttributes
-	{
-        public RequestLocation location;
-
-        public ImageTransform imageTransform;
-
-        public Intrinsics intrinsics;
-
-        public bool forced_localization;
-
-        public int version;
-
-        public string user_id;
-
-        public double timestamp;
+    [Serializable]
+    public class RequestStruct
+    {
+        public RequestData data;
     }
 
     [Serializable]
-	public class RequestLocation
-	{
-		public string type;
-		public string location_id;
+    public class RequestData
+    {
+        public string id;
+        public RequestAttributes attributes;
+    }
+
+    [Serializable]
+    public class RequestAttributes
+    {
+        [JsonProperty("session_id")]
+        public string sessionId;
+        [JsonProperty("user_id")]
+        public string userId;
+        public double timestamp;
+        public RequestLocation location;
+        [JsonProperty("client_coordinate_system")]
+        public string clientCoordinateSystem;
+        [JsonProperty("tracking_pose")]
+        public TrackingPose trackingPose;
+        public Intrinsics intrinsics;
+    }
+
+    [Serializable]
+    public class RequestLocation
+    {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public RequstGps gps;
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public RequestCompass compass;
-        public string clientCoordinateSystem;
-        public LocalPos localPos;
-	}
-
-	[Serializable]
-	public class RequstGps
-	{
-		public double latitude;
-
-		public double longitude;
-
-		public double altitude;
-
-		public float accuracy;
-
-		public double timestamp;
-	}
+    }
 
     [Serializable]
-    public class LocalPos
+    public class RequstGps
+    {
+        public double latitude;
+        public double longitude;
+        public double altitude;
+        public double accuracy;
+        public double timestamp;
+    }
+
+    [Serializable]
+    public class TrackingPose
     {
         public float x;
         public float y;
         public float z;
 
-        public float roll;
-        public float pitch;
-        public float yaw;
+        public float rx;
+        public float ry;
+        public float rz;
     }
 
     [Serializable]
-	public class RequestCompass
-	{
-		public float heading;
-
-		public float accuracy;
-
-		public double timestamp;
-	}
-
-    [Serializable]
-    public class ImageTransform
+    public class RequestCompass
     {
-        public int orientation;
-
-        public bool mirrorX;
-
-        public bool mirrorY;
+        public float heading;
+        public float accuracy;
+        public double timestamp;
     }
 
     [Serializable]
     public class Intrinsics
     {
         public float fx;
-
         public float fy;
-
         public float cx;
-
         public float cy;
-    }
-
-    public class RequestLocalizationData
-    {
-        public byte[] image;
-        public string meta;
-        public Pose pose;
-        public byte[] Embedding;
-
-        public RequestLocalizationData(byte[] Img, string Meta, Pose pose, byte[] embedding)
-        {
-            image = Img;
-            meta = Meta;
-            this.pose = pose;
-            Embedding = embedding;
-        }
-
-        public RequestLocalizationData()
-        {
-
-        }
     }
 }

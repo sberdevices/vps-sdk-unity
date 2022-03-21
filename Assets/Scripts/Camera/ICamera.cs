@@ -33,9 +33,5 @@ namespace ARVRLab.VPSService
         /// Get image as NativeArray by requirement
         /// </summary>
         NativeArray<byte> GetBuffer(VPSTextureRequirement requir);
-        /// <summary>
-        /// Get device orientation
-        /// </summary>
-        VPSOrientation GetOrientation();
     }
 }

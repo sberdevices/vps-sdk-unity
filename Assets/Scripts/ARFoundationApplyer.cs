@@ -9,8 +9,6 @@ namespace ARVRLab.VPSService
     {
         private ARSessionOrigin arSessionOrigin;
 
-        private Pose startPose;
-
         [Tooltip("Max distance for interpolation")]
         public float MaxInterpolationDistance = 5;
 
@@ -30,90 +28,27 @@ namespace ARVRLab.VPSService
         }
 
         /// <summary>
-        /// Save camera pose before sending request
-        /// </summary>
-        public void LocalisationStart()
-        {
-            Vector3 pos = arSessionOrigin.camera.transform.position;
-            Vector3 rot;
-            if (RotateOnlyY)
-            {
-                rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0); 
-            }
-            else
-            {
-                rot = arSessionOrigin.camera.transform.eulerAngles;
-            }
-            startPose = new Pose(pos, Quaternion.Euler(rot));
-        }
-
-        /// <summary>
-        /// Get current camera pose
-        /// </summary>
-        public Pose GetCurrentPose()
-        {
-            Vector3 pos = arSessionOrigin.camera.transform.position;
-            Vector3 rot;
-            if (RotateOnlyY)
-            {
-                rot = new Vector3(0, arSessionOrigin.camera.transform.eulerAngles.y, 0);
-            }
-            else
-            {
-                rot = arSessionOrigin.camera.transform.eulerAngles;
-            }
-            return new Pose(pos, Quaternion.Euler(rot));
-        }
-
-        /// <summary>
         /// Apply taked transform and return adjusted ARFoundation localisation
         /// </summary>
         /// <returns>The VPS Transform.</returns>
         public LocalisationResult ApplyVPSTransform(LocalisationResult localisation)
         {
-            LocalisationResult correctedResult = localisation;
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization position: {0}", localisation.VpsPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Received localization rotation: {0}", localisation.VpsRotation);
+            LocalisationResult correctedResult = (LocalisationResult)localisation.Clone();
 
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - startPose.position;
+            // calculate camera offset for the time of sending request
+            Vector3 cameraOffset = arSessionOrigin.camera.transform.localPosition - localisation.TrackingPosition;
 
-            if (RotateOnlyY)
-            {
-                var qrot = Quaternion.Inverse(startPose.rotation) * Quaternion.Euler(localisation.LocalRotation);
-                correctedResult.LocalRotation = qrot.eulerAngles;
-            }
-
-            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
-            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
+            // subtract the sent position and rotation because the child has them
+            correctedResult.VpsPosition -= correctedResult.TrackingPosition;
+            correctedResult.VpsRotation -= correctedResult.TrackingRotation;
 
             StopAllCoroutines();
+            StartCoroutine(UpdatePosAndRot(correctedResult.VpsPosition, correctedResult.VpsRotation, cameraOffset));
 
-            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
-
-            return correctedResult;
-        }
-
-        /// <summary>
-        /// Apply taked transform and return adjusted ARFoundation localisation
-        /// relative to a custom start position
-        /// </summary>
-        /// <returns>The VPS Transform.</returns>
-        public LocalisationResult ApplyVPSTransform(LocalisationResult localisation, Pose CustomStartPose)
-        {
-            LocalisationResult correctedResult = localisation;
-
-            correctedResult.LocalPosition = arSessionOrigin.transform.localPosition + localisation.LocalPosition - CustomStartPose.position;
-
-            if (RotateOnlyY)
-            {
-                var qrot = Quaternion.Inverse(CustomStartPose.rotation) * Quaternion.Euler(localisation.LocalRotation);
-                correctedResult.LocalRotation = qrot.eulerAngles;
-            }
-
-            VPSLogger.Log(LogLevel.NONE, "VPS localization successful");
-            VPSLogger.LogFormat(LogLevel.DEBUG, "VPS position: {0}", correctedResult.LocalPosition);
-
-            StopAllCoroutines();
-
-            StartCoroutine(UpdatePosAndRot(correctedResult.LocalPosition, correctedResult.LocalRotation));
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization position: {0}", correctedResult.VpsPosition);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "Corrected localization rotation: {0}", correctedResult.VpsRotation);
 
             return correctedResult;
         }
@@ -124,30 +59,52 @@ namespace ARVRLab.VPSService
         /// <returns>The position and rotation.</returns>
         /// <param name="NewPosition">New position.</param>
         /// <param name="NewRotation">New rotation y.</param>
-        IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation)
+        IEnumerator UpdatePosAndRot(Vector3 NewPosition, Vector3 NewRotation, Vector3 cameraOffset)
         {
-            // if the offset is greater than MaxInterpolationDistance - move instantly
-            if (!RotateOnlyY || Vector3.Distance(arSessionOrigin.transform.localPosition, NewPosition) > MaxInterpolationDistance)
+            if (RotateOnlyY)
             {
-                arSessionOrigin.transform.localPosition = NewPosition;
-                if (RotateOnlyY)
-                    arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, NewRotation.y);
-                else
-                    arSessionOrigin.transform.eulerAngles = NewRotation;
-                yield break;
+                NewRotation.x = 0;
+                NewRotation.z = 0;
             }
 
-            float CurAngle = 0;
+            // save current anchor position and rotation
+            Vector3 startPosition = arSessionOrigin.transform.position;
+            Quaternion startRotation = arSessionOrigin.transform.rotation;
 
-            while (true)
+            // set new position
+            arSessionOrigin.transform.position = NewPosition;
+            // we need rotate only camera, so we reset parent rotation
+            arSessionOrigin.transform.rotation = Quaternion.identity;
+            // calculate camera world position without offset
+            Vector3 cameraPosWithoutOffet = arSessionOrigin.camera.transform.position - cameraOffset;
+            // and rotate parent around child on three axes
+            RotateAroundThreeAxes(NewRotation, cameraPosWithoutOffet);
+
+            // save anchor position and rotation
+            Vector3 targetPosition = arSessionOrigin.transform.position;
+            Quaternion targetRotation = arSessionOrigin.transform.rotation;
+
+            // if the offset is greater than MaxInterpolationDistance - don't use interpolation (move instantly)
+            if (Vector3.Distance(startPosition, targetPosition) > MaxInterpolationDistance)
+                yield break;
+
+            // interpolate position and rotation from start pos to target
+            float interpolant = 0;
+            while (interpolant < 1)
             {
-                arSessionOrigin.transform.localPosition = Vector3.Lerp(arSessionOrigin.transform.localPosition, NewPosition, LerpSpeed * Time.deltaTime);
-
-                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, -CurAngle);
-                CurAngle = Mathf.LerpAngle(CurAngle, NewRotation.y, LerpSpeed * Time.deltaTime);
-                arSessionOrigin.transform.RotateAround(arSessionOrigin.camera.transform.position, Vector3.up, CurAngle);
+                interpolant += LerpSpeed * Time.deltaTime;
+                arSessionOrigin.transform.position = Vector3.Lerp(startPosition, targetPosition, interpolant);
+                arSessionOrigin.transform.rotation = Quaternion.Lerp(startRotation, targetRotation, interpolant);
                 yield return null;
             }
+        }
+
+        private void RotateAroundThreeAxes(Vector3 rotateVector, Vector3 cameraPosWithoutOffet)
+        {
+            // rotate anchor (parent) around camera (child)
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.forward, rotateVector.z);
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.right, rotateVector.x);
+            arSessionOrigin.transform.RotateAround(cameraPosWithoutOffet, Vector3.up, rotateVector.y);
         }
 
         public void ResetTracking()

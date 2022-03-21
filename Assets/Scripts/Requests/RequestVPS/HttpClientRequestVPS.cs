@@ -15,24 +15,28 @@ namespace ARVRLab.VPSService
     public class HttpClientRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api for serial photo localization
-        private string api_path_firstloc = "vps/api/v1/first_loc/job";
-        // api for one photo localisation
-        private string api_path = "vps/api/v1/job";
+        // api for localisation
+        private string api_path_session = "vps/api/v2";
 
-        private int aloneTimeout = 4;
-        private int serialTimeout = 12;
+        private int timeout = 4;
 
         private LocationState locationState = new LocationState();
+
+        #region Metrics
+
+        private const string ImageVPSRequest = "ImageVPSRequest";
+        private const string MVPSRequest = "MVPSRequest";
+
+        #endregion
 
         public void SetUrl(string url)
         {
             serverUrl = url;
         }
 
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -54,12 +58,20 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
-            yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
+            MetricsCollector.Instance.StartStopwatch(ImageVPSRequest);
+
+            yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
+
+            MetricsCollector.Instance.StopStopwatch(ImageVPSRequest);
+
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", ImageVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(ImageVPSRequest));
+
+            callback();
         }
 
-        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -75,37 +87,14 @@ namespace ARVRLab.VPSService
             HttpContent metaContent = new StringContent(meta);
             form.Add(metaContent, "json");
 
-            yield return Task.Run(() => SendRequest(uri, form, aloneTimeout)).AsCoroutine();
-        }
+            MetricsCollector.Instance.StartStopwatch(MVPSRequest);
 
-        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
-        {
-            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
+            yield return Task.Run(() => SendRequest(uri, form, timeout)).AsCoroutine();
 
-            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
-            {
-                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
-                yield break;
-            }
+            MetricsCollector.Instance.StopStopwatch(MVPSRequest);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSRequest));
 
-            MultipartFormDataContent form = new MultipartFormDataContent();
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (data[i].Embedding != null)
-                {
-                    HttpContent embd = new ByteArrayContent(data[i].Embedding);
-                    form.Add(embd, "embd" + i, "data.embd");
-                }
-                else
-                {
-                    HttpContent img = new ByteArrayContent(data[i].image);
-                    form.Add(img, "mes" + i, CreateFileName());
-                }
-
-                HttpContent meta = new StringContent(data[i].meta);
-                form.Add(meta, "mes" + i);
-            }
-            yield return Task.Run(() => SendRequest(uri, form, serialTimeout)).AsCoroutine();
+            callback();
         }
 
         public LocalisationStatus GetStatus()

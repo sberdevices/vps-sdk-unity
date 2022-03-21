@@ -13,7 +13,7 @@ namespace ARVRLab.VPSService
         public double Latitude;
         public double Longitude;
         public double Altitude;
-        public float Accuracy;
+        public double Accuracy;
         public double Timestamp;
 
         public GPSData()

@@ -1,30 +1,53 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService
 {
-    public class FakeSerialCamera : MonoBehaviour, ICamera
+    [Serializable]
+    public class FakeData
+    {
+        public string ImageLocalPath;
+        public Texture2D Texture;
+        public TextAsset Pose;
+    }
+
+    public class FakeSerialCamera : MonoBehaviour, ICamera, ITracking
     {
         private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
+        public FakeTextureLoadingType LoadingType;
 
-        public Texture2D[] FakeTextures;
+        public FakeData[] fakeDatas;
+
+        [Tooltip("Update current photo by this timeout")]
+        public float updateTimeout;
+
         private Texture2D ppFakeTexture;
         private Texture2D convertTexture;
-
         private Dictionary<VPSTextureRequirement, NativeArray<byte>> buffers;
 
         private int Counter = 0;
 
-        private VPSTextureRequirement textureRequir;
+        private Image mockImage;
         private float resizeCoef = 1.0f;
 
-        private void Awake()
+        private TrackingData trackingData;
+
+        private GameObject ARCamera;
+
+        private const float fakeFocalPixelLength = 1444.24768066f;
+
+        private void Start()
         {
-            LocalizationImagesCollector.OnPhotoAdded += IncPhotoCounter;
+            trackingData = new TrackingData();
+            ARCamera = FindObjectOfType<ARSessionOrigin>().camera.gameObject;
+            StartCoroutine(UpdateFrame());
         }
 
         /// <summary>
@@ -33,22 +56,23 @@ namespace ARVRLab.VPSService
         private void IncPhotoCounter()
         {
             Counter++;
-            if (Counter >= FakeTextures.Length)
+            if (Counter >= fakeDatas.Length)
                 Counter = 0;
+
             InitBuffers();
+            UpdateTrackingData();
         }
 
         public void Init(VPSTextureRequirement[] requirements)
         {
-            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
-
-            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y; 
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y;
+            SetCameraFov();
         }
 
         /// <summary>
@@ -59,9 +83,20 @@ namespace ARVRLab.VPSService
             if (buffers == null || buffers.Count == 0)
                 return;
 
+            if (LoadingType == FakeTextureLoadingType.TEXTURE)
+            {
+                if (fakeDatas[Counter] == null)
+                    return;
+            }
+            else
+            {
+                string fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, fakeDatas[Counter].ImageLocalPath);
+                fakeDatas[Counter].Texture.LoadImage(File.ReadAllBytes(fullPath));
+            }
+
             foreach (var req in buffers.Keys)
             {
-                convertTexture = Preprocess(FakeTextures[Counter], req.Format);
+                convertTexture = Preprocess(fakeDatas[Counter].Texture, req.Format);
                 if (convertTexture.width != req.Width || convertTexture.height != req.Height)
                 {
                     RectInt inputRect = req.GetCropRect(convertTexture.width, convertTexture.height, ((float)req.Height) / ((float)req.Width));
@@ -70,11 +105,13 @@ namespace ARVRLab.VPSService
                 }
                 buffers[req].CopyFrom(convertTexture.GetRawTextureData());
             }
+
+            ShowMockFrame(fakeDatas[Counter].Texture);
         }
 
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1444.24768066f * resizeCoef, 1444.24768066f * resizeCoef);
+            return new Vector2(fakeFocalPixelLength * resizeCoef, fakeFocalPixelLength * resizeCoef);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -102,7 +139,7 @@ namespace ARVRLab.VPSService
 
         public bool IsCameraReady()
         {
-            return FakeTextures[0] != null;
+            return fakeDatas[0].Texture != null;
         }
 
         private void OnDestroy()
@@ -126,11 +163,6 @@ namespace ARVRLab.VPSService
             buffers.Clear();
         }
 
-        public float GetResizeCoefficient()
-        {
-            return resizeCoef;
-        }
-
         /// <summary>
         /// Rotate FakeTexture and copy the red channel to green and blue
         /// </summary>
@@ -140,9 +172,9 @@ namespace ARVRLab.VPSService
             int h = FakeTexture.height;
 
             bool onlyFeatures = FindObjectOfType<VPSLocalisationService>().SendOnlyFeatures;
+            Texture2D rotatedTexture = new Texture2D(w, h, format, false);
             if (onlyFeatures)
             {
-                Texture2D rotatedTexture = new Texture2D(w, h, format, false);
                 for (int i = 0; i < w; i++)
                 {
                     for (int j = 0; j < h; j++)
@@ -155,12 +187,49 @@ namespace ARVRLab.VPSService
                 }
 
                 rotatedTexture.Apply();
-                return rotatedTexture;
             }
             else
             {
-                return FakeTexture;
+                rotatedTexture.SetPixels(FakeTexture.GetPixels());
+                rotatedTexture.Apply();
             }
+
+            return rotatedTexture;
+        }
+
+        /// <summary>
+        /// Create mock frame on the background
+        /// </summary>
+        private void ShowMockFrame(Texture mockTexture)
+        {
+            if (!mockImage)
+            {
+                var canvasGO = new GameObject("FakeSerialCamera");
+                var canvas = canvasGO.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+
+                var camera = FindObjectOfType<Camera>();
+                if (!camera)
+                {
+                    VPSLogger.Log(LogLevel.ERROR, "Virtual camera is not found");
+                    return;
+                }
+
+                canvas.worldCamera = camera;
+                canvas.planeDistance = camera.farClipPlane - 10f;
+
+                var imgGO = new GameObject("FakeFrame");
+                var imgTransform = imgGO.AddComponent<RectTransform>();
+                imgTransform.SetParent(canvasGO.transform, false);
+
+                imgTransform.anchorMin = Vector2.zero;
+                imgTransform.anchorMax = Vector2.one;
+
+                mockImage = imgGO.AddComponent<Image>();
+                mockImage.preserveAspect = true;
+            }
+
+            mockImage.sprite = Sprite.Create((Texture2D)mockTexture, new Rect(0, 0, mockTexture.width, mockTexture.height), Vector2.zero);
         }
 
         /// <summary>
@@ -171,16 +240,60 @@ namespace ARVRLab.VPSService
             Camera camera = Camera.main;
 
             float h = cameraResolution.x;
-            float fy = GetFocalPixelLength().y;
+            float fy = fakeFocalPixelLength;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
             camera.fieldOfView = fovY;
         }
 
-        public VPSOrientation GetOrientation()
+        public TrackingData GetLocalTracking()
         {
-            return VPSOrientation.Portrait;
+            UpdateTrackingData();
+            return trackingData;
+        }
+
+        /// <summary>
+        /// Write current position and rotation from current file in the structure
+        /// </summary>
+        private void UpdateTrackingData()
+        {
+            if (fakeDatas[Counter].Pose != null)
+            {
+                Pose currentPose = MetaParser.Parse(fakeDatas[Counter].Pose.text);
+                trackingData.Position = currentPose.position;
+                trackingData.Rotation = currentPose.rotation;
+            }
+            else
+            {
+                trackingData.Position = ARCamera.transform.localPosition;
+                trackingData.Rotation = ARCamera.transform.localRotation;
+            }
+        }
+
+        public void Localize()
+        {
+            if (trackingData != null)
+            {
+                trackingData.IsLocalisedFloor = true;
+            }
+        }
+
+        public void ResetTracking()
+        {
+            if (trackingData != null)
+            {
+                trackingData.IsLocalisedFloor = false;
+            }
+        }
+
+        private IEnumerator UpdateFrame()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(updateTimeout);
+                IncPhotoCounter();
+            }
         }
     }
 }

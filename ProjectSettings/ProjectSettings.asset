@@ -134,10 +134,8 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  bundleVersion: 0.3.4
-  preloadedAssets:
-  - {fileID: 4800000, guid: e7c77f6eaab324a819efdc13b8125a39, type: 3}
-  - {fileID: 2469857932885625709, guid: c4793d07cfa8c46ce8e15fffcbd6cf60, type: 2}
+  bundleVersion: 0.4.0
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -155,7 +153,8 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.arvrlab.VPSServise
+    Android: com.arvrlab.VPSServiseExample
+    Standalone: com.arvrlab.VPSServiseExample
     iPhone: com.arvrlab.VPSServiseExample
   buildNumber:
     Standalone: 0

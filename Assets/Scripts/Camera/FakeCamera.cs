@@ -32,16 +32,18 @@ namespace ARVRLab.VPSService
         private Image mockImage;
         private float resizeCoef = 1.0f;
 
+        private const float fakeFocalPixelLength = 1444.24768066f;
+
         public void Init(VPSTextureRequirement[] requirements)
         {
-            SetCameraFov();
             FreeBufferMemory();
 
             var distinctRequir = requirements.Distinct().ToList();
             buffers = distinctRequir.ToDictionary(r => r, r => new NativeArray<byte>(r.Width * r.Height * r.ChannelsCount(), Allocator.Persistent));
 
             InitBuffers();
-            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y; 
+            resizeCoef = (float)buffers.FirstOrDefault().Key.Width / (float)cameraResolution.y;
+            SetCameraFov();
         }
 
         private void OnValidate()
@@ -63,7 +65,6 @@ namespace ARVRLab.VPSService
 
 #if UNITY_EDITOR
                 EditorApplication.delayCall = () => ShowMockFrame(FakeTexture);
-                PrepareApplyer();
 #endif
             }
         }
@@ -89,16 +90,9 @@ namespace ARVRLab.VPSService
             }
         }
 
-        private void PrepareApplyer()
-        {
-            var applyer = FindObjectOfType<ARFoundationApplyer>();
-            if (applyer)
-                applyer.RotateOnlyY = false;
-        }
-
         public Vector2 GetFocalPixelLength()
         {
-            return new Vector2(1444.24768066f * resizeCoef, 1444.24768066f * resizeCoef);
+            return new Vector2(fakeFocalPixelLength * resizeCoef, fakeFocalPixelLength * resizeCoef);
         }
 
         public Texture2D GetFrame(VPSTextureRequirement requir)
@@ -189,6 +183,9 @@ namespace ARVRLab.VPSService
         /// </summary>
         private void ShowMockFrame(Texture mockTexture)
         {
+            if (!gameObject.activeSelf)
+                return;
+
             if (!mockImage)
             {
                 var canvasGO = new GameObject("FakeCamera");
@@ -227,16 +224,11 @@ namespace ARVRLab.VPSService
             Camera camera = Camera.main;
 
             float h = cameraResolution.x;
-            float fy = GetFocalPixelLength().y;
+            float fy = fakeFocalPixelLength;
 
             float fovY = (float)(2 * Mathf.Atan(h / 2 / fy) * 180 / Mathf.PI);
 
             camera.fieldOfView = fovY;
-        }
-
-        public VPSOrientation GetOrientation()
-        {
-            return VPSOrientation.Portrait;
         }
     }
 }

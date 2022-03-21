@@ -17,23 +17,28 @@ namespace ARVRLab.VPSService
     public class UnityWebRequestVPS : IRequestVPS
     {
         private string serverUrl;
-        // api for serial photo localization
-        private string api_path_firstloc = "vps/api/v1/first_loc/job";
         // api for one photo localisation
-        private string api_path = "vps/api/v1/job";
+        private string api_path_session = "vps/api/v2";
 
-        private int timeout = 10;
+        private int timeout = 4;
 
         private LocationState locationState = new LocationState();
+
+        #region Metrics
+
+        private const string ImageVPSRequest = "ImageVPSRequest";
+        private const string MVPSRequest = "MVPSRequest";
+
+        #endregion
 
         public void SetUrl(string url)
         {
             serverUrl = url;
         }
 
-        public IEnumerator SendVpsRequest(Texture2D image, string meta)
+        public IEnumerator SendVpsRequest(Texture2D image, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -53,12 +58,20 @@ namespace ARVRLab.VPSService
 
             form.AddField("json", meta);
 
+            MetricsCollector.Instance.StartStopwatch(ImageVPSRequest);
+
             yield return SendRequest(uri, form);
+
+            MetricsCollector.Instance.StopStopwatch(ImageVPSRequest);
+
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", ImageVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(ImageVPSRequest));
+
+            callback();
         }
 
-        public IEnumerator SendVpsRequest(byte[] embedding, string meta)
+        public IEnumerator SendVpsRequest(byte[] embedding, string meta, System.Action callback)
         {
-            string uri = Path.Combine(serverUrl, api_path).Replace("\\", "/");
+            string uri = Path.Combine(serverUrl, api_path_session).Replace("\\", "/");
 
             if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
             {
@@ -72,35 +85,14 @@ namespace ARVRLab.VPSService
 
             form.AddField("json", meta);
 
-            yield return SendRequest(uri, form);
-        }
-
-        public IEnumerator SendVpsLocalizationRequest(List<RequestLocalizationData> data)
-        {
-            string uri = Path.Combine(serverUrl, api_path_firstloc).Replace("\\", "/");
-
-            if (!Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
-            {
-                VPSLogger.LogFormat(LogLevel.ERROR, "URL is incorrect: {0}", uri);
-                yield break;
-            }
-
-            WWWForm form = new WWWForm();
-
-            for (int i = 0; i < data.Count; i++)
-            {
-                if (data[i].Embedding != null)
-                {
-                    form.AddBinaryData("embd" + i, data[i].Embedding, "data.embd");
-                }
-                else
-                {
-                    form.AddBinaryData("mes" + i, data[i].image, CreateFileName());
-                }
-                form.AddField("mes" + i, data[i].meta);
-            }
+            MetricsCollector.Instance.StartStopwatch(MVPSRequest);
 
             yield return SendRequest(uri, form);
+
+            MetricsCollector.Instance.StopStopwatch(MVPSRequest);
+            VPSLogger.LogFormat(LogLevel.VERBOSE, "[Metric] {0} {1}", MVPSRequest, MetricsCollector.Instance.GetStopwatchSecondsAsString(MVPSRequest));
+
+            callback();
         }
 
         public LocalisationStatus GetStatus()

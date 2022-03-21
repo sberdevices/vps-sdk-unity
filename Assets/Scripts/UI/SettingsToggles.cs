@@ -10,21 +10,19 @@ namespace ARVRLab.VPSService
     public class SettingsToggles : MonoBehaviour
     {
         public GameObject Root;
-        public Toggle UsePhotoSerial;
         public Toggle Autofocus;
         public Toggle SendOnlyFeatures;
-        public Toggle AlwaysForce;
         public Toggle SendGPS;
         public Toggle Occluder;
         public Toggle SaveImages;
+        public Toggle WriteLogsInFile;
 
         public Button RestartVPSButton;
         public float PressTime = 2f;
         private float mouseDeltaTime = 0;
         public string ContentTag;
 
-        public Material occluderMaterial;
-        public Material standartMaterial;
+        private GameObject content;
 
         private VPSLocalisationService vps;
         private VPSLocalisationService VPS
@@ -50,28 +48,18 @@ namespace ARVRLab.VPSService
 
         private void Awake()
         {
-
-            UsePhotoSerial?.onValueChanged.AddListener((value) => VPS.UsePhotoSeries = value);
             Autofocus?.onValueChanged.AddListener((value) => CameraManager.autoFocusRequested = value);
             SendOnlyFeatures?.onValueChanged.AddListener((value) => VPS.SendOnlyFeatures = value);
-            AlwaysForce?.onValueChanged.AddListener((value) => VPS.AlwaysForce = value);
             SendGPS?.onValueChanged.AddListener((value) => VPS.SendGPS = value);
             Occluder?.onValueChanged.AddListener((value) => ApplyOccluder(value));
             SaveImages.onValueChanged.AddListener((value) => OnSaveImages(value));
+            WriteLogsInFile.onValueChanged.AddListener((value) => VPSLogger.WriteLogsInFile = value);
+            content = GameObject.FindGameObjectWithTag(ContentTag);
 
             RestartVPSButton.onClick.AddListener(() =>
             {
                 VPS.ResetTracking();
-                SettingsVPS settings;
-                if (VPS.UseCustomUrl)
-                {
-                    settings = new SettingsVPS(VPS.CustomUrl, VPS.defaultBuildingGuid);
-                }
-                else
-                {
-                    settings = new SettingsVPS(VPS.defaultUrl, VPS.defaultBuildingGuid);
-                }
-                VPS.StartVPS(settings);
+                VPS.StartVPS();
                 HideToggles();
             });
 
@@ -85,20 +73,18 @@ namespace ARVRLab.VPSService
 
         private void Start()
         {
-            if (UsePhotoSerial != null)
-                UsePhotoSerial.isOn = VPS.UsePhotoSeries;
             if (Autofocus != null)
                 Autofocus.isOn = CameraManager.autoFocusRequested;
             if (SendOnlyFeatures != null)
                 SendOnlyFeatures.isOn = VPS.SendOnlyFeatures;
-            if (AlwaysForce != null)
-                AlwaysForce.isOn = VPS.AlwaysForce;
             if (SendGPS != null)
                 SendGPS.isOn = VPS.SendGPS;
             if (Occluder != null)
-                Occluder.isOn = false;
+                Occluder.isOn = content.activeSelf;
             if (SaveImages != null)
                 SaveImages.isOn = DebugUtils.SaveImagesLocaly;
+            if (WriteLogsInFile != null)
+                WriteLogsInFile.isOn = VPSLogger.WriteLogsInFile;
         }
 
         private void Update()
@@ -148,13 +134,7 @@ namespace ARVRLab.VPSService
 
         private void ApplyOccluder(bool enable)
         {
-            Material material = enable ? occluderMaterial : standartMaterial;
-
-            GameObject[] contents = GameObject.FindGameObjectsWithTag(ContentTag);
-            foreach (var content in contents)
-            {
-                content.GetComponent<Renderer>().material = material;
-            }
+            content.SetActive(enable);
         }
     }
 }
