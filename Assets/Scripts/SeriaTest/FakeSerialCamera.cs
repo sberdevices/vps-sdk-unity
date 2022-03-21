@@ -13,7 +13,6 @@ namespace ARVRLab.VPSService
     [Serializable]
     public class FakeData
     {
-        public string ImageLocalPath;
         public Texture2D Texture;
         public TextAsset Pose;
     }
@@ -21,7 +20,6 @@ namespace ARVRLab.VPSService
     public class FakeSerialCamera : MonoBehaviour, ICamera, ITracking
     {
         private Vector2Int cameraResolution = new Vector2Int(1920, 1080);
-        public FakeTextureLoadingType LoadingType;
 
         public FakeData[] fakeDatas;
 
@@ -83,16 +81,8 @@ namespace ARVRLab.VPSService
             if (buffers == null || buffers.Count == 0)
                 return;
 
-            if (LoadingType == FakeTextureLoadingType.TEXTURE)
-            {
-                if (fakeDatas[Counter] == null)
-                    return;
-            }
-            else
-            {
-                string fullPath = Path.Combine(Directory.GetParent(Application.dataPath).FullName, fakeDatas[Counter].ImageLocalPath);
-                fakeDatas[Counter].Texture.LoadImage(File.ReadAllBytes(fullPath));
-            }
+            if (fakeDatas[Counter] == null)
+                return;
 
             foreach (var req in buffers.Keys)
             {

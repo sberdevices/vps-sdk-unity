@@ -13,6 +13,7 @@ namespace ARVRLab.VPSService
     /// </summary>
     public static class VPSLogger
     {
+        // Write logs in file
         public static bool WriteLogsInFile = false;
 
 #if VPS_DEBUG
@@ -76,8 +77,9 @@ namespace ARVRLab.VPSService
                 if (!File.Exists(path))
                 {
                     fs = File.Create(path);
+                    // without it log file may not be displayed in android file transfer
 #if UNITY_ANDROID && !UNITY_EDITOR
-        RefreshAndroidFile(path);
+                    RefreshAndroidFile(path);
 #endif
                 }
                 else

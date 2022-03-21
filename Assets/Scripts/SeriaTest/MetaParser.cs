@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace ARVRLab.VPSService
 {
     public static class MetaParser

@@ -115,9 +115,8 @@ namespace ARVRLab.VPSService
         /// </summary>
         private string CreateFileName()
         {
-            string file = "";
             DateTime dateTime = DateTime.Now;
-            file = dateTime.ToString("yyyy-MM-dd-HH-mm-ss");
+            string file = dateTime.ToString("yyyy-MM-dd-HH-mm-ss");
             file += ".jpg";
             return file;
         }

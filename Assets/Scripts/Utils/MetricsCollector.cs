@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// Class to collect time metrics
+    /// </summary>
     public class MetricsCollector : MonoBehaviour
     {
         private static MetricsCollector instance = new MetricsCollector();
