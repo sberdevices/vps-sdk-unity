@@ -4,6 +4,9 @@ using ARVRLab.VPSService;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Show VPS request status in UI
+/// </summary>
 public class TestVPSStatus : MonoBehaviour
 {
 	private VPSLocalisationService VPS;

@@ -7,6 +7,9 @@ using UnityEngine.XR.ARFoundation;
 
 namespace ARVRLab.VPSService
 {
+    /// <summary>
+    /// UI Canvas to change settings at runtime
+    /// </summary>
     public class SettingsToggles : MonoBehaviour
     {
         public GameObject Root;

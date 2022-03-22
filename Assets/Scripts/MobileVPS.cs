@@ -82,16 +82,16 @@ namespace ARVRLab.VPSService
             format = inputShape[3] == 1 ? TextureFormat.R8 : TextureFormat.RGB24;
             imageEncoderRequirements = new VPSTextureRequirement(inputShape[2], inputShape[1], format);
 
-            //keypoints
+            // Keypoints output
             int[] kpOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(0).shape;
             keyPointsOutput = new float[kpOutputShape[0], kpOutputShape[1]];
-            //descriptors
+            // Descriptors output
             int[] dOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(1).shape;
             descriptorsOutput = new float[dOutputShape[0], dOutputShape[1]];
-            //scores
+            // Scores output
             int[] sOutputShape = imageFeatureExtractorInterpreter.GetOutputTensorInfo(2).shape;
             scoresOutput = new float[sOutputShape[0]];
-            //globalDescriptor
+            // GlobalDescriptor output
             int[] gdOutputShape = imageEncoderInterpreter.GetOutputTensorInfo(0).shape;
             globalDescriptorOutput = new float[gdOutputShape[0], gdOutputShape[1]];
 
