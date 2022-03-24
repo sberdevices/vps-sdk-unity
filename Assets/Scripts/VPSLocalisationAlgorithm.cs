@@ -26,7 +26,7 @@ namespace ARVRLab.VPSService
 
         private bool sendOnlyFeatures;
 
-        IRequestVPS requestVPS = new HttpClientRequestVPS();
+        IRequestVPS requestVPS = new UnityWebRequestVPS();
 
         /// <summary>
         /// Event localisation error
